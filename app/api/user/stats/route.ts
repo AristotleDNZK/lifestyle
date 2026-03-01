@@ -9,13 +9,40 @@ import { supabaseAdmin } from "@/lib/supabase";
 export async function GET(req: NextRequest) {
   try {
     // Authenticate user
-    const { userId } = await auth();
+    const authResult = await auth();
+    const userId = authResult.userId;
 
     if (!userId) {
       return NextResponse.json(
         { error: "Unauthorized - Please sign in" },
         { status: 401 }
       );
+    }
+
+    // Ensure user exists in database (auto-create with free credits)
+    const { data: existingUser } = await supabaseAdmin
+      .from("users")
+      .select("id, credits")
+      .eq("id", userId)
+      .single();
+
+    if (!existingUser) {
+      console.log("User not found in stats API - creating new user with 10 free credits");
+
+      // Get user email from Clerk
+      const userEmail = authResult.user?.emailAddresses[0]?.emailAddress || `${userId}@temp.local`;
+
+      const { error: insertError } = await supabaseAdmin
+        .from("users")
+        .insert({
+          id: userId,
+          email: userEmail,
+          credits: 10, // Free credits for new users
+        });
+
+      if (insertError) {
+        console.error("Failed to create user in stats API:", insertError);
+      }
     }
 
     // Get user stats using RPC function

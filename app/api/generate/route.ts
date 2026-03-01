@@ -6,7 +6,7 @@ import {
   downloadImage,
   type AspectRatio,
 } from "@/lib/volcengine";
-import { uploadImage } from "@/lib/r2";
+import { uploadToImgBB, EXPIRATION } from "@/lib/imgbb";
 
 /**
  * AI Generation API Route
@@ -16,9 +16,11 @@ import { uploadImage } from "@/lib/r2";
  * 1. Authenticate user
  * 2. Deduct credits (using RPC for atomic operation)
  * 3. Branch based on type:
- *    - Image: Generate → Download → Upload to R2 → Save to DB
+ *    - Image: Generate → Download → Upload to ImgBB → Save to DB
  *    - Video: Return "coming soon" message (no deduction, no generation)
  * 4. Error handling: Refund credits if generation fails
+ *
+ * Storage: Uses ImgBB (free unlimited storage with optional expiration)
  */
 
 // Credit costs
@@ -85,6 +87,43 @@ export async function POST(req: NextRequest) {
     // IMAGE GENERATION (ACTIVE)
     // =====================================================
 
+    // Step 0: Ensure user exists in database (auto-create with free credits)
+    console.log(`Checking if user ${userId} exists in database...`);
+
+    const { data: existingUser } = await supabaseAdmin
+      .from("users")
+      .select("id, credits, email")
+      .eq("id", userId)
+      .single();
+
+    if (!existingUser) {
+      console.log("User not found - creating new user with 10 free credits");
+
+      // Get user email from Clerk
+      const { user: clerkUser } = await auth();
+      const userEmail = clerkUser?.emailAddresses[0]?.emailAddress || `${userId}@temp.local`;
+
+      const { error: insertError } = await supabaseAdmin
+        .from("users")
+        .insert({
+          id: userId,
+          email: userEmail,
+          credits: 10, // Free credits for new users
+        });
+
+      if (insertError) {
+        console.error("Failed to create user:", insertError);
+        return NextResponse.json(
+          { error: "Failed to initialize user account. Please try again." },
+          { status: 500 }
+        );
+      }
+
+      console.log(`New user created successfully with 10 free credits`);
+    } else {
+      console.log(`User found with ${existingUser.credits} credits`);
+    }
+
     // Step A: Deduct credits using RPC (atomic operation)
     const costInCredits = CREDIT_COST.image;
 
@@ -144,10 +183,13 @@ export async function POST(req: NextRequest) {
     const imageBuffer = await downloadImage(volcengineResult.imageUrl);
     console.log(`Image downloaded: ${imageBuffer.length} bytes`);
 
-    // Step D: Upload to Cloudflare R2
-    console.log("Uploading image to Cloudflare R2...");
-    const r2Url = await uploadImage(imageBuffer, "png");
-    console.log("Image uploaded to R2:", r2Url);
+    // Step D: Upload to ImgBB (free unlimited storage)
+    console.log("Uploading image to ImgBB...");
+    const imgbbResult = await uploadToImgBB(imageBuffer, {
+      expiration: EXPIRATION.SEVEN_DAYS, // 7天自动过期
+      name: `ai-gen-${Date.now()}`,
+    });
+    console.log("Image uploaded to ImgBB:", imgbbResult.url);
 
     // Step E: Save generation record to database
     console.log("Saving generation record to database...");
@@ -158,7 +200,7 @@ export async function POST(req: NextRequest) {
         user_id: userId,
         type: "image",
         prompt: prompt.trim(),
-        url: r2Url,
+        url: imgbbResult.url,
         cost: costInCredits,
         status: "completed",
       });
@@ -175,7 +217,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       type: "image",
-      url: r2Url,
+      url: imgbbResult.url,
+      deleteUrl: imgbbResult.deleteUrl,
+      expiresAt: imgbbResult.expiresAt,
       prompt: prompt.trim(),
       creditsUsed: costInCredits,
       requestId: volcengineResult.requestId,
