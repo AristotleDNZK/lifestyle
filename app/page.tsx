@@ -18,7 +18,12 @@ type FAQItem = {
   a: string;
 };
 
-const navLinks = ["Dating Profile Review", "AI Dating Photos", "Reviews", "Blog"];
+const navLinks = [
+  { label: "Dating Profile Review", href: "#" },
+  { label: "AI Dating Photos", href: "#" },
+  { label: "Reviews", href: "#" },
+  { label: "Blog", href: "/blog" },
+];
 
 const stats = [
   { value: "2M+", label: "Professional dating photos" },
@@ -150,16 +155,19 @@ function SiteNavbar() {
       <Container>
         <div className="flex h-16 items-center justify-between gap-4">
           <Link href="#hero" className="inline-flex -skew-x-12 bg-[#5ef36f] px-3 py-1">
-            <span className="skew-x-12 font-['Bebas_Neue','Oswald','Arial_Narrow',sans-serif] text-2xl uppercase tracking-[0.05em] text-[#111]">
+            <span
+              translate="no"
+              className="notranslate skew-x-12 font-['Bebas_Neue','Oswald','Arial_Narrow',sans-serif] text-2xl uppercase tracking-[0.05em] text-[#111]"
+            >
               Roast
             </span>
           </Link>
 
           <nav className="hidden items-center gap-8 text-[15px] text-white/65 lg:flex">
             {navLinks.map((link) => (
-              <a key={link} href="#" className="transition-colors hover:text-[#63f276]">
-                {link}
-              </a>
+              <Link key={link.label} href={link.href} className="transition-colors hover:text-[#63f276]">
+                {link.label}
+              </Link>
             ))}
           </nav>
 
@@ -468,9 +476,9 @@ function GallerySection() {
 
         <div className="mt-5 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-base text-white/55">
           {navLinks.map((link) => (
-            <a key={link} href="#" className="transition-colors hover:text-[#63f276]">
-              {link}
-            </a>
+            <Link key={link.label} href={link.href} className="transition-colors hover:text-[#63f276]">
+              {link.label}
+            </Link>
           ))}
         </div>
 
@@ -551,7 +559,12 @@ function PricingSection() {
               <tr className="bg-[#13171d] text-left">
                 <th className="px-4 py-5 text-sm uppercase tracking-[0.06em] text-white/55">Feature</th>
                 <th className="border-x border-[#3f8d52]/55 bg-[#1c3d29]/80 px-4 py-4 text-center">
-                  <p className="font-['Bebas_Neue','Oswald','Arial_Narrow',sans-serif] text-[34px] uppercase leading-none text-[#61f275]">Roast AI Photos</p>
+                  <p
+                    translate="no"
+                    className="notranslate font-['Bebas_Neue','Oswald','Arial_Narrow',sans-serif] text-[34px] uppercase leading-none text-[#61f275]"
+                  >
+                    Roast AI Photos
+                  </p>
                   <p className="mt-1 text-3xl font-semibold text-[#69f17a]">$39/mo</p>
                 </th>
                 <th className="px-4 py-4 text-center">
@@ -628,7 +641,14 @@ function SiteFooter() {
       <Container>
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
           <div>
-            <div className="inline-flex -skew-x-12 bg-[#5ef36f] px-3 py-1"><span className="skew-x-12 font-['Bebas_Neue','Oswald','Arial_Narrow',sans-serif] text-2xl uppercase tracking-[0.05em] text-[#111]">Roast</span></div>
+            <div className="inline-flex -skew-x-12 bg-[#5ef36f] px-3 py-1">
+              <span
+                translate="no"
+                className="notranslate skew-x-12 font-['Bebas_Neue','Oswald','Arial_Narrow',sans-serif] text-2xl uppercase tracking-[0.05em] text-[#111]"
+              >
+                Roast
+              </span>
+            </div>
             <p className="mt-4 text-base text-white/55">AI-powered dating optimization</p>
           </div>
           <div>
@@ -646,7 +666,7 @@ function SiteFooter() {
         </div>
         <div className="mt-10 border-t border-white/10 pt-6 text-sm text-white/45">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p>c 2022-2026 Roast. All rights reserved.</p>
+            <p translate="no" className="notranslate">c 2022-2026 Roast. All rights reserved.</p>
             <div className="flex flex-wrap gap-5"><a href="#">Terms</a><a href="#">Privacy</a><a href="#">Refund</a><a href="#">Disclaimer</a><a href="#">Cookies</a></div>
           </div>
         </div>

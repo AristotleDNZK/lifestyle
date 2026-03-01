@@ -7,6 +7,443 @@ import {
   type AspectRatio,
 } from "@/lib/volcengine";
 import { uploadToImgBB, EXPIRATION } from "@/lib/imgbb";
+import { Agent } from "undici";
+import { HttpsProxyAgent } from "https-proxy-agent";
+import { randomUUID } from "crypto";
+
+export const runtime = "nodejs";
+export const maxDuration = 60;
+
+type GeminiGenerateRequest = {
+  prompt: string;
+  ratio?: string;
+  model?: string;
+  imageBase64: string;
+  imageMimeType?: string;
+};
+
+function safeString(v: unknown) {
+  return typeof v === "string" ? v : "";
+}
+
+let cachedDispatcher: any | null = null;
+let cachedDispatcherKey = "";
+
+function redactProxy(proxyUrl: string) {
+  try {
+    const u = new URL(proxyUrl);
+    const port = u.port ? `:${u.port}` : "";
+    return `${u.protocol}//${u.hostname}${port}`;
+  } catch {
+    return "invalid-proxy-url";
+  }
+}
+
+function getGeminiDispatcher() {
+  const proxy =
+    process.env.GEMINI_PROXY_URL ||
+    process.env.HTTPS_PROXY ||
+    process.env.HTTP_PROXY ||
+    process.env.ALL_PROXY ||
+    "";
+
+  const key = proxy ? `proxy:${proxy}` : "direct";
+  if (cachedDispatcher && cachedDispatcherKey === key) return cachedDispatcher;
+
+  cachedDispatcherKey = key;
+  if (proxy) {
+    // Use https-proxy-agent for better compatibility with Clash/V2Ray
+    cachedDispatcher = new HttpsProxyAgent(proxy, {
+      timeout: 30_000,
+    } as any);
+    console.log("[Gemini][Network]", { mode: "proxy", proxy: redactProxy(proxy) });
+    return cachedDispatcher;
+  }
+
+  // Also increase connect timeout for direct mode (Node fetch default can be ~10s).
+  cachedDispatcher = new Agent({ connectTimeout: 30_000 } as any);
+  console.log("[Gemini][Network]", { mode: "direct" });
+  return cachedDispatcher;
+}
+
+function getOverallTimeoutMs() {
+  const raw = process.env.GEMINI_TIMEOUT_MS;
+  const parsed = raw ? Number(raw) : NaN;
+  // Default longer timeout for local debugging; Vercel can still be capped by maxDuration.
+  if (!Number.isFinite(parsed) || parsed <= 0) return 120_000;
+  return Math.min(Math.max(parsed, 10_000), 240_000);
+}
+
+function normalizeModelId(model: string) {
+  const m = model.trim();
+  if (!m) return "";
+  return m.startsWith("models/") ? m.slice("models/".length) : m;
+}
+
+function mapUiModelToGeminiModel(uiModel: string) {
+  switch (uiModel) {
+    case "nano-banana-edit":
+      return "nano-banana-pro-preview";
+    case "seedance-edit-fast":
+      return "gemini-3.1-flash-image-preview";
+    case "seedance-edit-pro":
+      return "gemini-3-pro-image-preview";
+    default:
+      return "";
+  }
+}
+
+function looksLikeGeminiImageModelId(value: string) {
+  const v = value.trim();
+  if (!v) return false;
+  const id = normalizeModelId(v);
+  return (
+    id.startsWith("gemini-") ||
+    id.startsWith("nano-banana-")
+  );
+}
+
+function presetStrategy(presetId: string) {
+  switch (presetId) {
+    case "auto-fast":
+      return {
+        primary: "gemini-3.1-flash-image-preview",
+        fallbacks: [
+          "gemini-2.5-flash-image",
+          "nano-banana-pro-preview",
+          "gemini-2.0-flash-exp-image-generation",
+          "gemini-3-pro-image-preview",
+        ],
+      };
+    case "auto-balanced":
+      return {
+        primary: "gemini-2.5-flash-image",
+        fallbacks: [
+          "gemini-3.1-flash-image-preview",
+          "nano-banana-pro-preview",
+          "gemini-2.0-flash-exp-image-generation",
+          "gemini-3-pro-image-preview",
+        ],
+      };
+    case "auto-edit":
+      return {
+        primary: "nano-banana-pro-preview",
+        fallbacks: [
+          "gemini-3.1-flash-image-preview",
+          "gemini-2.5-flash-image",
+          "gemini-3-pro-image-preview",
+          "gemini-2.0-flash-exp-image-generation",
+        ],
+      };
+    case "auto-quality":
+      return {
+        primary: "gemini-3-pro-image-preview",
+        fallbacks: [
+          "nano-banana-pro-preview",
+          "gemini-3.1-flash-image-preview",
+          "gemini-2.5-flash-image",
+          "gemini-2.0-flash-exp-image-generation",
+        ],
+      };
+    case "auto-experimental":
+      return {
+        primary: "gemini-2.0-flash-exp-image-generation",
+        fallbacks: [
+          "gemini-3.1-flash-image-preview",
+          "gemini-2.5-flash-image",
+          "nano-banana-pro-preview",
+          "gemini-3-pro-image-preview",
+        ],
+      };
+    default:
+      return null;
+  }
+}
+
+function uniqueModels(models: string[]) {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const m of models) {
+    const id = normalizeModelId(m);
+    if (!id) continue;
+    if (seen.has(id)) continue;
+    seen.add(id);
+    out.push(id);
+  }
+  return out;
+}
+
+function sleep(ms: number) {
+  return new Promise<void>((r) => setTimeout(r, ms));
+}
+
+function extractGeminiImage(json: any): { imageBase64: string; mimeType: string } | null {
+  const candidates = Array.isArray(json?.candidates) ? json.candidates : [];
+  for (const cand of candidates) {
+    const parts = cand?.content?.parts;
+    if (!Array.isArray(parts)) continue;
+    for (const part of parts) {
+      const inline = part?.inlineData || part?.inline_data;
+      if (inline?.data && typeof inline.data === "string") {
+        return {
+          imageBase64: inline.data,
+          mimeType: typeof inline.mimeType === "string" ? inline.mimeType : "image/jpeg",
+        };
+      }
+    }
+  }
+  return null;
+}
+
+async function handleGeminiImageToImage(req: NextRequest, body: GeminiGenerateRequest) {
+  try {
+    const reqId = randomUUID();
+    const authResult = await auth();
+    if (!authResult.userId) {
+      return NextResponse.json(
+        { error: "Unauthorized - Please sign in" },
+        { status: 401 }
+      );
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json({ error: "Missing GEMINI_API_KEY" }, { status: 500 });
+    }
+
+    const prompt = safeString(body.prompt).trim();
+    const imageBase64 = safeString(body.imageBase64).trim();
+    const imageMimeType = safeString(body.imageMimeType).trim() || "image/jpeg";
+    const ratio = safeString(body.ratio).trim();
+
+    if (!prompt) {
+      return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
+    }
+    if (!imageBase64) {
+      return NextResponse.json({ error: "imageBase64 is required" }, { status: 400 });
+    }
+
+    const text =
+      "\u8bf7\u6839\u636e\u56fe\u7247\u548c\u8981\u6c42\u8fdb\u884c\u91cd\u7ed8\uff1a" +
+      prompt +
+      (ratio ? `\n\u8f93\u51fa\u6bd4\u4f8b: ${ratio}` : "");
+
+    const payload = {
+      contents: [
+        {
+          parts: [
+            { text },
+            {
+              inlineData: {
+                mimeType: imageMimeType || "image/jpeg",
+                data: imageBase64,
+              },
+            },
+          ],
+        },
+      ],
+    };
+
+    const uiModel = safeString(body.model).trim();
+    const envPrimary = safeString(process.env.GEMINI_IMAGE_MODEL).trim();
+    const envFallback = safeString(process.env.GEMINI_FALLBACK_MODELS).trim();
+    const fallbackFromEnv = envFallback
+      ? envFallback.split(",").map((s) => s.trim())
+      : [
+          "gemini-3.1-flash-image-preview",
+          "nano-banana-pro-preview",
+          "gemini-2.5-flash-image",
+          "gemini-2.0-flash-exp-image-generation",
+          "gemini-3-pro-image-preview",
+        ];
+
+    const preset = presetStrategy(uiModel);
+    const primaryFromUi = preset
+      ? preset.primary
+      : looksLikeGeminiImageModelId(uiModel)
+        ? normalizeModelId(uiModel)
+        : normalizeModelId(mapUiModelToGeminiModel(uiModel));
+
+    // UI selection wins. Env primary is only used as a default.
+    const primaryModel =
+      primaryFromUi ||
+      normalizeModelId(envPrimary) ||
+      "gemini-3-pro-image-preview";
+
+    const fallbackModels = preset?.fallbacks?.length
+      ? [...preset.fallbacks, ...fallbackFromEnv]
+      : fallbackFromEnv;
+
+    const modelsToTry = uniqueModels([primaryModel, ...fallbackModels]);
+    const overallTimeoutMs = getOverallTimeoutMs();
+
+    console.log("[Gemini][RequestPayload]", {
+      reqId,
+      uiModel,
+      primaryModel,
+      modelsToTry,
+      ratio,
+      promptLen: prompt.length,
+      imageMimeType,
+      imageBase64Len: imageBase64.length,
+      imageBase64Preview: imageBase64.slice(0, 50),
+      overallTimeoutMs,
+      payloadShape: {
+        contents: [
+          {
+            parts: [
+              { textPreview: text.slice(0, 120) },
+              {
+                inlineData: {
+                  mimeType: imageMimeType,
+                  dataPreview: imageBase64.slice(0, 50),
+                },
+              },
+            ],
+          },
+        ],
+      },
+    });
+
+    const deadline = Date.now() + overallTimeoutMs;
+    const dispatcher = getGeminiDispatcher();
+
+    let lastError: { status?: number; message: string } | null = null;
+
+    for (let mi = 0; mi < modelsToTry.length; mi += 1) {
+      const modelId = modelsToTry[mi]!;
+      const remaining = Math.max(0, deadline - Date.now());
+      if (remaining < 5_000) break;
+
+      // Give the primary model more budget; keep fallbacks tighter.
+      const attemptTimeoutMs =
+        mi === 0 ? Math.min(remaining, 120_000) : Math.min(remaining, 60_000);
+
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${encodeURIComponent(
+        apiKey
+      )}`;
+
+      console.log("[Gemini][TryModel]", {
+        reqId,
+        modelId,
+        attemptTimeoutMs,
+        remainingMs: remaining,
+      });
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => {
+        controller.abort(new Error(`Gemini request timed out after ${attemptTimeoutMs}ms`));
+      }, attemptTimeoutMs);
+
+      const startedAt = Date.now();
+      let res: Response | null = null;
+      let rawText = "";
+
+      try {
+        res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
+          // @ts-expect-error - RequestInit typing doesn't include undici dispatcher.
+          dispatcher,
+          body: JSON.stringify(payload),
+        });
+        rawText = await res.text();
+      } catch (error: any) {
+        console.error("【后端完整报错日志】:", error.name, error.message, error.cause);
+        console.error(error.stack);
+        lastError = { message: error?.message || "Gemini fetch failed" };
+      } finally {
+        clearTimeout(timeout);
+        console.log("[Gemini][ResponseMeta]", {
+          reqId,
+          modelId,
+          ok: res?.ok ?? false,
+          status: res?.status ?? null,
+          elapsedMs: Date.now() - startedAt,
+          rawTextPreview: rawText ? rawText.slice(0, 220) : "",
+          aborted: controller.signal.aborted,
+        });
+      }
+
+      if (!res) {
+        continue;
+      }
+
+      let json: any = null;
+      try {
+        json = rawText ? JSON.parse(rawText) : null;
+      } catch {
+        json = null;
+      }
+
+      if (!res.ok) {
+        const msg =
+          safeString(json?.error?.message) ||
+          safeString(json?.message) ||
+          rawText ||
+          `Gemini request failed (${res.status})`;
+        lastError = { status: res.status, message: msg };
+
+        console.error("[Gemini][UpstreamError]", {
+          reqId,
+          modelId,
+          status: res.status,
+          message: msg,
+          responsePreview: rawText ? rawText.slice(0, 1200) : "",
+        });
+
+        // Retry a bit on transient overload/rate-limit (keep within overall budget).
+        if (res.status === 503 || res.status === 429) {
+          const waitMs = 1200 + Math.floor(Math.random() * 600);
+          const still = Math.max(0, deadline - Date.now());
+          if (still > waitMs + 5_000) {
+            console.log("[Gemini][RetryAfter]", { modelId, waitMs, status: res.status });
+            await sleep(waitMs);
+            mi -= 1;
+            continue;
+          }
+        }
+
+        continue;
+      }
+
+      const extracted = extractGeminiImage(json);
+      if (!extracted?.imageBase64) {
+        lastError = { status: 502, message: "No image returned from Gemini" };
+        console.error("[Gemini][NoImageInResponse]", {
+          reqId,
+          modelId,
+          responsePreview: rawText ? rawText.slice(0, 2000) : "",
+        });
+        continue;
+      }
+
+      return NextResponse.json({
+        success: true,
+        imageBase64: extracted.imageBase64,
+        mimeType: extracted.mimeType,
+        modelId,
+      });
+    }
+
+    return NextResponse.json(
+      {
+        error: lastError?.message || `Gemini request timed out after ${overallTimeoutMs}ms`,
+        status: lastError?.status,
+        modelsTried: modelsToTry,
+      },
+      { status: 502 }
+    );
+  } catch (error: any) {
+    console.error("【后端完整报错日志】:", error.name, error.message, error.cause);
+    console.error(error.stack);
+    return NextResponse.json(
+      { error: error?.message || "Internal server error", name: error?.name },
+      { status: 500 }
+    );
+  }
+}
 
 /**
  * AI Generation API Route
@@ -35,6 +472,28 @@ export async function POST(req: NextRequest) {
   let generationType: "image" | "video" = "image";
 
   try {
+    // If the request includes `imageBase64`, treat it as Image-to-Image (Gemini).
+    // This keeps the existing text-to-image/video API behavior intact for other pages.
+    let maybeBody: any = null;
+    try {
+      maybeBody = await req.json();
+    } catch (error: any) {
+      console.error("【后端完整报错日志】:", error.name, error.message, error.cause);
+      console.error(error.stack);
+      return NextResponse.json(
+        { error: "Invalid JSON body", name: error?.name },
+        { status: 400 }
+      );
+    }
+
+    if (
+      maybeBody &&
+      typeof maybeBody === "object" &&
+      typeof maybeBody.imageBase64 === "string"
+    ) {
+      return await handleGeminiImageToImage(req, maybeBody as GeminiGenerateRequest);
+    }
+
     // Step 1: Authenticate user
     const authResult = await auth();
     userId = authResult.userId;
@@ -47,8 +506,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Parse request body
-    const body = await req.json();
-    const { type, prompt, aspectRatio, seed, scale } = body;
+    const body = maybeBody;
+    const { type, prompt, aspectRatio, seed, scale } = body || {};
 
     // Validate type
     if (!type || !["image", "video"].includes(type)) {
@@ -58,7 +517,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    generationType = type;
+    generationType = type as "image" | "video";
 
     // Validate prompt
     if (!prompt || typeof prompt !== "string" || prompt.trim().length === 0) {
@@ -99,9 +558,7 @@ export async function POST(req: NextRequest) {
     if (!existingUser) {
       console.log("User not found - creating new user with 10 free credits");
 
-      // Get user email from Clerk
-      const { user: clerkUser } = await auth();
-      const userEmail = clerkUser?.emailAddresses[0]?.emailAddress || `${userId}@temp.local`;
+      const userEmail = `${userId}@temp.local`;
 
       const { error: insertError } = await supabaseAdmin
         .from("users")
@@ -225,7 +682,8 @@ export async function POST(req: NextRequest) {
       requestId: volcengineResult.requestId,
     });
   } catch (error: any) {
-    console.error("Generation error:", error);
+    console.error("【后端完整报错日志】:", error.name, error.message, error.cause);
+    console.error(error.stack);
 
     // =====================================================
     // ERROR HANDLING: Refund credits if deducted
