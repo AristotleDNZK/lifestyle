@@ -1,5 +1,7 @@
 import { WorkspaceSidebar } from "./_components/workspace-sidebar";
 
+export const dynamic = "force-dynamic";
+
 export default function WorkspaceLayout({
   children,
 }: {
@@ -14,4 +16,3 @@ export default function WorkspaceLayout({
     </main>
   );
 }
-

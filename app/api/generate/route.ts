@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import {
@@ -7,10 +7,11 @@ import {
   type AspectRatio,
 } from "@/lib/volcengine";
 import { uploadToImgBB, EXPIRATION } from "@/lib/imgbb";
-import { Agent } from "undici";
 import { HttpsProxyAgent } from "https-proxy-agent";
+import nodeFetch from "node-fetch";
 import { randomUUID } from "crypto";
 
+export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
@@ -26,9 +27,6 @@ function safeString(v: unknown) {
   return typeof v === "string" ? v : "";
 }
 
-let cachedDispatcher: any | null = null;
-let cachedDispatcherKey = "";
-
 function redactProxy(proxyUrl: string) {
   try {
     const u = new URL(proxyUrl);
@@ -39,7 +37,8 @@ function redactProxy(proxyUrl: string) {
   }
 }
 
-function getGeminiDispatcher() {
+// Create a custom fetch function that works with proxy
+function getProxiedFetch() {
   const proxy =
     process.env.GEMINI_PROXY_URL ||
     process.env.HTTPS_PROXY ||
@@ -47,23 +46,28 @@ function getGeminiDispatcher() {
     process.env.ALL_PROXY ||
     "";
 
-  const key = proxy ? `proxy:${proxy}` : "direct";
-  if (cachedDispatcher && cachedDispatcherKey === key) return cachedDispatcher;
-
-  cachedDispatcherKey = key;
   if (proxy) {
-    // Use https-proxy-agent for better compatibility with Clash/V2Ray
-    cachedDispatcher = new HttpsProxyAgent(proxy, {
-      timeout: 30_000,
-    } as any);
     console.log("[Gemini][Network]", { mode: "proxy", proxy: redactProxy(proxy) });
-    return cachedDispatcher;
+    const agent = new HttpsProxyAgent(proxy);
+
+    // Return a custom fetch that uses node-fetch with proxy agent
+    return async (url: string, options: any = {}) => {
+      return nodeFetch(url, {
+        ...options,
+        agent,
+        timeout: 180000, // 3 minutes
+      });
+    };
   }
 
-  // Also increase connect timeout for direct mode (Node fetch default can be ~10s).
-  cachedDispatcher = new Agent({ connectTimeout: 30_000 } as any);
   console.log("[Gemini][Network]", { mode: "direct" });
-  return cachedDispatcher;
+  // Return regular node-fetch for direct connection
+  return async (url: string, options: any = {}) => {
+    return nodeFetch(url, {
+      ...options,
+      timeout: 180000,
+    });
+  };
 }
 
 function getOverallTimeoutMs() {
@@ -74,107 +78,23 @@ function getOverallTimeoutMs() {
   return Math.min(Math.max(parsed, 10_000), 240_000);
 }
 
-function normalizeModelId(model: string) {
-  const m = model.trim();
-  if (!m) return "";
-  return m.startsWith("models/") ? m.slice("models/".length) : m;
-}
+const MODEL_MAP: Record<string, string> = {
+  standard: "gemini-3.1-flash-image-preview",
+  pro: "gemini-3-pro-image-preview",
+  auto: "gemini-3.1-flash-image-preview",
+  default: "gemini-3.1-flash-image-preview",
+};
 
-function mapUiModelToGeminiModel(uiModel: string) {
-  switch (uiModel) {
-    case "nano-banana-edit":
-      return "nano-banana-pro-preview";
-    case "seedance-edit-fast":
-      return "gemini-3.1-flash-image-preview";
-    case "seedance-edit-pro":
-      return "gemini-3-pro-image-preview";
-    default:
-      return "";
-  }
-}
+const MODEL_COST_MAP: Record<string, number> = {
+  standard: 2,
+  auto: 3,
+  pro: 4,
+};
 
-function looksLikeGeminiImageModelId(value: string) {
-  const v = value.trim();
-  if (!v) return false;
-  const id = normalizeModelId(v);
-  return (
-    id.startsWith("gemini-") ||
-    id.startsWith("nano-banana-")
-  );
-}
-
-function presetStrategy(presetId: string) {
-  switch (presetId) {
-    case "auto-fast":
-      return {
-        primary: "gemini-3.1-flash-image-preview",
-        fallbacks: [
-          "gemini-2.5-flash-image",
-          "nano-banana-pro-preview",
-          "gemini-2.0-flash-exp-image-generation",
-          "gemini-3-pro-image-preview",
-        ],
-      };
-    case "auto-balanced":
-      return {
-        primary: "gemini-2.5-flash-image",
-        fallbacks: [
-          "gemini-3.1-flash-image-preview",
-          "nano-banana-pro-preview",
-          "gemini-2.0-flash-exp-image-generation",
-          "gemini-3-pro-image-preview",
-        ],
-      };
-    case "auto-edit":
-      return {
-        primary: "nano-banana-pro-preview",
-        fallbacks: [
-          "gemini-3.1-flash-image-preview",
-          "gemini-2.5-flash-image",
-          "gemini-3-pro-image-preview",
-          "gemini-2.0-flash-exp-image-generation",
-        ],
-      };
-    case "auto-quality":
-      return {
-        primary: "gemini-3-pro-image-preview",
-        fallbacks: [
-          "nano-banana-pro-preview",
-          "gemini-3.1-flash-image-preview",
-          "gemini-2.5-flash-image",
-          "gemini-2.0-flash-exp-image-generation",
-        ],
-      };
-    case "auto-experimental":
-      return {
-        primary: "gemini-2.0-flash-exp-image-generation",
-        fallbacks: [
-          "gemini-3.1-flash-image-preview",
-          "gemini-2.5-flash-image",
-          "nano-banana-pro-preview",
-          "gemini-3-pro-image-preview",
-        ],
-      };
-    default:
-      return null;
-  }
-}
-
-function uniqueModels(models: string[]) {
-  const out: string[] = [];
-  const seen = new Set<string>();
-  for (const m of models) {
-    const id = normalizeModelId(m);
-    if (!id) continue;
-    if (seen.has(id)) continue;
-    seen.add(id);
-    out.push(id);
-  }
-  return out;
-}
-
-function sleep(ms: number) {
-  return new Promise<void>((r) => setTimeout(r, ms));
+function resolveModelValue(value: string) {
+  const key = value.trim().toLowerCase();
+  if (key in MODEL_MAP) return key;
+  return "default";
 }
 
 function extractGeminiImage(json: any): { imageBase64: string; mimeType: string } | null {
@@ -195,7 +115,7 @@ function extractGeminiImage(json: any): { imageBase64: string; mimeType: string 
   return null;
 }
 
-async function handleGeminiImageToImage(req: NextRequest, body: GeminiGenerateRequest) {
+async function handleGeminiImageToImage(_req: NextRequest, body: GeminiGenerateRequest) {
   try {
     const reqId = randomUUID();
     const authResult = await auth();
@@ -224,9 +144,9 @@ async function handleGeminiImageToImage(req: NextRequest, body: GeminiGenerateRe
     }
 
     const text =
-      "\u8bf7\u6839\u636e\u56fe\u7247\u548c\u8981\u6c42\u8fdb\u884c\u91cd\u7ed8\uff1a" +
+      "请根据图片和要求进行重绘：" +
       prompt +
-      (ratio ? `\n\u8f93\u51fa\u6bd4\u4f8b: ${ratio}` : "");
+      (ratio ? `\n输出比例: ${ratio}` : "");
 
     const payload = {
       contents: [
@@ -244,44 +164,44 @@ async function handleGeminiImageToImage(req: NextRequest, body: GeminiGenerateRe
       ],
     };
 
-    const uiModel = safeString(body.model).trim();
-    const envPrimary = safeString(process.env.GEMINI_IMAGE_MODEL).trim();
-    const envFallback = safeString(process.env.GEMINI_FALLBACK_MODELS).trim();
-    const fallbackFromEnv = envFallback
-      ? envFallback.split(",").map((s) => s.trim())
-      : [
-          "gemini-3.1-flash-image-preview",
-          "nano-banana-pro-preview",
-          "gemini-2.5-flash-image",
-          "gemini-2.0-flash-exp-image-generation",
-          "gemini-3-pro-image-preview",
-        ];
-
-    const preset = presetStrategy(uiModel);
-    const primaryFromUi = preset
-      ? preset.primary
-      : looksLikeGeminiImageModelId(uiModel)
-        ? normalizeModelId(uiModel)
-        : normalizeModelId(mapUiModelToGeminiModel(uiModel));
-
-    // UI selection wins. Env primary is only used as a default.
-    const primaryModel =
-      primaryFromUi ||
-      normalizeModelId(envPrimary) ||
-      "gemini-3-pro-image-preview";
-
-    const fallbackModels = preset?.fallbacks?.length
-      ? [...preset.fallbacks, ...fallbackFromEnv]
-      : fallbackFromEnv;
-
-    const modelsToTry = uniqueModels([primaryModel, ...fallbackModels]);
+    const selectedModelValue = resolveModelValue(safeString(body.model));
+    const modelId = MODEL_MAP[selectedModelValue] || MODEL_MAP.default;
+    const modelCost = MODEL_COST_MAP[selectedModelValue] ?? MODEL_COST_MAP.auto;
     const overallTimeoutMs = getOverallTimeoutMs();
+
+    const userId = authResult.userId;
+    const { data: deductSuccess, error: deductError } = await supabaseAdmin.rpc(
+      "deduct_credits",
+      {
+        p_user_id: userId,
+        p_amount: modelCost,
+      }
+    );
+
+    if (deductError) {
+      console.error("[Gemini][CreditDeductError]", deductError);
+      return NextResponse.json(
+        { error: "Failed to deduct credits. Please try again." },
+        { status: 500 }
+      );
+    }
+
+    if (!deductSuccess) {
+      return NextResponse.json(
+        {
+          error: "Insufficient credits",
+          required: modelCost,
+          message: "Please purchase more credits to continue generating images.",
+        },
+        { status: 402 }
+      );
+    }
 
     console.log("[Gemini][RequestPayload]", {
       reqId,
-      uiModel,
-      primaryModel,
-      modelsToTry,
+      selectedModelValue,
+      modelId,
+      modelCost,
       ratio,
       promptLen: prompt.length,
       imageMimeType,
@@ -305,136 +225,122 @@ async function handleGeminiImageToImage(req: NextRequest, body: GeminiGenerateRe
       },
     });
 
-    const deadline = Date.now() + overallTimeoutMs;
-    const dispatcher = getGeminiDispatcher();
+    const customFetch = getProxiedFetch();
+    const attemptTimeoutMs = Math.min(Math.max(overallTimeoutMs, 10_000), 180_000);
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${encodeURIComponent(
+      apiKey
+    )}`;
 
-    let lastError: { status?: number; message: string } | null = null;
+    console.log("[Gemini][TryModel]", {
+      reqId,
+      modelId,
+      attemptTimeoutMs,
+    });
 
-    for (let mi = 0; mi < modelsToTry.length; mi += 1) {
-      const modelId = modelsToTry[mi]!;
-      const remaining = Math.max(0, deadline - Date.now());
-      if (remaining < 5_000) break;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => {
+      controller.abort(new Error(`Gemini request timed out after ${attemptTimeoutMs}ms`));
+    }, attemptTimeoutMs);
 
-      // Give the primary model more budget; keep fallbacks tighter.
-      const attemptTimeoutMs =
-        mi === 0 ? Math.min(remaining, 120_000) : Math.min(remaining, 60_000);
+    const startedAt = Date.now();
+    let res: Response | null = null;
+    let rawText = "";
 
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${encodeURIComponent(
-        apiKey
-      )}`;
-
-      console.log("[Gemini][TryModel]", {
+    try {
+      const fetchedRes = (await customFetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
+        body: JSON.stringify(payload),
+      })) as any;
+      res = fetchedRes;
+      rawText = await fetchedRes.text();
+    } catch (error: any) {
+      console.error("【后端完整报错日志】:", error.name, error.message, error.cause);
+      console.error(error.stack);
+    } finally {
+      clearTimeout(timeout);
+      console.log("[Gemini][ResponseMeta]", {
         reqId,
         modelId,
-        attemptTimeoutMs,
-        remainingMs: remaining,
-      });
-
-      const controller = new AbortController();
-      const timeout = setTimeout(() => {
-        controller.abort(new Error(`Gemini request timed out after ${attemptTimeoutMs}ms`));
-      }, attemptTimeoutMs);
-
-      const startedAt = Date.now();
-      let res: Response | null = null;
-      let rawText = "";
-
-      try {
-        res = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          signal: controller.signal,
-          // @ts-expect-error - RequestInit typing doesn't include undici dispatcher.
-          dispatcher,
-          body: JSON.stringify(payload),
-        });
-        rawText = await res.text();
-      } catch (error: any) {
-        console.error("【后端完整报错日志】:", error.name, error.message, error.cause);
-        console.error(error.stack);
-        lastError = { message: error?.message || "Gemini fetch failed" };
-      } finally {
-        clearTimeout(timeout);
-        console.log("[Gemini][ResponseMeta]", {
-          reqId,
-          modelId,
-          ok: res?.ok ?? false,
-          status: res?.status ?? null,
-          elapsedMs: Date.now() - startedAt,
-          rawTextPreview: rawText ? rawText.slice(0, 220) : "",
-          aborted: controller.signal.aborted,
-        });
-      }
-
-      if (!res) {
-        continue;
-      }
-
-      let json: any = null;
-      try {
-        json = rawText ? JSON.parse(rawText) : null;
-      } catch {
-        json = null;
-      }
-
-      if (!res.ok) {
-        const msg =
-          safeString(json?.error?.message) ||
-          safeString(json?.message) ||
-          rawText ||
-          `Gemini request failed (${res.status})`;
-        lastError = { status: res.status, message: msg };
-
-        console.error("[Gemini][UpstreamError]", {
-          reqId,
-          modelId,
-          status: res.status,
-          message: msg,
-          responsePreview: rawText ? rawText.slice(0, 1200) : "",
-        });
-
-        // Retry a bit on transient overload/rate-limit (keep within overall budget).
-        if (res.status === 503 || res.status === 429) {
-          const waitMs = 1200 + Math.floor(Math.random() * 600);
-          const still = Math.max(0, deadline - Date.now());
-          if (still > waitMs + 5_000) {
-            console.log("[Gemini][RetryAfter]", { modelId, waitMs, status: res.status });
-            await sleep(waitMs);
-            mi -= 1;
-            continue;
-          }
-        }
-
-        continue;
-      }
-
-      const extracted = extractGeminiImage(json);
-      if (!extracted?.imageBase64) {
-        lastError = { status: 502, message: "No image returned from Gemini" };
-        console.error("[Gemini][NoImageInResponse]", {
-          reqId,
-          modelId,
-          responsePreview: rawText ? rawText.slice(0, 2000) : "",
-        });
-        continue;
-      }
-
-      return NextResponse.json({
-        success: true,
-        imageBase64: extracted.imageBase64,
-        mimeType: extracted.mimeType,
-        modelId,
+        ok: res?.ok ?? false,
+        status: res?.status ?? null,
+        elapsedMs: Date.now() - startedAt,
+        rawTextPreview: rawText ? rawText.slice(0, 220) : "",
+        aborted: controller.signal.aborted,
       });
     }
 
-    return NextResponse.json(
-      {
-        error: lastError?.message || `Gemini request timed out after ${overallTimeoutMs}ms`,
-        status: lastError?.status,
-        modelsTried: modelsToTry,
-      },
-      { status: 502 }
-    );
+    if (!res) {
+      await supabaseAdmin.rpc("add_credits", {
+        p_user_id: userId,
+        p_amount: modelCost,
+      });
+      return NextResponse.json(
+        { error: "Gemini fetch failed", modelTried: modelId },
+        { status: 502 }
+      );
+    }
+
+    let json: any = null;
+    try {
+      json = rawText ? JSON.parse(rawText) : null;
+    } catch {
+      json = null;
+    }
+
+    if (!res.ok) {
+      const msg =
+        safeString(json?.error?.message) ||
+        safeString(json?.message) ||
+        rawText ||
+        `Gemini request failed (${res.status})`;
+
+      console.error("[Gemini][UpstreamError]", {
+        reqId,
+        modelId,
+        status: res.status,
+        message: msg,
+        responsePreview: rawText ? rawText.slice(0, 1200) : "",
+      });
+
+      await supabaseAdmin.rpc("add_credits", {
+        p_user_id: userId,
+        p_amount: modelCost,
+      });
+
+      return NextResponse.json(
+        { error: msg, status: res.status, modelTried: modelId },
+        { status: 502 }
+      );
+    }
+
+    const extracted = extractGeminiImage(json);
+    if (!extracted?.imageBase64) {
+      console.error("[Gemini][NoImageInResponse]", {
+        reqId,
+        modelId,
+        responsePreview: rawText ? rawText.slice(0, 2000) : "",
+      });
+
+      await supabaseAdmin.rpc("add_credits", {
+        p_user_id: userId,
+        p_amount: modelCost,
+      });
+
+      return NextResponse.json(
+        { error: "No image returned from Gemini", modelTried: modelId },
+        { status: 502 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      imageBase64: extracted.imageBase64,
+      mimeType: extracted.mimeType,
+      modelId,
+      creditsUsed: modelCost,
+    });
   } catch (error: any) {
     console.error("【后端完整报错日志】:", error.name, error.message, error.cause);
     console.error(error.stack);
@@ -453,7 +359,7 @@ async function handleGeminiImageToImage(req: NextRequest, body: GeminiGenerateRe
  * 1. Authenticate user
  * 2. Deduct credits (using RPC for atomic operation)
  * 3. Branch based on type:
- *    - Image: Generate → Download → Upload to ImgBB → Save to DB
+ *    - Image: Generate 鈫?Download 鈫?Upload to ImgBB 鈫?Save to DB
  *    - Video: Return "coming soon" message (no deduction, no generation)
  * 4. Error handling: Refund credits if generation fails
  *
@@ -478,7 +384,7 @@ export async function POST(req: NextRequest) {
     try {
       maybeBody = await req.json();
     } catch (error: any) {
-      console.error("【后端完整报错日志】:", error.name, error.message, error.cause);
+      console.error("銆愬悗绔畬鏁存姤閿欐棩蹇椼€?", error.name, error.message, error.cause);
       console.error(error.stack);
       return NextResponse.json(
         { error: "Invalid JSON body", name: error?.name },
@@ -643,8 +549,7 @@ export async function POST(req: NextRequest) {
     // Step D: Upload to ImgBB (free unlimited storage)
     console.log("Uploading image to ImgBB...");
     const imgbbResult = await uploadToImgBB(imageBuffer, {
-      expiration: EXPIRATION.SEVEN_DAYS, // 7天自动过期
-      name: `ai-gen-${Date.now()}`,
+      expiration: EXPIRATION.SEVEN_DAYS, // 7澶╄嚜鍔ㄨ繃鏈?      name: `ai-gen-${Date.now()}`,
     });
     console.log("Image uploaded to ImgBB:", imgbbResult.url);
 
@@ -682,7 +587,7 @@ export async function POST(req: NextRequest) {
       requestId: volcengineResult.requestId,
     });
   } catch (error: any) {
-    console.error("【后端完整报错日志】:", error.name, error.message, error.cause);
+    console.error("銆愬悗绔畬鏁存姤閿欐棩蹇椼€?", error.name, error.message, error.cause);
     console.error(error.stack);
 
     // =====================================================
@@ -723,3 +628,4 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+

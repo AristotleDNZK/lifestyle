@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -23,84 +23,30 @@ type HistoryItem = {
 type ModelOption = {
   id: string;
   label: string;
-  badge: string;
   cost: number;
   note: string;
 };
 
 const MODELS: ModelOption[] = [
   {
-    id: "auto-fast",
-    label: "Auto Fast (Recommended)",
-    badge: "⚡",
+    id: "auto",
+    label: "Auto Balanced (⚡️ 3)",
     cost: 3,
-    note: "Fastest routing: prefers Flash image models first.",
+    note: "Balanced mode for most scenarios.",
   },
   {
-    id: "auto-balanced",
-    label: "Auto Balanced",
-    badge: "◎",
-    cost: 3,
-    note: "Balanced routing: speed + quality mix.",
-  },
-  {
-    id: "auto-edit",
-    label: "Auto Edit",
-    badge: "✎",
-    cost: 4,
-    note: "Edit-focused routing: prefers Nano Banana first.",
-  },
-  {
-    id: "auto-quality",
-    label: "Auto Quality",
-    badge: "✦",
-    cost: 5,
-    note: "Quality-first routing: prefers Pro image models first.",
-  },
-  {
-    id: "auto-experimental",
-    label: "Auto Experimental",
-    badge: "β",
+    id: "standard",
+    label: "Standard / Fast (⚡️ 2)",
     cost: 2,
-    note: "Experimental routing: may be faster but less consistent.",
+    note: "Lower cost and faster generation.",
   },
   {
-    id: "gemini-3.1-flash-image-preview",
-    label: "Gemini 3.1 Flash Image (Preview)",
-    badge: "G3.1",
-    cost: 3,
-    note: "Fast image model, good default for most edits.",
-  },
-  {
-    id: "gemini-2.5-flash-image",
-    label: "Gemini 2.5 Flash Image",
-    badge: "G2.5",
-    cost: 3,
-    note: "Stable and fairly fast image model.",
-  },
-  {
-    id: "nano-banana-pro-preview",
-    label: "Nano Banana Pro (Preview)",
-    badge: "🍌",
+    id: "pro",
+    label: "Pro / High Quality (⚡️ 4)",
     cost: 4,
-    note: "Great for portrait retouch and style-preserving edits.",
-  },
-  {
-    id: "gemini-3-pro-image-preview",
-    label: "Gemini 3 Pro Image (Preview)",
-    badge: "G3P",
-    cost: 5,
-    note: "Highest quality but can be slower during peak demand.",
-  },
-  {
-    id: "gemini-2.0-flash-exp-image-generation",
-    label: "Gemini 2.0 Flash ImageGen (Exp)",
-    badge: "G2E",
-    cost: 2,
-    note: "Experimental image generation; expect occasional quirks.",
+    note: "Higher quality output for complex prompts.",
   },
 ];
-
 const RATIO_OPTIONS: { value: Ratio; label: string }[] = [
   { value: "auto", label: "Auto" },
   { value: "1:1", label: "1:1" },
@@ -592,7 +538,7 @@ function SettingsPanel({
                 value={m.id}
                 className="bg-[#080b10] text-white"
               >
-                {m.badge} {m.label} (⚡ {m.cost})
+                {m.label}
               </option>
             ))}
           </select>
@@ -898,7 +844,7 @@ export default function ImageToImagePage() {
     () => MODELS.find((m) => m.id === selectedModel) || MODELS[0],
     [selectedModel]
   );
-  const cost = model.cost + (multiShot ? 1 : 0);
+  const cost = model.cost;
 
   useEffect(() => {
     // If the persisted model is no longer available (after updating the list),
@@ -1257,3 +1203,4 @@ export default function ImageToImagePage() {
     </div>
   );
 }
+

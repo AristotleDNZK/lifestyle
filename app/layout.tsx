@@ -3,6 +3,8 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { GlobalLanguageSwitcher } from "./_components/global-language-switcher";
 import "./globals.css";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "AI Video & Image Generator",
   description: "Generate images and videos with AI",
