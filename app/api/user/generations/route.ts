@@ -23,23 +23,28 @@ export async function GET(req: NextRequest) {
     // Get query parameters
     const searchParams = req.nextUrl.searchParams;
     const type = searchParams.get("type"); // 'image' or 'video' or null (all)
-    const limit = parseInt(searchParams.get("limit") || "50");
-    const offset = parseInt(searchParams.get("offset") || "0");
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
+    const limit = Math.max(1, parseInt(searchParams.get("limit") || "8", 10) || 8);
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
 
-    // Build query
+    // Build query: only successful generations with non-empty URL
     let query = supabaseAdmin
       .from("generations")
-      .select("*")
+      .select("*", { count: "exact" })
       .eq("user_id", userId)
+      .eq("status", "completed")
+      .not("url", "is", null)
+      .neq("url", "")
       .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1);
+      .range(from, to);
 
     // Filter by type if specified
     if (type && (type === "image" || type === "video")) {
       query = query.eq("type", type);
     }
 
-    const { data: generations, error: genError } = await query;
+    const { data: generations, error: genError, count } = await query;
 
     if (genError) {
       console.error("Failed to get generations:", genError);
@@ -49,23 +54,18 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Get total count for pagination
-    let countQuery = supabaseAdmin
-      .from("generations")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", userId);
-
-    if (type && (type === "image" || type === "video")) {
-      countQuery = countQuery.eq("type", type);
-    }
-
-    const { count } = await countQuery;
-
+    const list = generations || [];
+    const total = count || 0;
+    const totalPages = Math.max(1, Math.ceil(total / limit));
     return NextResponse.json({
-      generations: generations || [],
-      total: count || 0,
+      data: list,
+      generations: list,
+      total,
+      page,
+      totalPages,
       limit,
-      offset,
+      from,
+      to,
     });
   } catch (error: any) {
     console.error("Generations history error:", error);

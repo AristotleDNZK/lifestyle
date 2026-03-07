@@ -13,11 +13,26 @@ type StoredImage = {
 
 type HistoryItem = {
   id: string;
-  outputUrl: string;
+  imageUrl: string;
   prompt: string;
   modelId: string;
-  ratio: Ratio;
+  ratio: string;
   createdAt: string;
+};
+
+type HistoryResponse = {
+  data?: Array<{
+    id: string;
+    url: string | null;
+    prompt: string | null;
+    model?: string | null;
+    model_id?: string | null;
+    model_name?: string | null;
+    aspect_ratio?: string | null;
+    created_at?: string | null;
+  }>;
+  totalPages?: number;
+  error?: string;
 };
 
 type ModelOption = {
@@ -271,8 +286,10 @@ function Icon({
   }
 }
 
-function nowLabel() {
-  const d = new Date();
+function formatDateLabel(value?: string | null) {
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(
     d.getHours()
@@ -605,11 +622,19 @@ function HistoryGallery({
   loading,
   selectedId,
   onSelect,
+  currentPage,
+  totalPages,
+  onPrev,
+  onNext,
 }: {
   history: HistoryItem[];
   loading: boolean;
   selectedId: string | null;
   onSelect: (id: string) => void;
+  currentPage: number;
+  totalPages: number;
+  onPrev: () => void;
+  onNext: () => void;
 }) {
   if (loading) {
     return (
@@ -639,8 +664,9 @@ function HistoryGallery({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 xl:grid-cols-3">
-      {history.map((item) => (
+    <div className="p-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {history.map((item) => (
           <article
             key={item.id}
             className={`group overflow-hidden rounded-xl border bg-black/20 transition ${
@@ -657,7 +683,7 @@ function HistoryGallery({
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={item.outputUrl}
+                src={item.imageUrl}
                 alt="result"
                 className="h-40 w-full object-cover"
               />
@@ -673,6 +699,28 @@ function HistoryGallery({
             </div>
           </article>
         ))}
+      </div>
+      <div className="mt-5 flex items-center justify-center gap-3">
+        <button
+          type="button"
+          onClick={onPrev}
+          disabled={currentPage === 1}
+          className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/80 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-45"
+        >
+          Previous
+        </button>
+        <span className="text-xs text-white/60">
+          Page {currentPage} of {totalPages}
+        </span>
+        <button
+          type="button"
+          onClick={onNext}
+          disabled={currentPage >= totalPages}
+          className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/80 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-45"
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 }
@@ -813,20 +861,18 @@ export default function ImageToImagePage() {
     "i2i_tab",
     "examples"
   );
-  const [history, setHistory] = useSessionStorageState<HistoryItem[]>(
-    "i2i_history",
-    []
-  );
+  const [historyData, setHistoryData] = useState<HistoryItem[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const [credits, setCredits] = useState<number>(0);
   const [selectedExampleId, setSelectedExampleId] = useSessionStorageState<
     string | null
   >("i2i_selectedExampleId", null);
-  const [selectedHistoryId, setSelectedHistoryId] = useSessionStorageState<
-    string | null
-  >("i2i_selectedHistoryId", null);
+  const [selectedHistoryId, setSelectedHistoryId] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(false);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const [toast, setToast] = useState<
     | {
         id: string;
@@ -862,9 +908,9 @@ export default function ImageToImagePage() {
 
   const selectedHistory = useMemo(() => {
     const id = selectedHistoryId;
-    if (id) return history.find((h) => h.id === id) || null;
-    return history.length ? history[0] : null;
-  }, [history, selectedHistoryId]);
+    if (id) return historyData.find((h) => h.id === id) || null;
+    return historyData.length ? historyData[0] : null;
+  }, [historyData, selectedHistoryId]);
 
   useEffect(() => {
     // Re-apply persisted language or translation state handled globally.
@@ -889,6 +935,56 @@ export default function ImageToImagePage() {
     void fetchCredits();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const fetchHistory = async (page: number) => {
+    setHistoryLoading(true);
+    try {
+      const res = await fetch(
+        `/api/user/generations?page=${page}&limit=8&type=image`,
+        { cache: "no-store" }
+      );
+      const data = (await res.json()) as HistoryResponse;
+
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to load history.");
+      }
+
+      const list = Array.isArray(data?.data) ? data.data : [];
+      const normalized: HistoryItem[] = list
+        .filter((item) => {
+          const url = String(item?.url || "");
+          return url.length > 0 && !url.startsWith("data:image/");
+        })
+        .map((item) => ({
+          id: String(item.id),
+          imageUrl: String(item.url),
+          prompt: String(item.prompt || ""),
+          modelId: String(item.model_id || item.model_name || item.model || ""),
+          ratio: String(item.aspect_ratio || "auto"),
+          createdAt: formatDateLabel(item.created_at),
+        }));
+
+      setHistoryData(normalized);
+      setTotalPages(Math.max(1, Number(data?.totalPages || 1)));
+      setSelectedHistoryId((prev) =>
+        prev && normalized.some((x) => x.id === prev)
+          ? prev
+          : normalized[0]?.id || null
+      );
+    } catch (e: any) {
+      showError(e?.message || "Failed to load history.");
+      setHistoryData([]);
+      setTotalPages(1);
+      setSelectedHistoryId(null);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void fetchHistory(currentPage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage]);
 
   useEffect(() => {
     let cancelled = false;
@@ -976,19 +1072,6 @@ export default function ImageToImagePage() {
 
     // Use real credits from DB. Form state is already persisted via sessionStorage hooks.
     if (credits < cost) {
-      // Ensure latest values are flushed before navigation.
-      try {
-        sessionStorage.setItem(
-          "i2i_uploadedImages",
-          JSON.stringify(uploadedImages)
-        );
-        sessionStorage.setItem("i2i_prompt", JSON.stringify(prompt));
-        sessionStorage.setItem("i2i_model", JSON.stringify(selectedModel));
-        sessionStorage.setItem("i2i_ratio", JSON.stringify(ratio));
-        sessionStorage.setItem("i2i_multiShot", JSON.stringify(multiShot));
-      } catch {
-        // ignore
-      }
       router.push("/workspace/pricing");
       return;
     }
@@ -1032,26 +1115,12 @@ export default function ImageToImagePage() {
       }
 
       const data = (await res.json()) as any;
-      const outBase64 = String(data?.imageBase64 || "");
-      if (!outBase64) {
-        showError("No image returned from server.");
+      if (!data?.success) {
+        showError(data?.error || "Generation completed but no cloud result returned.");
         return;
       }
-      const outMime = String(data?.mimeType || "image/jpeg");
-      const outputUrl = `data:${outMime};base64,${outBase64}`;
-      const usedModelId = String(data?.modelId || selectedModel);
-
-      const item: HistoryItem = {
-        id: uid("hist"),
-        outputUrl,
-        prompt: promptText,
-        modelId: usedModelId,
-        ratio,
-        createdAt: nowLabel(),
-      };
-
-      setHistory((prev) => [item, ...prev]);
-      setSelectedHistoryId(item.id);
+      setCurrentPage(1);
+      await fetchHistory(1);
       void fetchCredits();
     } finally {
       setTimeout(() => setLoading(false), 350);
@@ -1066,7 +1135,7 @@ export default function ImageToImagePage() {
       : selectedExample?.prompt || "Examples";
   const stageImageUrl =
     activeTab === "history"
-      ? selectedHistory?.outputUrl || null
+      ? selectedHistory?.imageUrl || null
       : selectedExample?.imageUrl || null;
 
   return (
@@ -1158,10 +1227,14 @@ export default function ImageToImagePage() {
 
           {activeTab === "history" ? (
             <HistoryGallery
-              history={history}
-              loading={loading}
+              history={historyData}
+              loading={historyLoading}
               selectedId={selectedHistoryId}
               onSelect={(id) => setSelectedHistoryId(id)}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPrev={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              onNext={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             />
           ) : (
             <ExamplesGallery

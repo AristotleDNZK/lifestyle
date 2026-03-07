@@ -115,6 +115,16 @@ function extractGeminiImage(json: any): { imageBase64: string; mimeType: string 
   return null;
 }
 
+async function refundCredits(userId: string, amount: number) {
+  const { error } = await supabaseAdmin.rpc("add_credits", {
+    p_user_id: userId,
+    p_amount: amount,
+  });
+  if (error) {
+    console.error("[Gemini][CreditRefundError]", { userId, amount, error });
+  }
+}
+
 async function handleGeminiImageToImage(_req: NextRequest, body: GeminiGenerateRequest) {
   try {
     const reqId = randomUUID();
@@ -272,10 +282,7 @@ async function handleGeminiImageToImage(_req: NextRequest, body: GeminiGenerateR
     }
 
     if (!res) {
-      await supabaseAdmin.rpc("add_credits", {
-        p_user_id: userId,
-        p_amount: modelCost,
-      });
+      await refundCredits(userId, modelCost);
       return NextResponse.json(
         { error: "Gemini fetch failed", modelTried: modelId },
         { status: 502 }
@@ -304,10 +311,7 @@ async function handleGeminiImageToImage(_req: NextRequest, body: GeminiGenerateR
         responsePreview: rawText ? rawText.slice(0, 1200) : "",
       });
 
-      await supabaseAdmin.rpc("add_credits", {
-        p_user_id: userId,
-        p_amount: modelCost,
-      });
+      await refundCredits(userId, modelCost);
 
       return NextResponse.json(
         { error: msg, status: res.status, modelTried: modelId },
@@ -323,10 +327,7 @@ async function handleGeminiImageToImage(_req: NextRequest, body: GeminiGenerateR
         responsePreview: rawText ? rawText.slice(0, 2000) : "",
       });
 
-      await supabaseAdmin.rpc("add_credits", {
-        p_user_id: userId,
-        p_amount: modelCost,
-      });
+      await refundCredits(userId, modelCost);
 
       return NextResponse.json(
         { error: "No image returned from Gemini", modelTried: modelId },
@@ -334,12 +335,119 @@ async function handleGeminiImageToImage(_req: NextRequest, body: GeminiGenerateR
       );
     }
 
+    const imgbbApiKey = process.env.IMGBB_API_KEY;
+    if (!imgbbApiKey) {
+      await refundCredits(userId, modelCost);
+      return NextResponse.json(
+        { error: "Missing IMGBB_API_KEY" },
+        { status: 500 }
+      );
+    }
+
+    const imgbbBody = new FormData();
+    imgbbBody.append("image", extracted.imageBase64);
+
+    let imgbbRes: Response;
+    let imgbbText = "";
+    try {
+      imgbbRes = await fetch(
+        `https://api.imgbb.com/1/upload?key=${encodeURIComponent(imgbbApiKey)}`,
+        {
+          method: "POST",
+          body: imgbbBody,
+        }
+      );
+      imgbbText = await imgbbRes.text();
+    } catch (error: any) {
+      console.error("[Gemini][ImgBBUploadNetworkError]", {
+        name: error?.name,
+        message: error?.message,
+        cause: error?.cause,
+      });
+      await refundCredits(userId, modelCost);
+      return NextResponse.json(
+        { error: "Failed to upload image to ImgBB (network error)." },
+        { status: 502 }
+      );
+    }
+
+    let imgbbJson: any = null;
+    try {
+      imgbbJson = imgbbText ? JSON.parse(imgbbText) : null;
+    } catch {
+      imgbbJson = null;
+    }
+
+    if (!imgbbRes.ok || !imgbbJson?.success) {
+      console.error("[Gemini][ImgBBUploadError]", {
+        status: imgbbRes.status,
+        responsePreview: imgbbText.slice(0, 800),
+      });
+      await refundCredits(userId, modelCost);
+      return NextResponse.json(
+        { error: "Failed to upload image to ImgBB." },
+        { status: 502 }
+      );
+    }
+
+    const imgbbUrl = String(
+      imgbbJson?.data?.url || imgbbJson?.data?.display_url || ""
+    ).trim();
+    if (!imgbbUrl) {
+      console.error("[Gemini][ImgBBMissingUrl]", {
+        responsePreview: imgbbText.slice(0, 800),
+      });
+      await refundCredits(userId, modelCost);
+      return NextResponse.json(
+        { error: "ImgBB upload succeeded but URL is missing." },
+        { status: 502 }
+      );
+    }
+
+    const record = {
+      user_id: userId,
+      type: "image",
+      prompt,
+      url: imgbbUrl,
+      image_url: imgbbUrl,
+      cost: modelCost,
+      status: "completed",
+      model_id: modelId,
+      aspect_ratio: ratio || null,
+    };
+
+    const { error: insertError } = await supabaseAdmin
+      .from("generations")
+      .insert(record);
+
+    if (insertError) {
+      console.error("[Gemini][InsertGenerationError]", insertError);
+      // Fallback insert for older schema that may not include model_id/aspect_ratio columns
+      const { error: fallbackInsertError } = await supabaseAdmin
+        .from("generations")
+        .insert({
+          user_id: userId,
+          type: "image",
+          prompt,
+          url: imgbbUrl,
+          cost: modelCost,
+          status: "completed",
+        });
+
+      if (fallbackInsertError) {
+        console.error("[Gemini][InsertGenerationFallbackError]", fallbackInsertError);
+        await refundCredits(userId, modelCost);
+        return NextResponse.json(
+          { error: "Failed to save generation history." },
+          { status: 500 }
+        );
+      }
+    }
+
     return NextResponse.json({
       success: true,
-      imageBase64: extracted.imageBase64,
-      mimeType: extracted.mimeType,
-      modelId,
       creditsUsed: modelCost,
+      imageUrl: imgbbUrl,
     });
   } catch (error: any) {
     console.error("【后端完整报错日志】:", error.name, error.message, error.cause);
