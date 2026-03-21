@@ -11,6 +11,7 @@
 
 # next.js
 /.next/
+/.next-dev/
 /out/
 
 # production
@@ -42,3 +43,6 @@ next-env.d.ts
 *.swp
 *.swo
 *~
+
+.trigger
+.worktrees/

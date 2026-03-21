@@ -19,7 +19,7 @@ type FAQItem = {
 };
 
 const navLinks = [
-  { label: "Dating Profile Review", href: "#" },
+  { label: "Dating Profile Review", href: "/dating-profile-review" },
   { label: "AI Dating Photos", href: "#" },
   { label: "Reviews", href: "#" },
   { label: "Blog", href: "/blog" },
@@ -142,12 +142,25 @@ function PrimaryButton({ children }: { children: React.ReactNode }) {
   );
 }
 
-function SecondaryButton({ children }: { children: React.ReactNode }) {
-  return (
-    <button className="inline-flex items-center justify-center rounded-sm border border-white/10 bg-white/5 px-7 py-3 text-base font-semibold text-white transition-all duration-200 hover:border-[#57f06d]/60 hover:bg-white/10">
-      {children}
-    </button>
-  );
+function SecondaryButton({
+  children,
+  href,
+}: {
+  children: React.ReactNode;
+  href?: string;
+}) {
+  const className =
+    "inline-flex items-center justify-center rounded-sm border border-white/10 bg-white/5 px-7 py-3 text-base font-semibold text-white transition-all duration-200 hover:border-[#57f06d]/60 hover:bg-white/10";
+
+  if (href) {
+    return (
+      <Link href={href} className={className}>
+        {children}
+      </Link>
+    );
+  }
+
+  return <button className={className}>{children}</button>;
 }
 function SiteNavbar() {
   return (
@@ -257,7 +270,9 @@ function HeroSection() {
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
               <PrimaryButton>GET MY AI PHOTOS</PrimaryButton>
-              <SecondaryButton>Audit my Dating Photos</SecondaryButton>
+              <SecondaryButton href="/dating-profile-review">
+                Audit my Dating Photos
+              </SecondaryButton>
             </div>
 
             <div className="mt-8 flex items-center gap-4">
@@ -626,7 +641,9 @@ function GuaranteeAndFAQ() {
             <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-white/58 sm:text-2xl">Get 40 professional dating photos without the studio overhead. Upgrade your profile and move faster on every app.</p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <PrimaryButton>GET MY AI PHOTOS</PrimaryButton>
-              <SecondaryButton>Audit my Dating Photos</SecondaryButton>
+              <SecondaryButton href="/dating-profile-review">
+                Audit my Dating Photos
+              </SecondaryButton>
             </div>
           </div>
         </Container>

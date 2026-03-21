@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import { retryAsync } from "@/lib/retry";
 import { supabaseAdmin } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
@@ -44,7 +45,10 @@ export async function GET(req: NextRequest) {
       query = query.eq("type", type);
     }
 
-    const { data: generations, error: genError, count } = await query;
+    const { data: generations, error: genError, count } = await retryAsync(
+      async () => query,
+      { retries: 2, delayMs: 500 }
+    );
 
     if (genError) {
       console.error("Failed to get generations:", genError);

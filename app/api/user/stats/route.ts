@@ -5,7 +5,10 @@ import { createClient } from "@supabase/supabase-js";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const PRIVILEGED_EMAIL = "gelinlandao2000@gmail.com";
+const PRIVILEGED_EMAILS = new Set([
+  "gelinlandao2000@gmail.com",
+  "nuoweileinaxiawan@gmail.com",
+]);
 
 export async function GET() {
   try {
@@ -46,7 +49,7 @@ export async function GET() {
       return NextResponse.json({ credits: 0 }, { status: 200 });
     }
 
-    const isPrivileged = email.toLowerCase() === PRIVILEGED_EMAIL;
+    const isPrivileged = PRIVILEGED_EMAILS.has(email.toLowerCase());
 
     if (data) {
       if (isPrivileged) {

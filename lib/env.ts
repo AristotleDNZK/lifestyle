@@ -31,6 +31,39 @@ export const env = {
   R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY,
   R2_BUCKET_NAME: process.env.R2_BUCKET_NAME,
   R2_PUBLIC_DOMAIN: process.env.R2_PUBLIC_DOMAIN,
+
+  // Gemini profile review
+  GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+  PROFILE_REVIEW_OBSERVATION_MODEL:
+    process.env.PROFILE_REVIEW_OBSERVATION_MODEL || "gemini-2.5-flash-lite",
+  PROFILE_REVIEW_REPORT_MODEL:
+    process.env.PROFILE_REVIEW_REPORT_MODEL || "gemini-2.5-flash",
+  GEMINI_TIMEOUT_MS: process.env.GEMINI_TIMEOUT_MS,
+  GEMINI_PROXY_URL: process.env.GEMINI_PROXY_URL,
+
+  // Email delivery
+  RESEND_API_KEY: process.env.RESEND_API_KEY,
+  PROFILE_REVIEW_REPORT_FROM_EMAIL:
+    process.env.PROFILE_REVIEW_REPORT_FROM_EMAIL,
+  PROFILE_REVIEW_REPORT_REPLY_TO:
+    process.env.PROFILE_REVIEW_REPORT_REPLY_TO,
+
+  // Profile review business config
+  PROFILE_REVIEW_UNLOCK_PRICE_USD:
+    process.env.PROFILE_REVIEW_UNLOCK_PRICE_USD || "3.99",
+  NEXT_PUBLIC_PROFILE_REVIEW_UNLOCK_PRICE_USD:
+    process.env.NEXT_PUBLIC_PROFILE_REVIEW_UNLOCK_PRICE_USD ||
+    process.env.PROFILE_REVIEW_UNLOCK_PRICE_USD ||
+    "3.99",
+  PROFILE_REVIEW_STORAGE_BUCKET:
+    process.env.PROFILE_REVIEW_STORAGE_BUCKET || "profile-review-photos",
+  PROFILE_REVIEW_MAX_UPLOAD_IMAGES:
+    process.env.PROFILE_REVIEW_MAX_UPLOAD_IMAGES || "9",
+  PROFILE_REVIEW_SCORE_MAX: process.env.PROFILE_REVIEW_SCORE_MAX || "50",
+
+  // Trigger.dev
+  TRIGGER_SECRET_KEY: process.env.TRIGGER_SECRET_KEY,
+  TRIGGER_PROJECT_REF: process.env.TRIGGER_PROJECT_REF,
 };
 
 // Validate required environment variables

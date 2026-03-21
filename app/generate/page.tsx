@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { pollGenerationJob } from "@/lib/generation-jobs";
 
 type GenerationType = "image" | "video";
 type AspectRatio = "1:1" | "16:9" | "9:16" | "4:3" | "3:4";
@@ -25,6 +26,14 @@ export default function GeneratePage() {
     setResult(null);
 
     try {
+      if (activeTab === "video") {
+        setResult({
+          status: "coming_soon",
+          message: "Video generation is coming soon.",
+        });
+        return;
+      }
+
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: {
@@ -43,7 +52,22 @@ export default function GeneratePage() {
         throw new Error(data.error || "Generation failed");
       }
 
-      setResult(data);
+      if (!data?.jobId) {
+        throw new Error(data?.error || "Generation job was queued without a jobId.");
+      }
+
+      const job = await pollGenerationJob(String(data.jobId));
+      if (!job.imageUrl) {
+        throw new Error("Generation completed but no image URL was returned.");
+      }
+
+      setResult({
+        success: true,
+        type: "image",
+        url: job.imageUrl,
+        prompt: job.prompt || prompt.trim(),
+        creditsUsed: job.cost,
+      });
     } catch (err: any) {
       setError(err.message || "An error occurred");
     } finally {

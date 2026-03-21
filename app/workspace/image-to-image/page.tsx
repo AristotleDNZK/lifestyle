@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { pollGenerationJob } from "@/lib/generation-jobs";
 
 type Ratio = "auto" | "1:1" | "3:4" | "9:16" | "4:3" | "16:9";
 
@@ -24,6 +25,7 @@ type HistoryResponse = {
   data?: Array<{
     id: string;
     url: string | null;
+    image_url?: string | null;
     prompt: string | null;
     model?: string | null;
     model_id?: string | null;
@@ -936,7 +938,7 @@ export default function ImageToImagePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const fetchHistory = async (page: number) => {
+  const fetchHistory = async (page: number, preferredId?: string | null) => {
     setHistoryLoading(true);
     try {
       const res = await fetch(
@@ -952,12 +954,12 @@ export default function ImageToImagePage() {
       const list = Array.isArray(data?.data) ? data.data : [];
       const normalized: HistoryItem[] = list
         .filter((item) => {
-          const url = String(item?.url || "");
+          const url = String(item?.image_url || item?.url || "");
           return url.length > 0 && !url.startsWith("data:image/");
         })
         .map((item) => ({
           id: String(item.id),
-          imageUrl: String(item.url),
+          imageUrl: String(item.image_url || item.url || ""),
           prompt: String(item.prompt || ""),
           modelId: String(item.model_id || item.model_name || item.model || ""),
           ratio: String(item.aspect_ratio || "auto"),
@@ -967,9 +969,11 @@ export default function ImageToImagePage() {
       setHistoryData(normalized);
       setTotalPages(Math.max(1, Number(data?.totalPages || 1)));
       setSelectedHistoryId((prev) =>
-        prev && normalized.some((x) => x.id === prev)
-          ? prev
-          : normalized[0]?.id || null
+        preferredId && normalized.some((x) => x.id === preferredId)
+          ? preferredId
+          : prev && normalized.some((x) => x.id === prev)
+            ? prev
+            : normalized[0]?.id || null
       );
     } catch (e: any) {
       showError(e?.message || "Failed to load history.");
@@ -1080,15 +1084,9 @@ export default function ImageToImagePage() {
     try {
       setActiveTab("history");
 
-      const controller = new AbortController();
-      // Keep client timeout >= server-side Gemini timeout, otherwise the server may succeed
-      // but the client aborts first (you'll see server 200 but UI still errors).
-      const timeout = setTimeout(() => controller.abort(), 190_000);
-
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        signal: controller.signal,
         body: JSON.stringify({
           prompt: promptText,
           ratio,
@@ -1096,7 +1094,7 @@ export default function ImageToImagePage() {
           imageMimeType: parsed.mimeType,
           imageBase64: parsed.base64,
         }),
-      }).finally(() => clearTimeout(timeout));
+      });
 
       if (!res.ok) {
         let msg = `Request failed (${res.status})`;
@@ -1115,12 +1113,20 @@ export default function ImageToImagePage() {
       }
 
       const data = (await res.json()) as any;
-      if (!data?.success) {
-        showError(data?.error || "Generation completed but no cloud result returned.");
+      if (!data?.success || !data?.jobId) {
+        showError(data?.error || "Generation job was not queued.");
         return;
       }
+
+      void fetchCredits();
+      const job = await pollGenerationJob(String(data.jobId));
+      if (!job.imageUrl) {
+        showError("Generation completed but no image URL was returned.");
+        return;
+      }
+
       setCurrentPage(1);
-      await fetchHistory(1);
+      await fetchHistory(1, String(job.id));
       void fetchCredits();
     } finally {
       setTimeout(() => setLoading(false), 350);
