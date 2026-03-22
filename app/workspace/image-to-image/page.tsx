@@ -2,6 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import {
+  WorkspaceImageActionOverlay,
+  buildWorkspaceImageDownloadName,
+} from "../_components/workspace-image-actions";
 import { pollGenerationJob } from "@/lib/generation-jobs";
 
 type Ratio = "auto" | "1:1" | "3:4" | "9:16" | "4:3" | "16:9";
@@ -668,39 +672,54 @@ function HistoryGallery({
   return (
     <div className="p-5">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {history.map((item) => (
-          <article
-            key={item.id}
-            className={`group overflow-hidden rounded-xl border bg-black/20 transition ${
-              selectedId === item.id
-                ? "border-[#57f06d]/55 shadow-[0_14px_40px_rgba(87,240,109,0.12)]"
-                : "border-white/10 hover:border-white/20"
-            }`}
-          >
-            <button
-              type="button"
-              onClick={() => onSelect(item.id)}
-              className="block w-full text-left"
-              title="Click to preview"
+        {history.map((item) => {
+          const imageAlt = item.prompt?.trim() || "Generated image result";
+          const downloadName = buildWorkspaceImageDownloadName({
+            label: item.prompt,
+            imageUrl: item.imageUrl,
+            fallback: `image-to-image-${item.id}`,
+          });
+
+          return (
+            <article
+              key={item.id}
+              className={`group overflow-hidden rounded-xl border bg-black/20 transition ${
+                selectedId === item.id
+                  ? "border-[#57f06d]/55 shadow-[0_14px_40px_rgba(87,240,109,0.12)]"
+                  : "border-white/10 hover:border-white/20"
+              }`}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={item.imageUrl}
-                alt="result"
-                className="h-40 w-full object-cover"
-              />
-            </button>
-            <div className="space-y-2 p-3">
-              <p className="line-clamp-2 text-sm font-semibold text-white/85">
-                {item.prompt || "No prompt"}
-              </p>
-              <div className="flex items-center justify-between text-xs text-white/45">
-                <span>{item.ratio.toUpperCase()}</span>
-                <span>{item.createdAt}</span>
+              <WorkspaceImageActionOverlay
+                imageUrl={item.imageUrl}
+                imageAlt={imageAlt}
+                downloadName={downloadName}
+              >
+                <button
+                  type="button"
+                  onClick={() => onSelect(item.id)}
+                  className="block w-full text-left"
+                  title="Click to preview"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={item.imageUrl}
+                    alt={imageAlt}
+                    className="h-40 w-full object-cover"
+                  />
+                </button>
+              </WorkspaceImageActionOverlay>
+              <div className="space-y-2 p-3">
+                <p className="line-clamp-2 text-sm font-semibold text-white/85">
+                  {item.prompt || "No prompt"}
+                </p>
+                <div className="flex items-center justify-between text-xs text-white/45">
+                  <span>{item.ratio.toUpperCase()}</span>
+                  <span>{item.createdAt}</span>
+                </div>
               </div>
-            </div>
-          </article>
-        ))}
+            </article>
+          );
+        })}
       </div>
       <div className="mt-5 flex items-center justify-center gap-3">
         <button

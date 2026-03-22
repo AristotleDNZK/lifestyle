@@ -1,6 +1,10 @@
 ﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
+import {
+  WorkspaceImageActionOverlay,
+  buildWorkspaceImageDownloadName,
+} from "../_components/workspace-image-actions";
 
 type GenerationType = "image" | "video";
 type ActiveTab = "images" | "videos";
@@ -57,16 +61,40 @@ function modelLabel(item: GenerationRecord) {
 }
 
 function CreationCard({ item }: { item: GenerationRecord }) {
+  const title = cardTitle(item.prompt, item.type);
   const ratio = item.aspect_ratio || (item.type === "video" ? "16:9" : null);
+  const downloadName =
+    item.type === "image" && item.url
+      ? buildWorkspaceImageDownloadName({
+          label: item.prompt,
+          imageUrl: item.url,
+          fallback: `my-creation-${item.id}`,
+        })
+      : null;
 
   return (
     <article className="group overflow-hidden rounded-xl border border-white/10 bg-[#0c1016] transition-all duration-300 hover:-translate-y-1 hover:border-[#57f06d]/60 hover:shadow-[0_14px_42px_rgba(87,240,109,0.2)]">
       <div className="relative h-52 overflow-hidden bg-black/30">
-        {item.url ? (
+        {item.url && item.type === "image" && downloadName ? (
+          <WorkspaceImageActionOverlay
+            imageUrl={item.url}
+            imageAlt={title}
+            downloadName={downloadName}
+            className="h-full"
+            actionsPlacement="bottom"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={item.url}
+              alt={title}
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+          </WorkspaceImageActionOverlay>
+        ) : item.url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={item.url}
-            alt={cardTitle(item.prompt, item.type)}
+            alt={title}
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
@@ -93,7 +121,7 @@ function CreationCard({ item }: { item: GenerationRecord }) {
 
       <div className="space-y-2 p-4">
         <h3 className="line-clamp-1 text-base font-semibold text-white">
-          {cardTitle(item.prompt, item.type)}
+          {title}
         </h3>
         <p className="line-clamp-2 text-xs text-white/60">{promptPreview(item.prompt)}</p>
         <div className="flex items-center justify-between text-xs text-white/50">
