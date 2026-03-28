@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 
 interface CreditLog {
@@ -39,6 +40,34 @@ export default function WorkspaceAccountPage() {
   const { user } = useUser();
   const displayName = user?.fullName || user?.firstName || "lin ge";
   const email = user?.primaryEmailAddress?.emailAddress || "gelinlandao2000@gmail.com";
+  const [credits, setCredits] = useState<number>(0);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchCredits = async () => {
+      try {
+        const response = await fetch("/api/user/stats", {
+          cache: "no-store",
+        });
+        const data = await response.json();
+
+        if (!cancelled) {
+          setCredits(Number(data?.credits ?? 0));
+        }
+      } catch {
+        if (!cancelled) {
+          setCredits(0);
+        }
+      }
+    };
+
+    void fetchCredits();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <>
@@ -89,7 +118,7 @@ export default function WorkspaceAccountPage() {
           <article className="rounded-2xl border border-[#2a633f]/70 bg-[linear-gradient(180deg,rgba(32,63,43,0.35),rgba(13,18,24,0.95))] p-5">
             <p className="text-sm uppercase tracking-[0.08em] text-[#8ef5a8]">Credits</p>
             <p className="mt-2 font-['Bebas_Neue','Oswald','Arial_Narrow',sans-serif] text-[62px] leading-none tracking-[0.03em] text-white">
-              1,248
+              {credits.toLocaleString()}
             </p>
             <p className="mt-1 text-sm text-white/55">Current available balance</p>
             <button className="mt-4 w-full rounded-md bg-[#5ef36f] px-4 py-2.5 text-sm font-semibold text-[#0e1213] transition hover:bg-[#78ff88]">
@@ -127,4 +156,3 @@ export default function WorkspaceAccountPage() {
     </>
   );
 }
-

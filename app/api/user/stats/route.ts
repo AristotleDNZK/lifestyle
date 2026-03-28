@@ -1,14 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { createClient } from "@supabase/supabase-js";
+import { resolveUserStatsRecord } from "@/lib/user-stats";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
-
-const PRIVILEGED_EMAILS = new Set([
-  "gelinlandao2000@gmail.com",
-  "nuoweileinaxiawan@gmail.com",
-]);
 
 export async function GET() {
   try {
@@ -49,36 +45,17 @@ export async function GET() {
       return NextResponse.json({ credits: 0 }, { status: 200 });
     }
 
-    const isPrivileged = PRIVILEGED_EMAILS.has(email.toLowerCase());
+    const resolution = resolveUserStatsRecord({
+      userId,
+      email,
+      record: data,
+    });
 
-    if (data) {
-      if (isPrivileged) {
-        return NextResponse.json({ credits: data.credits ?? 0 }, { status: 200 });
-      }
-
-      if ((data.credits ?? 0) !== 0) {
-        const { error: resetError } = await supabaseAdmin
-          .from("users")
-          .update({ credits: 0 })
-          .eq("id", userId);
-
-        if (resetError) {
-          console.error("[user/stats] Reset credits failed:", {
-            userId,
-            email,
-            error: resetError,
-          });
-        }
-      }
-
-      return NextResponse.json({ credits: 0 }, { status: 200 });
+    if (resolution.action === "existing-user") {
+      return NextResponse.json({ credits: resolution.credits }, { status: 200 });
     }
 
-    const { error: insertError } = await supabaseAdmin.from("users").insert({
-      id: userId,
-      email,
-      credits: 0,
-    });
+    const { error: insertError } = await supabaseAdmin.from("users").insert(resolution.user);
 
     if (insertError) {
       console.error("[user/stats] Insert new user failed:", {
@@ -89,7 +66,7 @@ export async function GET() {
       return NextResponse.json({ credits: 0 }, { status: 200 });
     }
 
-    return NextResponse.json({ credits: 0 }, { status: 200 });
+    return NextResponse.json({ credits: resolution.credits }, { status: 200 });
   } catch (error: any) {
     console.error("[user/stats] Unexpected error:", {
       name: error?.name,
