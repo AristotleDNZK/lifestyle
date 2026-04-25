@@ -822,10 +822,14 @@ function PreviewStage({
   title,
   subtitle,
   imageUrl,
+  imageAlt,
+  downloadName,
 }: {
   title: string;
   subtitle: string;
   imageUrl: string | null;
+  imageAlt: string;
+  downloadName: string | null;
 }) {
   return (
     <div className="px-5 pt-5">
@@ -835,11 +839,25 @@ function PreviewStage({
 
       <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/30">
         <div className="relative h-[520px] w-full bg-[radial-gradient(circle_at_35%_15%,rgba(255,255,255,0.06),rgba(0,0,0,0)_55%)]">
-          {imageUrl ? (
+          {imageUrl && downloadName ? (
+            <WorkspaceImageActionOverlay
+              imageUrl={imageUrl}
+              imageAlt={imageAlt}
+              downloadName={downloadName}
+              className="h-full w-full"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={imageUrl}
+                alt={imageAlt}
+                className="h-full w-full object-cover"
+              />
+            </WorkspaceImageActionOverlay>
+          ) : imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={imageUrl}
-              alt="preview"
+              alt={imageAlt}
               className="h-full w-full object-cover"
             />
           ) : (
@@ -1162,6 +1180,17 @@ export default function ImageToImagePage() {
     activeTab === "history"
       ? selectedHistory?.imageUrl || null
       : selectedExample?.imageUrl || null;
+  const stageImageAlt = stageSubtitle.trim() || stageTitle;
+  const stageImageDownloadName = stageImageUrl
+    ? buildWorkspaceImageDownloadName({
+        label: stageSubtitle,
+        imageUrl: stageImageUrl,
+        fallback:
+          activeTab === "history"
+            ? `image-to-image-history-${selectedHistoryId || "preview"}`
+            : `image-to-image-example-${selectedExampleId || "preview"}`,
+      })
+    : null;
 
   return (
     <div className="relative grid gap-5 xl:grid-cols-[420px_1fr]">
@@ -1248,6 +1277,8 @@ export default function ImageToImagePage() {
             title={stageTitle}
             subtitle={stageSubtitle}
             imageUrl={stageImageUrl}
+            imageAlt={stageImageAlt}
+            downloadName={stageImageDownloadName}
           />
 
           {activeTab === "history" ? (

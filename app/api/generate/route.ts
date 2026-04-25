@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { tasks } from "@trigger.dev/sdk/v3";
 import { addCredits, deductCredits } from "@/lib/credits";
 import {
@@ -8,6 +8,7 @@ import {
   safeString,
 } from "@/lib/generation-jobs";
 import { supabaseAdmin } from "@/lib/supabase";
+import { findUserIdentityRecords } from "@/lib/user-identity";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -32,11 +33,11 @@ function buildErrorMessage(error: unknown) {
   return "Unknown error";
 }
 
-async function refundCreditsSafely(userId: string, amount: number) {
+async function refundCreditsSafely(userId: string, amount: number, email?: string) {
   if (amount <= 0) return;
 
   try {
-    await addCredits(userId, amount);
+    await addCredits(userId, amount, email);
   } catch (error) {
     console.error("[GenerateRoute][RefundCreditsError]", {
       userId,
@@ -68,6 +69,8 @@ export async function POST(req: NextRequest) {
   try {
     const authResult = await auth();
     const userId = authResult.userId;
+    const clerkUser = await currentUser();
+    const email = clerkUser?.emailAddresses?.[0]?.emailAddress || "";
 
     if (!userId) {
       return NextResponse.json(
@@ -75,6 +78,9 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       );
     }
+
+    const identity = await findUserIdentityRecords({ userId, email });
+    const canonicalUserId = identity.canonicalUserId;
 
     let body: GenerateRequestBody;
     try {
@@ -117,7 +123,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const deductSuccess = await deductCredits(userId, cost);
+    const deductSuccess = await deductCredits(userId, cost, email);
 
     if (!deductSuccess) {
       return NextResponse.json(
@@ -133,7 +139,7 @@ export async function POST(req: NextRequest) {
     const { data: job, error: insertError } = await supabaseAdmin
       .from("generations")
       .insert({
-        user_id: userId,
+        user_id: canonicalUserId,
         type: "image",
         prompt,
         status: "pending",
@@ -150,7 +156,7 @@ export async function POST(req: NextRequest) {
 
     if (insertError || !job?.id) {
       console.error("[GenerateRoute][InsertJobError]", insertError);
-      await refundCreditsSafely(userId, cost);
+      await refundCreditsSafely(userId, cost, email);
 
       return NextResponse.json(
         { error: "Failed to create generation job." },
@@ -165,7 +171,7 @@ export async function POST(req: NextRequest) {
         jobId,
         prompt,
         modelId,
-        userId,
+        userId: canonicalUserId,
         cost,
         aspectRatio: aspectRatio ?? undefined,
         imageBase64,
@@ -194,7 +200,7 @@ export async function POST(req: NextRequest) {
       });
 
       await markJobFailed(jobId, message);
-      await refundCreditsSafely(userId, cost);
+      await refundCreditsSafely(userId, cost, email);
 
       return NextResponse.json(
         { error: "Failed to queue generation job." },

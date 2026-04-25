@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { retryAsync } from "@/lib/retry";
 import { supabaseAdmin } from "@/lib/supabase";
+import { findUserIdentityRecords } from "@/lib/user-identity";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,8 @@ type RouteContext = {
 export async function GET(_req: NextRequest, context: RouteContext) {
   try {
     const { userId } = await auth();
+    const clerkUser = await currentUser();
+    const email = clerkUser?.emailAddresses?.[0]?.emailAddress || "";
 
     if (!userId) {
       return NextResponse.json(
@@ -23,6 +26,7 @@ export async function GET(_req: NextRequest, context: RouteContext) {
     }
 
     const jobId = context.params.jobId;
+    const identity = await findUserIdentityRecords({ userId, email });
 
     const { data: job, error } = await retryAsync(
       async () =>
@@ -32,7 +36,7 @@ export async function GET(_req: NextRequest, context: RouteContext) {
             "id, user_id, status, prompt, url, image_url, error_message, model_id, aspect_ratio, cost, trigger_run_id, created_at, started_at, completed_at"
           )
           .eq("id", jobId)
-          .eq("user_id", userId)
+          .eq("user_id", identity.canonicalUserId)
           .single(),
       { retries: 2, delayMs: 500 }
     );

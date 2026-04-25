@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { createClient } from "@supabase/supabase-js";
 import { resolveUserStatsRecord } from "@/lib/user-stats";
+import { findUserIdentityRecords } from "@/lib/user-identity";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -34,13 +35,13 @@ export async function GET() {
       },
     });
 
-    const { data, error } = await supabaseAdmin
-      .from("users")
-      .select("credits")
-      .eq("id", userId)
-      .maybeSingle();
-
-    if (error) {
+    let identity;
+    try {
+      identity = await findUserIdentityRecords({
+        userId,
+        email,
+      });
+    } catch (error) {
       console.error("[user/stats] Query users failed:", error);
       return NextResponse.json({ credits: 0 }, { status: 200 });
     }
@@ -48,7 +49,8 @@ export async function GET() {
     const resolution = resolveUserStatsRecord({
       userId,
       email,
-      record: data,
+      recordById: identity.recordById,
+      recordByEmail: identity.recordByEmail,
     });
 
     if (resolution.action === "existing-user") {

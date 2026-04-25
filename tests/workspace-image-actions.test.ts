@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import test from "node:test";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -36,4 +38,18 @@ test("workspace image actions expose full-view and download controls", async () 
   assert.match(html, /View full image/);
   assert.match(html, /Download/);
   assert.match(html, /result-image\.png/);
+});
+
+test("image-to-image preview stage keeps full-view and download actions wired", () => {
+  const source = readFileSync(
+    path.join(process.cwd(), "app/workspace/image-to-image/page.tsx"),
+    "utf8"
+  );
+  const previewStageSource = source.match(
+    /function PreviewStage\([\s\S]*?\n}\n\nexport default function ImageToImagePage/
+  )?.[0];
+
+  assert.ok(previewStageSource, "PreviewStage source should be present");
+  assert.match(previewStageSource, /WorkspaceImageActionOverlay/);
+  assert.match(previewStageSource, /downloadName=/);
 });

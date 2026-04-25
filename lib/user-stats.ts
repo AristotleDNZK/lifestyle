@@ -1,14 +1,18 @@
-export type UserCreditsRecord = {
+export type UserIdentityRecord = {
+  id: string;
+  email: string;
   credits: number | null;
 };
 
 export type UserStatsResolution =
   | {
       action: "existing-user";
+      canonicalUserId: string;
       credits: number;
     }
   | {
       action: "create-user";
+      canonicalUserId: string;
       user: {
         id: string;
         email: string;
@@ -20,11 +24,15 @@ export type UserStatsResolution =
 export function resolveUserStatsRecord(params: {
   userId: string;
   email: string;
-  record: UserCreditsRecord | null;
+  recordById: UserIdentityRecord | null;
+  recordByEmail: UserIdentityRecord | null;
 }): UserStatsResolution {
-  if (!params.record) {
+  const existingRecord = params.recordById || params.recordByEmail;
+
+  if (!existingRecord) {
     return {
       action: "create-user",
+      canonicalUserId: params.userId,
       user: {
         id: params.userId,
         email: params.email,
@@ -36,6 +44,7 @@ export function resolveUserStatsRecord(params: {
 
   return {
     action: "existing-user",
-    credits: params.record.credits ?? 0,
+    canonicalUserId: existingRecord.id,
+    credits: existingRecord.credits ?? 0,
   };
 }

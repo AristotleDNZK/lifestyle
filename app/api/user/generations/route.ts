@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { retryAsync } from "@/lib/retry";
 import { supabaseAdmin } from "@/lib/supabase";
+import { findUserIdentityRecords } from "@/lib/user-identity";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,8 @@ export async function GET(req: NextRequest) {
   try {
     // Authenticate user
     const { userId } = await auth();
+    const clerkUser = await currentUser();
+    const email = clerkUser?.emailAddresses?.[0]?.emailAddress || "";
 
     if (!userId) {
       return NextResponse.json(
@@ -20,6 +23,8 @@ export async function GET(req: NextRequest) {
         { status: 401 }
       );
     }
+
+    const identity = await findUserIdentityRecords({ userId, email });
 
     // Get query parameters
     const searchParams = req.nextUrl.searchParams;
@@ -33,7 +38,7 @@ export async function GET(req: NextRequest) {
     let query = supabaseAdmin
       .from("generations")
       .select("*", { count: "exact" })
-      .eq("user_id", userId)
+      .eq("user_id", identity.canonicalUserId)
       .eq("status", "completed")
       .not("url", "is", null)
       .neq("url", "")

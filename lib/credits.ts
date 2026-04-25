@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "@/lib/supabase";
+import { findUserIdentityRecords } from "@/lib/user-identity";
 
 /**
  * Credit Management Utilities
@@ -14,10 +15,13 @@ import { supabaseAdmin } from "@/lib/supabase";
  */
 export async function deductCredits(
   userId: string,
-  amount: number
+  amount: number,
+  email?: string
 ): Promise<boolean> {
+  const identity = await findUserIdentityRecords({ userId, email });
+
   const { data, error } = await supabaseAdmin.rpc("deduct_credits", {
-    p_user_id: userId,
+    p_user_id: identity.canonicalUserId,
     p_amount: amount,
   });
 
@@ -38,10 +42,13 @@ export async function deductCredits(
  */
 export async function addCredits(
   userId: string,
-  amount: number
+  amount: number,
+  email?: string
 ): Promise<number> {
+  const identity = await findUserIdentityRecords({ userId, email });
+
   const { data, error } = await supabaseAdmin.rpc("add_credits", {
-    p_user_id: userId,
+    p_user_id: identity.canonicalUserId,
     p_amount: amount,
   });
 
@@ -60,12 +67,15 @@ export async function addCredits(
  * @returns Current credit balance
  */
 export async function getCreditBalance(
-  userId: string
+  userId: string,
+  email?: string
 ): Promise<number> {
+  const identity = await findUserIdentityRecords({ userId, email });
+
   const { data, error } = await supabaseAdmin
     .from("users")
     .select("credits")
-    .eq("id", userId)
+    .eq("id", identity.canonicalUserId)
     .single();
 
   if (error) {
@@ -82,9 +92,11 @@ export async function getCreditBalance(
  * @param userId - Clerk user ID
  * @returns User stats (credits, generations, total spent)
  */
-export async function getUserStats(userId: string) {
+export async function getUserStats(userId: string, email?: string) {
+  const identity = await findUserIdentityRecords({ userId, email });
+
   const { data, error } = await supabaseAdmin.rpc("get_user_stats", {
-    p_user_id: userId,
+    p_user_id: identity.canonicalUserId,
   });
 
   if (error) {
@@ -106,11 +118,8 @@ export async function ensureUserExists(
   userId: string,
   email: string
 ): Promise<void> {
-  const { data: existingUser } = await supabaseAdmin
-    .from("users")
-    .select("id")
-    .eq("id", userId)
-    .single();
+  const identity = await findUserIdentityRecords({ userId, email });
+  const existingUser = identity.recordById || identity.recordByEmail;
 
   if (!existingUser) {
     console.log(`Creating user: ${userId}`);
@@ -144,8 +153,9 @@ export const CREDIT_COSTS = {
  */
 export async function hasSufficientCredits(
   userId: string,
-  requiredCredits: number
+  requiredCredits: number,
+  email?: string
 ): Promise<boolean> {
-  const balance = await getCreditBalance(userId);
+  const balance = await getCreditBalance(userId, email);
   return balance >= requiredCredits;
 }
