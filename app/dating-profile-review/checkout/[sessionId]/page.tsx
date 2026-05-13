@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useAuth, useUser } from "@clerk/nextjs";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { ProfileReviewLogo } from "@/app/dating-profile-review/_components/profile-review-shell";
 
@@ -20,53 +20,52 @@ export default function DatingProfileReviewCheckoutPage() {
   const accessToken = searchParams.get("accessToken") || searchParams.get("token") || "";
   const price = Number(process.env.NEXT_PUBLIC_PROFILE_REVIEW_UNLOCK_PRICE_USD || "3.99");
   const email = user?.emailAddresses?.[0]?.emailAddress || "";
-  const [cardNumber, setCardNumber] = useState("4242 4242 4242 4242");
-  const [expiry, setExpiry] = useState("12/28");
-  const [cvc, setCvc] = useState("123");
-  const [name, setName] = useState(user?.fullName || "");
-  const [country, setCountry] = useState("United States");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const canSubmit = useMemo(() => {
-    return Boolean(
-      userId &&
-        email &&
-        cardNumber.trim() &&
-        expiry.trim() &&
-        cvc.trim() &&
-        name.trim() &&
-        country.trim()
-    );
-  }, [cardNumber, country, cvc, email, expiry, name, userId]);
 
   const handleCheckout = async () => {
     try {
       setSubmitting(true);
       setError(null);
 
-      const response = await fetch(`/api/profile-review/session/${sessionId}/mock-checkout`, {
+      const response = await fetch("/api/payments/profile-review/checkout", {
         method: "POST",
-        headers: accessToken ? { "x-profile-review-token": accessToken } : undefined,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId, accessToken }),
       });
 
       const data = (await response.json()) as {
         error?: string;
-        emailSent?: boolean;
-        sessionEmail?: string;
+        orderId?: string;
+        paddlePriceId?: string;
+        customData?: Record<string, unknown>;
+        email?: string;
       };
 
       if (!response.ok) {
         throw new Error(
-          typeof data.error === "string" ? data.error : "Mock checkout failed"
+          typeof data.error === "string" ? data.error : "Paddle checkout failed"
         );
       }
 
-      router.push(
-        `/dating-profile-review/report/${sessionId}?emailSent=${data.emailSent ? "1" : "0"}&email=${encodeURIComponent(data.sessionEmail || email)}`
-      );
+      if (!data.paddlePriceId || !data.orderId) {
+        throw new Error("Paddle checkout response is incomplete");
+      }
+
+      if (!window.Paddle) {
+        throw new Error("Paddle checkout is still loading. Please try again in a moment.");
+      }
+
+      window.Paddle?.Checkout.open({
+        items: [{ priceId: data.paddlePriceId, quantity: 1 }],
+        customData: data.customData,
+        customer: data.email || email ? { email: data.email || email } : undefined,
+        settings: {
+          successUrl: `${window.location.origin}/dating-profile-review/report/${sessionId}?payment=paddle&orderId=${data.orderId}`,
+        },
+      });
     } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "Mock checkout failed");
+      setError(nextError instanceof Error ? nextError.message : "Paddle checkout failed");
     } finally {
       setSubmitting(false);
     }
@@ -94,7 +93,7 @@ export default function DatingProfileReviewCheckoutPage() {
             Sign in required
           </h1>
           <p className="mt-4 text-base leading-7 text-white/60">
-            You need to sign in before continuing to the mock checkout flow.
+            You need to sign in before continuing to the checkout flow.
           </p>
           <div className="mt-8 grid gap-3">
             <Link
@@ -134,7 +133,7 @@ export default function DatingProfileReviewCheckoutPage() {
 
           <div className="mt-12 max-w-md">
             <div className="text-sm font-bold uppercase tracking-[0.16em] text-[#63f276]">
-              Mock payment
+              Payment
             </div>
             <h1 className="mt-4 text-5xl font-black tracking-[-0.05em]">
               US${price.toFixed(2)}
@@ -157,7 +156,7 @@ export default function DatingProfileReviewCheckoutPage() {
                 <div>
                   <div className="text-lg font-bold text-white">Roast Pro</div>
                   <div className="mt-1 text-sm text-white/50">
-                    Reference offer layout preserved for the mock checkout experience
+                    Reference offer layout preserved for the checkout experience
                   </div>
                 </div>
                 <div className="text-right">
@@ -187,7 +186,7 @@ export default function DatingProfileReviewCheckoutPage() {
                 Enter payment details
               </h2>
               <p className="mt-3 text-sm leading-7 text-[#5f6470]">
-                This is a mock checkout. No real card is charged. Submitting this form unlocks the report and triggers email delivery.
+                Continue to secure checkout. The report unlocks after Paddle confirms payment.
               </p>
 
               <div className="mt-6 rounded-2xl border border-[#e5e3de] bg-[#faf9f7] px-4 py-3">
@@ -197,68 +196,10 @@ export default function DatingProfileReviewCheckoutPage() {
                 <div className="mt-1 text-sm font-medium text-[#1d222d]">{email}</div>
               </div>
 
-              <div className="mt-6 space-y-4">
-                <label className="block">
-                  <span className="mb-2 block text-sm font-semibold text-[#212630]">
-                    Card number
-                  </span>
-                  <input
-                    value={cardNumber}
-                    onChange={(event) => setCardNumber(event.target.value)}
-                    className="w-full rounded-xl border border-[#d8d6d2] bg-white px-4 py-3 text-sm text-[#151922] outline-none transition focus:border-[#63f276]"
-                  />
-                </label>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-[#212630]">
-                      Expiry
-                    </span>
-                    <input
-                      value={expiry}
-                      onChange={(event) => setExpiry(event.target.value)}
-                      className="w-full rounded-xl border border-[#d8d6d2] bg-white px-4 py-3 text-sm text-[#151922] outline-none transition focus:border-[#63f276]"
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-[#212630]">
-                      CVC
-                    </span>
-                    <input
-                      value={cvc}
-                      onChange={(event) => setCvc(event.target.value)}
-                      className="w-full rounded-xl border border-[#d8d6d2] bg-white px-4 py-3 text-sm text-[#151922] outline-none transition focus:border-[#63f276]"
-                    />
-                  </label>
-                </div>
-
-                <label className="block">
-                  <span className="mb-2 block text-sm font-semibold text-[#212630]">
-                    Cardholder name
-                  </span>
-                  <input
-                    value={name}
-                    onChange={(event) => setName(event.target.value)}
-                    className="w-full rounded-xl border border-[#d8d6d2] bg-white px-4 py-3 text-sm text-[#151922] outline-none transition focus:border-[#63f276]"
-                  />
-                </label>
-
-                <label className="block">
-                  <span className="mb-2 block text-sm font-semibold text-[#212630]">
-                    Country or region
-                  </span>
-                  <input
-                    value={country}
-                    onChange={(event) => setCountry(event.target.value)}
-                    className="w-full rounded-xl border border-[#d8d6d2] bg-white px-4 py-3 text-sm text-[#151922] outline-none transition focus:border-[#63f276]"
-                  />
-                </label>
-              </div>
-
               <button
                 type="button"
                 onClick={handleCheckout}
-                disabled={!canSubmit || submitting}
+                disabled={!userId || !email || submitting}
                 className={classes(
                   "mt-8 inline-flex min-h-[56px] w-full items-center justify-center rounded-xl bg-[#171a24] px-6 text-base font-black uppercase tracking-[0.06em] text-white transition",
                   "hover:bg-[#222738] disabled:cursor-not-allowed disabled:bg-[#8f94a0]"
@@ -268,7 +209,7 @@ export default function DatingProfileReviewCheckoutPage() {
               </button>
 
               <p className="mt-4 text-center text-xs leading-6 text-[#6b6f79]">
-                Submitting this form triggers the mock payment route, unlocks the report on-site, and sends the full report to your email.
+                Payment confirmation unlocks the report on-site and sends the full report to your email.
               </p>
 
               {error ? <p className="mt-4 text-center text-sm text-[#cf4c4c]">{error}</p> : null}

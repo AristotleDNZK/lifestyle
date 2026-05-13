@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { GlobalLanguageSwitcher } from "./_components/global-language-switcher";
+import { PaddleScript } from "./_components/paddle-script";
 import "./globals.css";
 
 export const dynamic = "force-dynamic";
@@ -21,6 +22,7 @@ export default function RootLayout({
         <ClerkProvider>
           {children}
           <GlobalLanguageSwitcher />
+          <PaddleScript />
         </ClerkProvider>
       </body>
     </html>

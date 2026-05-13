@@ -684,7 +684,13 @@ function SiteFooter() {
         <div className="mt-10 border-t border-white/10 pt-6 text-sm text-white/45">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p translate="no" className="notranslate">c 2022-2026 Roast. All rights reserved.</p>
-            <div className="flex flex-wrap gap-5"><a href="#">Terms</a><a href="#">Privacy</a><a href="#">Refund</a><a href="#">Disclaimer</a><a href="#">Cookies</a></div>
+            <div className="flex flex-wrap gap-5">
+              <Link href="/terms-and-conditions">Terms</Link>
+              <Link href="/privacy">Privacy</Link>
+              <Link href="/refund">Refund</Link>
+              <Link href="/terms-and-conditions">Disclaimer</Link>
+              <Link href="/privacy">Cookies</Link>
+            </div>
           </div>
         </div>
       </Container>

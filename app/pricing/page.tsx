@@ -4,6 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { CREDIT_PACKAGES, type PackageType } from "@/lib/stripe";
 
+const paddleSkuByPackage: Record<PackageType, string> = {
+  starter: "credits_starter",
+  popular: "credits_popular",
+  pro: "credits_pro",
+};
+
 export default function PricingPage() {
   const [loading, setLoading] = useState<PackageType | null>(null);
 
@@ -11,25 +17,35 @@ export default function PricingPage() {
     setLoading(packageType);
 
     try {
-      const response = await fetch("/api/stripe/checkout", {
+      const response = await fetch("/api/payments/checkout", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ packageType }),
+        body: JSON.stringify({ sku: paddleSkuByPackage[packageType] }),
       });
 
       const data = await response.json();
 
-      if (data.url) {
-        // Redirect to Stripe Checkout
-        window.location.href = data.url;
-      } else {
-        alert("Failed to create checkout session: " + (data.error || "Unknown error"));
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to create checkout session");
       }
+
+      if (!window.Paddle) {
+        throw new Error("Paddle checkout is still loading. Please try again in a moment.");
+      }
+
+      window.Paddle?.Checkout.open({
+        items: [{ priceId: data.paddlePriceId, quantity: 1 }],
+        customData: data.customData,
+        customer: data.email ? { email: data.email } : undefined,
+        settings: {
+          successUrl: `${window.location.origin}/dashboard?success=true&orderId=${data.orderId}`,
+        },
+      });
     } catch (error) {
       console.error("Checkout error:", error);
-      alert("An error occurred. Please try again.");
+      alert(error instanceof Error ? error.message : "An error occurred. Please try again.");
     } finally {
       setLoading(null);
     }
@@ -172,7 +188,7 @@ export default function PricingPage() {
               <li>• Each image generation costs 1 credit</li>
               <li>• Each video generation costs 10 credits (coming soon)</li>
               <li>• Credits never expire</li>
-              <li>• Secure payment processing via Stripe</li>
+              <li>• Secure payment processing via Paddle</li>
             </ul>
           </div>
         </div>

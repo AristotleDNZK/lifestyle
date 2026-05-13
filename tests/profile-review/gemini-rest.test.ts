@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { SchemaType } from "@google/generative-ai";
 
 import {
   buildGeminiFetchOptions,
@@ -44,9 +45,9 @@ test("generateGeminiStructuredJson forwards dispatcher to the fetch layer", asyn
     prompt: "Return JSON only.",
     inlineImages: [],
     schema: {
-      type: "object",
+      type: SchemaType.OBJECT,
       properties: {
-        ok: { type: "boolean" },
+        ok: { type: SchemaType.BOOLEAN },
       },
       required: ["ok"],
     },

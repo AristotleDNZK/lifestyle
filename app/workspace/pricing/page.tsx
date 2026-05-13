@@ -1,7 +1,10 @@
-import Link from "next/link";
+"use client";
+
+import { useState } from "react";
 
 interface PlanTier {
   id: string;
+  sku: string;
   name: string;
   monthlyPrice: string;
   oldPrice: string;
@@ -12,6 +15,7 @@ interface PlanTier {
 const plans: PlanTier[] = [
   {
     id: "mini",
+    sku: "sub_mini_monthly",
     name: "Mini Plan",
     oldPrice: "$15.00",
     monthlyPrice: "$9.00",
@@ -24,6 +28,7 @@ const plans: PlanTier[] = [
   },
   {
     id: "standard",
+    sku: "sub_standard_monthly",
     name: "Standard Plan",
     oldPrice: "$50.00",
     monthlyPrice: "$30.00",
@@ -37,6 +42,7 @@ const plans: PlanTier[] = [
   },
   {
     id: "plus",
+    sku: "sub_plus_monthly",
     name: "Plus Plan",
     oldPrice: "$99.00",
     monthlyPrice: "$60.00",
@@ -58,6 +64,44 @@ function CheckIcon() {
 }
 
 export default function WorkspacePricingPage() {
+  const [loadingSku, setLoadingSku] = useState<string | null>(null);
+
+  const handleSubscribe = async (sku: string) => {
+    try {
+      setLoadingSku(sku);
+
+      const response = await fetch("/api/payments/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sku }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to start checkout");
+      }
+
+      if (!window.Paddle) {
+        throw new Error("Paddle checkout is still loading. Please try again in a moment.");
+      }
+
+      window.Paddle?.Checkout.open({
+        items: [{ priceId: data.paddlePriceId, quantity: 1 }],
+        customData: data.customData,
+        customer: data.email ? { email: data.email } : undefined,
+        settings: {
+          successUrl: `${window.location.origin}/workspace/account?success=true&orderId=${data.orderId}`,
+        },
+      });
+    } catch (error) {
+      console.error("Paddle subscription checkout failed:", error);
+      alert(error instanceof Error ? error.message : "Failed to start checkout");
+    } finally {
+      setLoadingSku(null);
+    }
+  };
+
   return (
     <>
       <header className="border-b border-white/10 pb-5">
@@ -108,16 +152,20 @@ export default function WorkspacePricingPage() {
               ))}
             </ul>
 
-            <Link
-              href="/workspace/account"
+            <button
+              type="button"
+              onClick={() => handleSubscribe(plan.sku)}
+              disabled={loadingSku !== null}
               className={`mt-6 inline-flex w-full items-center justify-center rounded-md px-4 py-2.5 text-sm font-semibold transition ${
                 plan.highlight
                   ? "bg-[#5ef36f] text-[#0e1213] hover:bg-[#78ff88]"
                   : "border border-white/15 bg-white/5 text-white hover:bg-white/10"
-              }`}
+              } disabled:cursor-not-allowed disabled:opacity-60`}
             >
-              Subscribe to {plan.name.replace(" Plan", "")}
-            </Link>
+              {loadingSku === plan.sku
+                ? "Starting checkout..."
+                : `Subscribe to ${plan.name.replace(" Plan", "")}`}
+            </button>
             <p className="mt-2 text-center text-xs text-white/40">Subscription billed yearly</p>
           </article>
         ))}
@@ -144,4 +192,3 @@ export default function WorkspacePricingPage() {
     </>
   );
 }
-

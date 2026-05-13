@@ -480,9 +480,15 @@ export default function DatingProfileReviewLandingPage() {
                 Company
               </h3>
               <div className="mt-4 space-y-2 text-sm text-white/55">
-                <div>Terms</div>
-                <div>Privacy</div>
-                <div>Refund policy</div>
+                <Link className="block transition hover:text-white" href="/terms-and-conditions">
+                  Terms
+                </Link>
+                <Link className="block transition hover:text-white" href="/privacy">
+                  Privacy
+                </Link>
+                <Link className="block transition hover:text-white" href="/refund">
+                  Refund policy
+                </Link>
               </div>
             </div>
           </div>
