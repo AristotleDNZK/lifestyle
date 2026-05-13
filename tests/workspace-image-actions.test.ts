@@ -23,11 +23,11 @@ async function renderImageActions() {
         imageAlt: "Result image",
         downloadName: "result-image.png",
         viewLabel: "View full image",
-      },
-      React.createElement("img", {
-        src: "https://example.com/result.png",
-        alt: "Result image",
-      })
+        children: React.createElement("img", {
+          src: "https://example.com/result.png",
+          alt: "Result image",
+        }),
+      }
     )
   );
 }

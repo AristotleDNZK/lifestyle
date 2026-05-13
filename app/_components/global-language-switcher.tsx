@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Script from "next/script";
-import { usePathname } from "next/navigation";
 
 type LanguageOption = {
   code: string;
@@ -95,6 +94,12 @@ function setGoogTransCookie(lang: string) {
   document.cookie = `googtrans=${value};path=/;domain=${host}`;
 }
 
+function clearGoogTransCookie() {
+  document.cookie = "googtrans=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  const host = window.location.hostname;
+  document.cookie = `googtrans=;path=/;domain=${host};expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+}
+
 function triggerGoogleTranslate(lang: string) {
   const select = document.querySelector(".goog-te-combo") as HTMLSelectElement | null;
   if (!select) return;
@@ -104,7 +109,6 @@ function triggerGoogleTranslate(lang: string) {
 }
 
 export function GlobalLanguageSwitcher() {
-  const pathname = usePathname();
   const includedLanguages = useMemo(
     () => LANGUAGES.map((l) => l.code).join(","),
     []
@@ -113,6 +117,7 @@ export function GlobalLanguageSwitcher() {
   const [panelOpen, setPanelOpen] = useState(false);
   const [lang, setLang] = useState("en");
   const [scriptReady, setScriptReady] = useState(false);
+  const [shouldLoadTranslateScript, setShouldLoadTranslateScript] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -132,38 +137,44 @@ export function GlobalLanguageSwitcher() {
         },
         "google_translate_element"
       );
-      const saved = localStorage.getItem(STORAGE_KEY) || "en";
-      setTimeout(() => {
-        setGoogTransCookie(saved);
-        triggerGoogleTranslate(saved);
-      }, 250);
     };
   }, [includedLanguages, mounted]);
 
   useEffect(() => {
-    if (!mounted || !scriptReady) return;
+    if (!mounted || !scriptReady || !shouldLoadTranslateScript) return;
     if (lang === "en") return;
     const timer = setTimeout(() => {
       setGoogTransCookie(lang);
       triggerGoogleTranslate(lang);
     }, 120);
     return () => clearTimeout(timer);
-  }, [pathname, lang, mounted, scriptReady]);
+  }, [lang, mounted, scriptReady, shouldLoadTranslateScript]);
 
   const applyLanguage = () => {
     localStorage.setItem(STORAGE_KEY, lang);
+    if (lang === "en") {
+      clearGoogTransCookie();
+      setPanelOpen(false);
+      return;
+    }
+
+    setShouldLoadTranslateScript(true);
     setGoogTransCookie(lang);
-    triggerGoogleTranslate(lang);
+    if (scriptReady) {
+      triggerGoogleTranslate(lang);
+    }
     setPanelOpen(false);
   };
 
   return (
     <>
-      <Script
-        src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
-        strategy="afterInteractive"
-        onReady={() => setScriptReady(true)}
-      />
+      {shouldLoadTranslateScript ? (
+        <Script
+          src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+          strategy="afterInteractive"
+          onReady={() => setScriptReady(true)}
+        />
+      ) : null}
 
       <div id="google_translate_element" className="hidden" />
 

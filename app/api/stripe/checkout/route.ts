@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { stripe, CREDIT_PACKAGES } from "@/lib/stripe";
+import { CREDIT_PACKAGES, getStripe } from "@/lib/stripe";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
     // Create Stripe Checkout Session
-    const session = await stripe.checkout.sessions.create({
+    const session = await getStripe().checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [
         {

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CREDIT_PACKAGES, type PackageType } from "@/lib/stripe";
+import { CREDIT_PACKAGES, type PackageType } from "@/lib/credit-packages";
 
 export default function PricingPage() {
   const [loading, setLoading] = useState<PackageType | null>(null);

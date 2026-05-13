@@ -35,7 +35,7 @@ function buildProfileReviewEmailHtml(params: {
     <div style="max-width:720px;margin:0 auto;padding:0 20px;">
       <div style="border:1px solid #18311e;background:#101417;border-radius:24px;overflow:hidden;">
         <div style="padding:28px 28px 18px;border-bottom:1px solid #173120;background:linear-gradient(180deg,#13261a,#0f1317);">
-          <div style="display:inline-block;background:#60f770;color:#0a110d;font-weight:800;padding:6px 10px;border-radius:999px;text-transform:uppercase;font-size:12px;letter-spacing:.08em;">Roast Report</div>
+          <div style="display:inline-block;background:#60f770;color:#0a110d;font-weight:800;padding:6px 10px;border-radius:999px;text-transform:uppercase;font-size:12px;letter-spacing:.08em;">DatingPhotosAI Report</div>
           <h1 style="margin:16px 0 8px;font-size:36px;line-height:1.05;">Your dating profile review is unlocked</h1>
           <p style="margin:0;color:#b8c1c7;line-height:1.7;">Your full report is ready. We've also unlocked it on-site so you can revisit it any time after signing in.</p>
         </div>

@@ -164,12 +164,12 @@ export default function DatingProfileReviewLandingPage() {
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-4 py-4 sm:px-6">
             <ProfileReviewLogo />
             <nav className="hidden items-center gap-8 lg:flex">
-              <NavLink href="/">Home</NavLink>
               <NavLink href="/dating-profile-review">Dating Profile Review</NavLink>
+              <NavLink href="/ai-photos">AI Dating Photos</NavLink>
               <NavLink href="/blog">Blog</NavLink>
             </nav>
-            <PrimaryLink href="/dating-profile-review/quiz?fresh=1">
-              Review my profile
+            <PrimaryLink href="/ai-photos">
+              Get my AI photos
             </PrimaryLink>
           </div>
         </header>
@@ -472,7 +472,6 @@ export default function DatingProfileReviewLandingPage() {
               <div className="mt-4 space-y-2 text-sm text-white/55">
                 <div>Blog</div>
                 <div>Support</div>
-                <div>Reviews</div>
               </div>
             </div>
             <div>

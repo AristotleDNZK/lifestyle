@@ -1,5 +1,6 @@
 import { task } from "@trigger.dev/sdk/v3";
 import { ProxyAgent, fetch as undiciFetch, type Dispatcher } from "undici";
+import { DEFAULT_AI_PHOTO_OPTIMIZATION_PROMPT } from "../../lib/ai-photo-optimization";
 import { addCredits } from "../../lib/credits";
 import { supabaseAdmin } from "../../lib/supabase";
 import { uploadToImgBB } from "../../lib/imgbb";
@@ -170,15 +171,11 @@ async function requestGeminiImage(payload: GenerateImagePayload) {
   const apiKey = getRequiredEnv("GEMINI_API_KEY");
   getRequiredEnv("IMGBB_API_KEY");
 
-  const prompt = payload.prompt.trim();
+  const prompt = payload.prompt.trim() || DEFAULT_AI_PHOTO_OPTIMIZATION_PROMPT;
   const modelId = payload.modelId.trim() || "gemini-3.1-flash-image";
   const aspectRatio = safeString(payload.aspectRatio).trim();
   const inputImageBase64 = safeString(payload.imageBase64).trim();
   const inputImageMimeType = safeString(payload.imageMimeType).trim() || "image/jpeg";
-
-  if (!prompt) {
-    throw new Error("Prompt is required");
-  }
 
   const parts: Array<Record<string, unknown>> = [
     {

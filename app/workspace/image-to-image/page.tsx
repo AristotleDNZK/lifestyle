@@ -6,6 +6,7 @@ import {
   WorkspaceImageActionOverlay,
   buildWorkspaceImageDownloadName,
 } from "../_components/workspace-image-actions";
+import { DEFAULT_AI_PHOTO_OPTIMIZATION_PROMPT } from "@/lib/ai-photo-optimization";
 import { pollGenerationJob } from "@/lib/generation-jobs";
 
 type Ratio = "auto" | "1:1" | "3:4" | "9:16" | "4:3" | "16:9";
@@ -123,6 +124,9 @@ const FALLBACK_EXAMPLES: ExampleItem[] = [
       "Turn into a cozy cafe scene, warm indoor lights, bokeh background, candid vibe.",
   },
 ];
+
+const WORKSPACE_HISTORY_LOAD_WARNING =
+  "[AIPhotoOptimization] Initial history load failed";
 
 function uid(prefix: string) {
   return `${prefix}-${Math.random().toString(16).slice(2)}-${Date.now()}`;
@@ -441,7 +445,7 @@ function UploadZone({
           Upload up to 5 images
         </p>
         <p className="mt-1 text-sm text-white/45">
-          Optional. Multi-select, drag and drop, or paste
+          Multi-select, drag and drop, or paste
         </p>
         <button
           type="button"
@@ -522,6 +526,8 @@ function Toggle({
 }
 
 function SettingsPanel({
+  showAdvancedOptions,
+  setShowAdvancedOptions,
   modelId,
   setModelId,
   ratio,
@@ -529,6 +535,8 @@ function SettingsPanel({
   multiShot,
   setMultiShot,
 }: {
+  showAdvancedOptions: boolean;
+  setShowAdvancedOptions: (v: boolean) => void;
   modelId: string;
   setModelId: (v: string) => void;
   ratio: Ratio;
@@ -543,82 +551,103 @@ function SettingsPanel({
 
   return (
     <div className="rounded-2xl border border-white/10 bg-[#090c12] p-4 sm:p-5">
-      <p className="text-sm font-semibold text-white/80">Settings</p>
-
-      <div className="mt-4">
-        <p className="text-xs uppercase tracking-[0.1em] text-white/40">
-          Model
-        </p>
-        <div className="mt-2 rounded-xl border border-white/10 bg-black/25 px-3 py-2">
-          <select
-            value={modelId}
-            onChange={(e) => setModelId(e.target.value)}
-            className="w-full appearance-none rounded-md bg-[#080b10] text-sm text-white outline-none [color-scheme:dark] focus:ring-0"
-          >
-            {MODELS.map((m) => (
-              <option
-                key={m.id}
-                value={m.id}
-                className="bg-[#080b10] text-white"
-              >
-                {m.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        <p className="mt-2 text-xs text-white/45">{selected.note}</p>
-      </div>
-
-      <div className="mt-5">
-        <p className="text-xs uppercase tracking-[0.1em] text-white/40">
-          Ratio
-        </p>
-        <div className="mt-3 flex flex-wrap gap-x-6 gap-y-3">
-          {RATIO_OPTIONS.map((opt) => {
-            const active = opt.value === ratio;
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => setRatio(opt.value)}
-                className="group inline-flex items-center gap-2 text-sm text-white/70 transition hover:text-white"
-              >
-                <span
-                  className={`relative h-4 w-4 rounded-full border transition ${
-                    active
-                      ? "border-white/70"
-                      : "border-white/30 group-hover:border-white/45"
-                  }`}
-                >
-                  <span
-                    className={`absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full transition ${
-                      active ? "bg-white" : "bg-transparent"
-                    }`}
-                  />
-                </span>
-                <span className={active ? "text-white" : ""}>{opt.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="mt-6 flex items-center justify-between gap-4">
+      <button
+        type="button"
+        aria-expanded={showAdvancedOptions}
+        onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
+        className="flex w-full items-center justify-between gap-4 text-left"
+      >
         <div>
-          <div className="flex items-center gap-2">
-            <p className="text-sm font-medium text-white/80">
-              Multi-Shot Generation
-            </p>
-            <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-white/70">
-              Beta
-            </span>
-          </div>
+          <p className="text-sm font-semibold text-white/80">
+            Advanced Options / 高级选项
+          </p>
           <p className="mt-1 text-xs text-white/45">
-            Generate multiple variations from the same inputs.
+            Model quality, aspect ratio, and variation controls.
           </p>
         </div>
-        <Toggle checked={multiShot} onChange={setMultiShot} />
-      </div>
+        <span className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs text-white/60">
+          {showAdvancedOptions ? "Collapse" : "Expand"}
+        </span>
+      </button>
+
+      {showAdvancedOptions && (
+        <div>
+          <div className="mt-4">
+            <p className="text-xs uppercase tracking-[0.1em] text-white/40">
+              Model
+            </p>
+            <div className="mt-2 rounded-xl border border-white/10 bg-black/25 px-3 py-2">
+              <select
+                value={modelId}
+                onChange={(e) => setModelId(e.target.value)}
+                className="w-full appearance-none rounded-md bg-[#080b10] text-sm text-white outline-none [color-scheme:dark] focus:ring-0"
+              >
+                {MODELS.map((m) => (
+                  <option
+                    key={m.id}
+                    value={m.id}
+                    className="bg-[#080b10] text-white"
+                  >
+                    {m.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <p className="mt-2 text-xs text-white/45">{selected.note}</p>
+          </div>
+
+          <div className="mt-5">
+            <p className="text-xs uppercase tracking-[0.1em] text-white/40">
+              Ratio
+            </p>
+            <div className="mt-3 flex flex-wrap gap-x-6 gap-y-3">
+              {RATIO_OPTIONS.map((opt) => {
+                const active = opt.value === ratio;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setRatio(opt.value)}
+                    className="group inline-flex items-center gap-2 text-sm text-white/70 transition hover:text-white"
+                  >
+                    <span
+                      className={`relative h-4 w-4 rounded-full border transition ${
+                        active
+                          ? "border-white/70"
+                          : "border-white/30 group-hover:border-white/45"
+                      }`}
+                    >
+                      <span
+                        className={`absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full transition ${
+                          active ? "bg-white" : "bg-transparent"
+                        }`}
+                      />
+                    </span>
+                    <span className={active ? "text-white" : ""}>{opt.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="mt-6 flex items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-medium text-white/80">
+                  Multi-Shot Generation
+                </p>
+                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-white/70">
+                  Beta
+                </span>
+              </div>
+              <p className="mt-1 text-xs text-white/45">
+                Generate multiple variations from the same inputs.
+              </p>
+            </div>
+            <Toggle checked={multiShot} onChange={setMultiShot} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -663,7 +692,7 @@ function HistoryGallery({
           No images generated yet
         </p>
         <p className="mt-1 text-xs text-white/45">
-          Transform an image to see results here.
+          Optimize a photo to see results here.
         </p>
       </div>
     );
@@ -903,6 +932,7 @@ export default function ImageToImagePage() {
   const [historyData, setHistoryData] = useState<HistoryItem[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
 
   const [credits, setCredits] = useState<number>(0);
   const [selectedExampleId, setSelectedExampleId] = useSessionStorageState<
@@ -1013,7 +1043,7 @@ export default function ImageToImagePage() {
             : normalized[0]?.id || null
       );
     } catch (e: any) {
-      showError(e?.message || "Failed to load history.");
+      console.warn(WORKSPACE_HISTORY_LOAD_WARNING, e);
       setHistoryData([]);
       setTotalPages(1);
       setSelectedHistoryId(null);
@@ -1105,11 +1135,7 @@ export default function ImageToImagePage() {
       showError("Invalid image format. Please re-upload the image.");
       return;
     }
-    const promptText = (prompt || "").trim();
-    if (!promptText) {
-      showError("Prompt is required.");
-      return;
-    }
+    const promptText = (prompt || "").trim() || DEFAULT_AI_PHOTO_OPTIMIZATION_PROMPT;
 
     // Use real credits from DB. Form state is already persisted via sessionStorage hooks.
     if (credits < cost) {
@@ -1171,7 +1197,7 @@ export default function ImageToImagePage() {
   };
 
   const stageTitle =
-    activeTab === "history" ? "Result Preview" : "Example Preview";
+    activeTab === "history" ? "优化结果预览" : "示例预览";
   const stageSubtitle =
     activeTab === "history"
       ? selectedHistory?.prompt || "History"
@@ -1198,17 +1224,21 @@ export default function ImageToImagePage() {
         <UploadZone images={uploadedImages} setImages={setUploadedImages} />
 
         <div className="rounded-2xl border border-white/10 bg-[#090c12] p-4 sm:p-5">
-          <p className="text-sm font-semibold text-white/80">Prompt</p>
+          <p className="text-sm font-semibold text-white/80">
+            Prompt <span className="text-white/35">(optional)</span>
+          </p>
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             rows={3}
-            placeholder="Describe how you want to edit the image, e.g. change the background to a sunset scene, add more contrast..."
+            placeholder="Leave blank to use the built-in dating photo optimization prompt, or describe the look you want."
             className="mt-3 w-full resize-none rounded-xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/80 outline-none transition focus:border-[#57f06d]/60"
           />
         </div>
 
         <SettingsPanel
+          showAdvancedOptions={showAdvancedOptions}
+          setShowAdvancedOptions={setShowAdvancedOptions}
           modelId={MODELS.some((m) => m.id === selectedModel) ? selectedModel : MODELS[0].id}
           setModelId={setSelectedModel}
           ratio={ratio}
@@ -1249,7 +1279,7 @@ export default function ImageToImagePage() {
             <span className="text-[#0b0d10]">
               <Icon name="wand" className="h-4 w-4" />
             </span>
-            {loading ? "Transforming..." : "Transform Image"}
+            {loading ? "Optimizing..." : "优化照片"}
           </button>
         </div>
       </div>

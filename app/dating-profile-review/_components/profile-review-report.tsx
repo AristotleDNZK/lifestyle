@@ -203,7 +203,7 @@ function PreviewSection({
                 x10
               </div>
               <div className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#63f276]">
-                With Roast
+                With DatingPhotosAI
               </div>
             </div>
           </div>

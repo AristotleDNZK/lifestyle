@@ -34,14 +34,14 @@ export async function GET(req: NextRequest) {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
-    // Build query: only successful generations with non-empty URL
+    // Build query: only successful generations. Clients normalize `url` and
+    // `image_url`, so keep image-only rows even if the legacy `url` column is
+    // empty.
     let query = supabaseAdmin
       .from("generations")
       .select("*", { count: "exact" })
       .eq("user_id", identity.canonicalUserId)
       .eq("status", "completed")
-      .not("url", "is", null)
-      .neq("url", "")
       .order("created_at", { ascending: false })
       .range(from, to);
 

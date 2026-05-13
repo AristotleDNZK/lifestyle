@@ -7,6 +7,7 @@ import {
   resolveModelId,
   safeString,
 } from "@/lib/generation-jobs";
+import { DEFAULT_AI_PHOTO_OPTIMIZATION_PROMPT } from "@/lib/ai-photo-optimization";
 import { supabaseAdmin } from "@/lib/supabase";
 import { findUserIdentityRecords } from "@/lib/user-identity";
 
@@ -108,20 +109,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const prompt = safeString(body.prompt).trim();
+    const prompt =
+      safeString(body.prompt).trim() || DEFAULT_AI_PHOTO_OPTIMIZATION_PROMPT;
     const aspectRatio =
       safeString(body.ratio).trim() || safeString(body.aspectRatio).trim() || null;
     const imageBase64 = safeString(body.imageBase64).trim() || undefined;
     const imageMimeType = safeString(body.imageMimeType).trim() || undefined;
     const modelId = resolveModelId(body);
     const cost = resolveGenerationCost(body);
-
-    if (!prompt) {
-      return NextResponse.json(
-        { error: "Prompt is required" },
-        { status: 400 }
-      );
-    }
 
     const deductSuccess = await deductCredits(userId, cost, email);
 

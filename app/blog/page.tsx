@@ -3,9 +3,8 @@ import Link from "next/link";
 import { blogPosts, type BlogPost } from "./mock-posts";
 
 const topNavItems = [
-  { label: "Dating Profile Review", href: "#" },
-  { label: "AI Dating Photos", href: "#" },
-  { label: "Reviews", href: "#" },
+  { label: "Dating Profile Review", href: "/dating-profile-review" },
+  { label: "AI Dating Photos", href: "/ai-photos" },
   { label: "Blog", href: "/blog" },
 ];
 
@@ -44,7 +43,7 @@ function Hero() {
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
-              href="/workspace"
+              href="/ai-photos"
               className="inline-flex items-center justify-center gap-3 rounded-sm bg-[#5ef36f] px-8 py-3 text-base font-semibold text-[#0e1213] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#78ff88] hover:shadow-[0_0_18px_rgba(94,243,111,0.45)]"
             >
               Boost My Profile
@@ -123,7 +122,7 @@ function BlogSubNav() {
             translate="no"
             className="notranslate skew-x-12 font-['Bebas_Neue','Oswald','Arial_Narrow',sans-serif] text-2xl uppercase tracking-[0.05em] text-[#111]"
           >
-            Roast
+            DatingPhotosAI
           </span>
         </Link>
 
@@ -143,7 +142,7 @@ function BlogSubNav() {
             Log In
           </Link>
           <Link
-            href="/workspace"
+            href="/ai-photos"
             className="rounded-sm bg-[#5ef36f] px-4 py-2 text-sm font-semibold text-[#0f1215] transition-all hover:bg-[#7bff89]"
           >
             Get Started
@@ -157,6 +156,7 @@ function BlogSubNav() {
 function PostCard({ post }: { post: BlogPost }) {
   return (
     <article className="group overflow-hidden rounded-md border border-[#2a633f]/70 bg-[#0d1117] shadow-[0_0_0_1px_rgba(87,240,109,0.02)] transition-all duration-300 hover:-translate-y-1 hover:border-[#57f06d]/80 hover:shadow-[0_10px_40px_rgba(87,240,109,0.16)]">
+      <Link href={`/blog/${post.slug}`} className="block">
       <div className="relative overflow-hidden rounded-t-md">
         <Image
           src={post.coverImage}
@@ -184,6 +184,7 @@ function PostCard({ post }: { post: BlogPost }) {
           <span>{post.readTime}</span>
         </div>
       </div>
+      </Link>
     </article>
   );
 }

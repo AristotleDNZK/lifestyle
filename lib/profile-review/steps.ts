@@ -146,7 +146,7 @@ export const profileReviewSteps: ProfileReviewStep[] = [
     key: "encouragement_2",
     type: "message",
     title: "There is no one-size-fits-all solution",
-    body: "Roast finds what works for you, based on your goals and your current photos.",
+    body: "DatingPhotosAI finds what works for you, based on your goals and your current photos.",
     cta: "Continue",
     progress: percent(30),
     theme: "green",

@@ -56,7 +56,7 @@ function modelLabel(item: GenerationRecord) {
     item.model_name ||
     item.model_id ||
     item.model ||
-    (item.type === "video" ? "Seedance 2.0" : "Seedance 1.5")
+    (item.type === "video" ? "Video Model" : "AI Photo Optimizer")
   );
 }
 
