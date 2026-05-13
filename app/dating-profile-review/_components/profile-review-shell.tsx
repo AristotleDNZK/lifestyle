@@ -14,7 +14,7 @@ export function ProfileReviewLogo({ href = "/" }: { href?: string }) {
       className="inline-flex -skew-x-12 bg-[#63f276] px-3 py-1 shadow-[0_0_28px_rgba(99,242,118,0.28)]"
     >
       <span className="skew-x-12 text-sm font-black uppercase tracking-[0.18em] text-[#071009]">
-        Roast
+        DatingPhotosAI
       </span>
     </Link>
   );

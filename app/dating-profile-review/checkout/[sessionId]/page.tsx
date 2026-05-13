@@ -154,7 +154,7 @@ export default function DatingProfileReviewCheckoutPage() {
               </div>
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <div className="text-lg font-bold text-white">Roast Pro</div>
+                  <div className="text-lg font-bold text-white">DatingPhotosAI Pro</div>
                   <div className="mt-1 text-sm text-white/50">
                     Reference offer layout preserved for the checkout experience
                   </div>

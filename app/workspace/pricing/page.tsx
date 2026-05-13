@@ -21,8 +21,8 @@ const plans: PlanTier[] = [
     monthlyPrice: "$9.00",
     features: [
       "500 monthly credits",
-      "720p resolution output",
-      "Image to Video support",
+      "AI photo optimization",
+      "Profile-ready image output",
       "Commercial usage rights",
     ],
   },
@@ -35,7 +35,7 @@ const plans: PlanTier[] = [
     highlight: true,
     features: [
       "1000 monthly credits",
-      "720p / 1080p output",
+      "Higher quality photo output",
       "Fast generation queue",
       "Priority support",
     ],
@@ -48,8 +48,8 @@ const plans: PlanTier[] = [
     monthlyPrice: "$60.00",
     features: [
       "2500 monthly credits",
-      "Top quality video models",
-      "Unlimited prompt library",
+      "Top quality photo models",
+      "Advanced prompt controls",
       "Commercial team usage",
     ],
   },
@@ -106,8 +106,8 @@ export default function WorkspacePricingPage() {
     <>
       <header className="border-b border-white/10 pb-5">
         <p className="text-xs uppercase tracking-[0.1em] text-white/40">Workspace</p>
-        <h1 className="mt-2 text-4xl font-semibold tracking-tight">Seedance 2.0 Pricing Plans</h1>
-        <p className="mt-1 text-white/55">Choose a plan and start creating AI video drafts.</p>
+        <h1 className="mt-2 text-4xl font-semibold tracking-tight">DatingPhotosAI Pricing Plans</h1>
+        <p className="mt-1 text-white/55">Choose a plan and start optimizing dating profile photos.</p>
       </header>
 
       <div className="mt-6 inline-flex items-center rounded-full border border-white/10 bg-[#0f141c] p-1 text-sm">
@@ -179,7 +179,7 @@ export default function WorkspacePricingPage() {
             "What are credits and how do they work?",
             "Can I upgrade or downgrade my plan anytime?",
             "Which payment methods do you accept?",
-            "Can I use generated videos commercially?",
+            "Can I use generated photos commercially?",
             "How long does generation usually take?",
           ].map((question) => (
             <div key={question} className="flex items-center justify-between px-4 py-3 text-sm text-white/75">

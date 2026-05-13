@@ -1,9 +1,9 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Terms and Conditions | Roast",
-  description: "Terms and conditions for using Roast AI dating profile review and AI photo services.",
+  title: "Terms and Conditions | DatingPhotosAI",
+  description: "Terms and conditions for using DatingPhotosAI AI dating profile review and AI photo services.",
 };
 
 const lastUpdated = "May 6, 2026";
@@ -35,7 +35,7 @@ export default function TermsAndConditionsPage() {
           href="/"
           className="inline-flex rounded-sm border border-white/15 px-4 py-2 text-sm font-semibold text-white/72 transition hover:border-[#63f276]/55 hover:text-white"
         >
-          Back to Roast
+          Back to DatingPhotosAI
         </Link>
 
         <header className="mt-10">
@@ -53,12 +53,12 @@ export default function TermsAndConditionsPage() {
         <div className="mt-12 space-y-10">
           <Section title="1. Service provider and scope">
             <p>
-              Roast provides digital software services for AI-powered dating
+              DatingPhotosAI provides digital software services for AI-powered dating
               profile review, profile recommendations, image generation, and
               related account features. These Terms govern your access to and
               use of the website, checkout flows, reports, credits,
               subscriptions, generated content, and other digital services
-              provided by Roast.
+              provided by DatingPhotosAI.
             </p>
             <p>
               By creating an account, uploading content, purchasing a product,
@@ -92,9 +92,9 @@ export default function TermsAndConditionsPage() {
 
           <Section title="4. Digital products, credits, and subscriptions">
             <p>
-              Roast sells digital access, reports, usage-based credits, and
+              DatingPhotosAI sells digital access, reports, usage-based credits, and
               subscription plans. Credits are internal usage units used only
-              inside Roast. Credits are not money, stored value, gift cards, or
+              inside DatingPhotosAI. Credits are not money, stored value, gift cards, or
               financial instruments. Credits cannot be withdrawn, transferred,
               resold, redeemed for cash, or exchanged outside the service.
             </p>
@@ -115,7 +115,7 @@ export default function TermsAndConditionsPage() {
             </p>
             <p>
               You remain responsible for how you use generated outputs. You
-              must not use Roast to create illegal, harmful, deceptive,
+              must not use DatingPhotosAI to create illegal, harmful, deceptive,
               infringing, sexually exploitative, or non-consensual content, or
               to impersonate another person.
             </p>
@@ -125,7 +125,7 @@ export default function TermsAndConditionsPage() {
             <p>
               AI reports, scores, recommendations, and generated images may be
               inaccurate, incomplete, or unsuitable for a specific situation.
-              Roast does not guarantee matches, dates, income, employment,
+              DatingPhotosAI does not guarantee matches, dates, income, employment,
               relationship outcomes, or any other real-world result.
             </p>
             <p>
@@ -137,7 +137,7 @@ export default function TermsAndConditionsPage() {
 
           <Section title="7. Fulfillment and support">
             <p>
-              After a successful payment, Roast will make the purchased digital
+              After a successful payment, DatingPhotosAI will make the purchased digital
               product, credits, subscription access, or unlocked report
               available through your account or checkout session. If fulfillment
               fails, contact support so we can investigate, restore access,
@@ -191,3 +191,4 @@ export default function TermsAndConditionsPage() {
     </main>
   );
 }
+

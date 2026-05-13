@@ -1,9 +1,9 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | Roast",
-  description: "Privacy policy for Roast AI dating profile review and AI photo services.",
+  title: "Privacy Policy | DatingPhotosAI",
+  description: "Privacy policy for DatingPhotosAI AI dating profile review and AI photo services.",
 };
 
 const lastUpdated = "May 6, 2026";
@@ -33,7 +33,7 @@ export default function PrivacyPage() {
           href="/"
           className="inline-flex rounded-sm border border-white/15 px-4 py-2 text-sm font-semibold text-white/72 transition hover:border-[#63f276]/55 hover:text-white"
         >
-          Back to Roast
+          Back to DatingPhotosAI
         </Link>
 
         <header className="mt-10">
@@ -51,9 +51,9 @@ export default function PrivacyPage() {
         <div className="mt-12 space-y-10">
           <Section title="1. Overview">
             <p>
-              This Privacy Policy explains how Roast collects, uses, stores,
+              This Privacy Policy explains how DatingPhotosAI collects, uses, stores,
               shares, and protects information when you use our website,
-              AI-powered dating profile review, AI image generation, account,
+              AI-powered dating profile review, AI photo generation, account,
               billing, and support features.
             </p>
           </Section>
@@ -170,3 +170,4 @@ export default function PrivacyPage() {
     </main>
   );
 }
+

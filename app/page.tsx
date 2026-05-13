@@ -20,8 +20,7 @@ type FAQItem = {
 
 const navLinks = [
   { label: "Dating Profile Review", href: "/dating-profile-review" },
-  { label: "AI Dating Photos", href: "#" },
-  { label: "Reviews", href: "#" },
+  { label: "AI Dating Photos", href: "/ai-photos" },
   { label: "Blog", href: "/blog" },
 ];
 
@@ -133,12 +132,21 @@ function CornerMarks() {
   );
 }
 
-function PrimaryButton({ children }: { children: React.ReactNode }) {
+function PrimaryButton({
+  children,
+  href = "/ai-photos",
+}: {
+  children: React.ReactNode;
+  href?: string;
+}) {
   return (
-    <button className="inline-flex items-center justify-center gap-3 rounded-sm bg-[#5ef36f] px-7 py-3 text-base font-semibold text-[#0e1213] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#78ff88] hover:shadow-[0_0_18px_rgba(94,243,111,0.45)]">
+    <Link
+      href={href}
+      className="inline-flex items-center justify-center gap-3 rounded-sm bg-[#5ef36f] px-7 py-3 text-base font-semibold text-[#0e1213] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#78ff88] hover:shadow-[0_0_18px_rgba(94,243,111,0.45)]"
+    >
       {children}
       <span className="text-lg">-&gt;</span>
-    </button>
+    </Link>
   );
 }
 
@@ -172,7 +180,7 @@ function SiteNavbar() {
               translate="no"
               className="notranslate skew-x-12 font-['Bebas_Neue','Oswald','Arial_Narrow',sans-serif] text-2xl uppercase tracking-[0.05em] text-[#111]"
             >
-              Roast
+              DatingPhotosAI
             </span>
           </Link>
 
@@ -269,7 +277,7 @@ function HeroSection() {
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <PrimaryButton>GET MY AI PHOTOS</PrimaryButton>
+              <PrimaryButton href="/ai-photos">GET MY AI PHOTOS</PrimaryButton>
               <SecondaryButton href="/dating-profile-review">
                 Audit my Dating Photos
               </SecondaryButton>
@@ -578,7 +586,7 @@ function PricingSection() {
                     translate="no"
                     className="notranslate font-['Bebas_Neue','Oswald','Arial_Narrow',sans-serif] text-[34px] uppercase leading-none text-[#61f275]"
                   >
-                    Roast AI Photos
+                    DatingPhotosAI
                   </p>
                   <p className="mt-1 text-3xl font-semibold text-[#69f17a]">$39/mo</p>
                 </th>
@@ -613,7 +621,7 @@ function GuaranteeAndFAQ() {
             <CornerMarks />
             <h3 className="font-['Bebas_Neue','Oswald','Arial_Narrow',sans-serif] text-[48px] uppercase leading-none tracking-[0.04em] text-[#63f276] sm:text-[64px]">100% Satisfaction Guarantee - Match Increase Guarantee</h3>
             <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 text-white/58 sm:text-2xl">If you do not see a meaningful increase in photo quality and confidence, contact support for a fast resolution.</p>
-            <div className="mt-8"><PrimaryButton>GET MY AI PHOTOS</PrimaryButton></div>
+            <div className="mt-8"><PrimaryButton href="/ai-photos">GET MY AI PHOTOS</PrimaryButton></div>
           </div>
         </Container>
       </section>
@@ -640,7 +648,7 @@ function GuaranteeAndFAQ() {
             <h3 className="font-['Bebas_Neue','Oswald','Arial_Narrow',sans-serif] text-[52px] uppercase leading-none tracking-[0.04em] text-[#63f276] sm:text-[68px]">Ready To Upgrade Your Arsenal?</h3>
             <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-white/58 sm:text-2xl">Get 40 professional dating photos without the studio overhead. Upgrade your profile and move faster on every app.</p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              <PrimaryButton>GET MY AI PHOTOS</PrimaryButton>
+              <PrimaryButton href="/ai-photos">GET MY AI PHOTOS</PrimaryButton>
               <SecondaryButton href="/dating-profile-review">
                 Audit my Dating Photos
               </SecondaryButton>
@@ -663,7 +671,7 @@ function SiteFooter() {
                 translate="no"
                 className="notranslate skew-x-12 font-['Bebas_Neue','Oswald','Arial_Narrow',sans-serif] text-2xl uppercase tracking-[0.05em] text-[#111]"
               >
-                Roast
+                DatingPhotosAI
               </span>
             </div>
             <p className="mt-4 text-base text-white/55">AI-powered dating optimization</p>
@@ -674,7 +682,7 @@ function SiteFooter() {
           </div>
           <div>
             <h4 className="text-base font-semibold text-white">Resources</h4>
-            <ul className="mt-4 space-y-2 text-base text-white/55"><li>Blog</li><li>Reviews</li><li>Support</li></ul>
+            <ul className="mt-4 space-y-2 text-base text-white/55"><li>Blog</li><li>Support</li></ul>
           </div>
           <div>
             <h4 className="text-base font-semibold text-white">Latest Articles</h4>
@@ -683,7 +691,7 @@ function SiteFooter() {
         </div>
         <div className="mt-10 border-t border-white/10 pt-6 text-sm text-white/45">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p translate="no" className="notranslate">c 2022-2026 Roast. All rights reserved.</p>
+            <p translate="no" className="notranslate">c 2022-2026 DatingPhotosAI. All rights reserved.</p>
             <div className="flex flex-wrap gap-5">
               <Link href="/terms-and-conditions">Terms</Link>
               <Link href="/privacy">Privacy</Link>

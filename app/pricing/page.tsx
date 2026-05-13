@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CREDIT_PACKAGES, type PackageType } from "@/lib/stripe";
+import { CREDIT_PACKAGES, type PackageType } from "@/lib/credit-packages";
 
 const paddleSkuByPackage: Record<PackageType, string> = {
   starter: "credits_starter",

@@ -1,9 +1,9 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Refund Policy | Roast",
-  description: "Refund policy for Roast digital products, credits, subscriptions, and AI reports.",
+  title: "Refund Policy | DatingPhotosAI",
+  description: "Refund policy for DatingPhotosAI digital products, credits, subscriptions, and AI reports.",
 };
 
 const lastUpdated = "May 6, 2026";
@@ -33,7 +33,7 @@ export default function RefundPage() {
           href="/"
           className="inline-flex rounded-sm border border-white/15 px-4 py-2 text-sm font-semibold text-white/72 transition hover:border-[#63f276]/55 hover:text-white"
         >
-          Back to Roast
+          Back to DatingPhotosAI
         </Link>
 
         <header className="mt-10">
@@ -51,7 +51,7 @@ export default function RefundPage() {
         <div className="mt-12 space-y-10">
           <Section title="1. Overview">
             <p>
-              This Refund Policy applies to Roast digital products, including
+              This Refund Policy applies to DatingPhotosAI digital products, including
               dating profile review unlocks, AI-generated image services,
               credits, subscriptions, and related digital access. It should be
               read together with our Terms and Conditions and Privacy Policy.
@@ -74,7 +74,7 @@ export default function RefundPage() {
 
           <Section title="3. Digital product delivery">
             <p>
-              Roast products are digital product services delivered through the
+              DatingPhotosAI products are digital product services delivered through the
               website after purchase. Because digital reports, credits,
               subscriptions, and generated outputs can be accessed or consumed
               immediately, completed and used purchases are generally not
@@ -122,7 +122,7 @@ export default function RefundPage() {
           <Section title="7. How to request a refund">
             <p>
               To request a refund, contact Paddle buyer support through your
-              Paddle receipt or Paddle order support channel, or contact Roast
+              Paddle receipt or Paddle order support channel, or contact DatingPhotosAI
               product support through the support contact published in your
               account or checkout receipt. Include the order ID, account email,
               purchase date, product purchased, and a clear description of the
@@ -146,3 +146,4 @@ export default function RefundPage() {
     </main>
   );
 }
+

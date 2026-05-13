@@ -13,14 +13,10 @@ type NavItem = {
 
 const toolItems: NavItem[] = [
   { label: "My Studio", href: "/workspace", match: "exact" },
-  { label: "AI Video" },
-  { label: "AI Image" },
-  { label: "Text to Image", indent: true },
   {
-    label: "Image to Image",
+    label: "AI 照片优化",
     href: "/workspace/image-to-image",
     match: "prefix",
-    indent: true,
   },
   { label: "My Creations", href: "/workspace/my-creations", match: "prefix" },
 ];
@@ -114,9 +110,9 @@ export function WorkspaceSidebar() {
     <aside className="relative w-full border-b border-white/10 bg-[#080b10] lg:w-[272px] lg:border-b-0 lg:border-r">
       <div className="border-b border-white/10 px-4 py-5">
         <Link href="/workspace" className="flex items-center gap-2">
-          <span className="text-2xl font-bold text-[#50e7cf]">S</span>
-          <span className="text-3xl font-semibold tracking-tight text-white">
-            Seedance 2.0
+          <span className="text-2xl font-bold text-[#50e7cf]">D</span>
+          <span className="text-2xl font-semibold tracking-tight text-white">
+            DatingPhotosAI
           </span>
         </Link>
       </div>
@@ -132,7 +128,7 @@ export function WorkspaceSidebar() {
                 {user?.fullName || user?.firstName || "User"}
               </p>
               <p className="truncate text-xs text-white/45">
-                {user?.primaryEmailAddress?.emailAddress || "account@seedance.ai"}
+                {user?.primaryEmailAddress?.emailAddress || "account@datingphotosai.com"}
               </p>
             </div>
             <UserButton afterSignOutUrl="/" />

@@ -7,8 +7,8 @@ import "./globals.css";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "AI Video & Image Generator",
-  description: "Generate images and videos with AI",
+  title: "DatingPhotosAI",
+  description: "Generate and optimize dating profile photos with AI",
 };
 
 export default function RootLayout({
