@@ -66,7 +66,7 @@ function SectionTitle({
 }) {
   return (
     <div className="mx-auto max-w-3xl text-center">
-      <h2 className="text-3xl font-black uppercase tracking-[-0.04em] text-white sm:text-5xl">
+      <h2 className="text-3xl font-black uppercase tracking-tight text-white sm:text-5xl">
         {title}
       </h2>
       {subtitle ? (
@@ -88,11 +88,11 @@ function StepCard({
   body: string;
 }) {
   return (
-    <article className="rounded-[26px] border border-[#223729] bg-[#0d120e] p-6 shadow-[0_0_24px_rgba(99,242,118,0.06)]">
+    <article className="rounded-2xl border border-[#223729] bg-[#0d120e] p-6 shadow-[0_0_24px_rgba(99,242,118,0.06)]">
       <div className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#28422e] bg-[#111914] text-sm font-black uppercase tracking-[0.14em] text-[#63f276]">
         {step}
       </div>
-      <h3 className="mt-5 text-2xl font-black uppercase tracking-[-0.03em] text-white">
+      <h3 className="mt-5 text-2xl font-black uppercase tracking-tight text-white">
         {title}
       </h3>
       <p className="mt-4 text-sm leading-7 text-white/62">{body}</p>
@@ -108,7 +108,7 @@ function FAQItem({
   answer: string;
 }) {
   return (
-    <article className="rounded-[22px] border border-white/10 bg-[#0b0f0e] p-6">
+    <article className="rounded-xl border border-white/10 bg-[#0b0f0e] p-6">
       <h3 className="text-lg font-bold text-white">{question}</h3>
       <p className="mt-3 text-sm leading-7 text-white/60">{answer}</p>
     </article>
@@ -132,8 +132,8 @@ function ScoreCard({
       : "border-[#613033] bg-[#140f10] text-[#ff8484]";
 
   return (
-    <div className="overflow-hidden rounded-[28px] border border-white/10 bg-[#090d0b] p-3">
-      <div className="relative aspect-[4/5] overflow-hidden rounded-[20px]">
+    <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#090d0b] p-3">
+      <div className="relative aspect-[4/5] overflow-hidden rounded-xl">
         <Image src={src} alt={label} fill className="object-cover" />
       </div>
       <div className="mt-4 flex items-center justify-between">
@@ -168,8 +168,8 @@ export default function DatingProfileReviewLandingPage() {
               <NavLink href="/ai-photos">AI Dating Photos</NavLink>
               <NavLink href="/blog">Blog</NavLink>
             </nav>
-            <PrimaryLink href="/ai-photos">
-              Get my AI photos
+            <PrimaryLink href="/dating-profile-review/quiz?fresh=1">
+              Review my profile
             </PrimaryLink>
           </div>
         </header>
@@ -180,7 +180,7 @@ export default function DatingProfileReviewLandingPage() {
               <div className="inline-flex items-center rounded-full border border-[#234129] bg-[#0d1510] px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[#63f276]">
                 Boost your match rate with better photos
               </div>
-              <h1 className="mt-6 text-5xl font-black uppercase leading-[0.92] tracking-[-0.06em] text-white sm:text-7xl xl:text-[5.7rem]">
+              <h1 className="mt-6 text-5xl font-black uppercase leading-[0.92] tracking-tight text-white sm:text-7xl xl:text-[5.7rem]">
                 10x your dates with a dating profile review
               </h1>
               <p className="mt-6 max-w-2xl text-lg leading-8 text-white/62 sm:text-xl">
@@ -203,7 +203,7 @@ export default function DatingProfileReviewLandingPage() {
               </div>
             </div>
 
-            <div className="rounded-[34px] border border-[#223729] bg-[radial-gradient(circle_at_top,rgba(99,242,118,0.12),rgba(10,13,11,0.96)_40%),linear-gradient(180deg,#0f1310,#090b09)] p-5 shadow-[0_0_48px_rgba(99,242,118,0.08)] sm:p-8">
+            <div className="rounded-2xl border border-[#223729] bg-[radial-gradient(circle_at_top,rgba(99,242,118,0.12),rgba(10,13,11,0.96)_40%),linear-gradient(180deg,#0f1310,#090b09)] p-5 shadow-[0_0_48px_rgba(99,242,118,0.08)] sm:p-8">
               <div className="grid items-center gap-4 sm:grid-cols-[1fr_auto_1fr]">
                 <ScoreCard
                   src="/homepage/hero-before.png"
@@ -222,7 +222,7 @@ export default function DatingProfileReviewLandingPage() {
                 />
               </div>
 
-              <div className="mt-6 rounded-[28px] border border-white/10 bg-[#090d0b] p-5">
+              <div className="mt-6 rounded-2xl border border-white/10 bg-[#090d0b] p-5">
                 <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#63f276]">
                   What the report includes
                 </div>
@@ -246,7 +246,7 @@ export default function DatingProfileReviewLandingPage() {
               ["4.8/5", "Average satisfaction"],
             ].map(([value, label]) => (
               <div key={label} className="text-center">
-                <div className="text-4xl font-black tracking-[-0.06em] text-[#081009] sm:text-5xl">
+                <div className="text-4xl font-black tracking-tight text-[#081009] sm:text-5xl">
                   {value}
                 </div>
                 <div className="mt-2 text-sm font-semibold uppercase tracking-[0.08em] text-[#19311f]">
@@ -290,8 +290,8 @@ export default function DatingProfileReviewLandingPage() {
               subtitle="The review focuses on first-photo impact, trust signals, visible style choices, and how well your photos match the type of connection you want."
             />
             <div className="mt-12 grid gap-6 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
-              <div className="rounded-[28px] border border-[#3d2a2a] bg-[#120f10] p-4">
-                <div className="relative aspect-[4/5] overflow-hidden rounded-[20px]">
+              <div className="rounded-2xl border border-[#3d2a2a] bg-[#120f10] p-4">
+                <div className="relative aspect-[4/5] overflow-hidden rounded-xl">
                   <Image
                     src="/homepage/compare-before.png"
                     alt="Weak dating profile photo"
@@ -311,8 +311,8 @@ export default function DatingProfileReviewLandingPage() {
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-[#28412f] bg-[#101713] text-2xl text-[#63f276]">
                 {">"}
               </div>
-              <div className="rounded-[28px] border border-[#223729] bg-[#0c100d] p-4">
-                <div className="relative aspect-[4/5] overflow-hidden rounded-[20px]">
+              <div className="rounded-2xl border border-[#223729] bg-[#0c100d] p-4">
+                <div className="relative aspect-[4/5] overflow-hidden rounded-xl">
                   <Image
                     src="/homepage/compare-after.png"
                     alt="Improved dating profile photo"
@@ -356,12 +356,12 @@ export default function DatingProfileReviewLandingPage() {
               ].map(([title, body]) => (
                 <article
                   key={title}
-                  className="rounded-[26px] border border-white/10 bg-[#0b0f0e] p-6"
+                  className="rounded-2xl border border-white/10 bg-[#0b0f0e] p-6"
                 >
                   <div className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#28422e] bg-[#111914] text-sm font-black uppercase tracking-[0.14em] text-[#63f276]">
                     AI
                   </div>
-                  <h3 className="mt-5 text-2xl font-black uppercase tracking-[-0.03em] text-white">
+                  <h3 className="mt-5 text-2xl font-black uppercase tracking-tight text-white">
                     {title}
                   </h3>
                   <p className="mt-4 text-sm leading-7 text-white/62">{body}</p>
@@ -372,7 +372,7 @@ export default function DatingProfileReviewLandingPage() {
         </section>
 
         <section className="px-4 pb-20 sm:px-6 sm:pb-28">
-          <div className="mx-auto max-w-6xl rounded-[32px] border border-[#223729] bg-[#0b0f0e] p-6 sm:p-8">
+          <div className="mx-auto max-w-6xl rounded-2xl border border-[#223729] bg-[#0b0f0e] p-6 sm:p-8">
             <SectionTitle
               title="Clarity changes online dating results"
               subtitle="The full report turns vague dissatisfaction into a prioritized execution list."
@@ -383,7 +383,7 @@ export default function DatingProfileReviewLandingPage() {
                 ["Quick wins", "The easiest changes with the highest expected return."],
                 ["7-day sprint", "A practical order of operations for the next week."],
               ].map(([title, body]) => (
-                <div key={title} className="rounded-[24px] border border-white/10 bg-[#101612] p-5">
+                <div key={title} className="rounded-xl border border-white/10 bg-[#101612] p-5">
                   <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#63f276]">
                     Included
                   </div>
@@ -428,11 +428,11 @@ export default function DatingProfileReviewLandingPage() {
         </section>
 
         <section className="px-4 pb-24 sm:px-6 sm:pb-28">
-          <div className="mx-auto max-w-6xl rounded-[36px] border border-[#224129] bg-[linear-gradient(180deg,#111a13,#0a0f0b)] px-6 py-10 text-center shadow-[0_0_40px_rgba(99,242,118,0.08)] sm:px-12 sm:py-14">
+          <div className="mx-auto max-w-6xl rounded-2xl border border-[#224129] bg-[linear-gradient(180deg,#111a13,#0a0f0b)] px-6 py-10 text-center shadow-[0_0_40px_rgba(99,242,118,0.08)] sm:px-12 sm:py-14">
             <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#63f276]">
               Ready to be seen?
             </p>
-            <h2 className="mt-3 text-4xl font-black uppercase tracking-[-0.04em] text-white sm:text-6xl">
+            <h2 className="mt-3 text-4xl font-black uppercase tracking-tight text-white sm:text-6xl">
               Review your profile now
             </h2>
             <p className="mx-auto mt-5 max-w-3xl text-base leading-7 text-white/60 sm:text-lg">

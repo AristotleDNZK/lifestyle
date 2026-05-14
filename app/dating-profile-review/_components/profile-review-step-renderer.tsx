@@ -146,7 +146,7 @@ export function ProfileReviewStepRenderer({
           title="Building your score"
           subtitle="The preview report is still loading."
         >
-          <div className="rounded-[28px] border border-white/10 bg-[#0b0f0e] p-8 text-center">
+          <div className="rounded-xl border border-white/10 bg-[#0f1319] p-8 text-center">
             <div className="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-white/10 border-t-[#63f276]" />
             <p className="mt-5 text-base text-white/65">
               Your preview report is being loaded.
@@ -230,9 +230,9 @@ export function ProfileReviewStepRenderer({
         subtitle={step.body}
       >
         <div className="mx-auto max-w-md">
-          <div className="rounded-[28px] border border-white/10 bg-[#111315] p-5 text-center">
-            <div className="mx-auto max-w-[180px] rounded-[22px] border border-white/10 bg-[#1a1d20] p-3 shadow-[0_0_28px_rgba(0,0,0,0.25)]">
-              <div className="rounded-[18px] bg-[#0e1113] p-3">
+          <div className="rounded-xl border border-white/10 bg-[#0f1319] p-5 text-center">
+            <div className="mx-auto max-w-[180px] rounded-xl border border-white/10 bg-[#151b24] p-3 shadow-[0_0_28px_rgba(0,0,0,0.25)]">
+              <div className="rounded-lg bg-[#0e1113] p-3">
                 <div className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#1b1b1b]">
                   Your profile is super{" "}
                   <span className="text-[#ff875c]">weak</span>
@@ -318,7 +318,7 @@ export function ProfileReviewStepRenderer({
             {uploadPreviews.map((file) => (
               <div
                 key={file.id}
-                className="group relative overflow-hidden rounded-[20px] border border-white/10 bg-[#101214]"
+                className="group relative overflow-hidden rounded-xl border border-white/10 bg-[#101214]"
               >
                 <div className="relative aspect-[4/5]">
                   <Image
@@ -343,7 +343,7 @@ export function ProfileReviewStepRenderer({
             {uploadPreviews.length < 9 ? (
               <label
                 htmlFor={fileInputId}
-                className="flex aspect-[4/5] cursor-pointer flex-col items-center justify-center rounded-[20px] border border-dashed border-white/16 bg-white/[0.03] text-center text-white/55 transition hover:border-[#63f276]/45 hover:bg-white/[0.05]"
+                className="flex aspect-[4/5] cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-white/16 bg-white/[0.03] text-center text-white/55 transition hover:border-[#63f276]/45 hover:bg-white/[0.05]"
               >
                 <span className="text-4xl font-light text-[#63f276]">+</span>
                 <span className="mt-2 text-sm font-semibold uppercase tracking-[0.12em]">
@@ -353,7 +353,7 @@ export function ProfileReviewStepRenderer({
             ) : null}
           </div>
 
-          <div className="rounded-[24px] border border-white/10 bg-[#0b0f0e] p-5">
+          <div className="rounded-xl border border-white/10 bg-[#0f1319] p-5">
             <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#63f276]">
               Best results checklist
             </div>
@@ -411,7 +411,7 @@ export function ProfileReviewStepRenderer({
     return (
       <ProfileReviewShell progress={step.progress} title={step.title} subtitle={step.body}>
         <div className="mx-auto max-w-2xl">
-          <div className="rounded-[24px] border-b border-white/20 px-2 pb-3">
+          <div className="rounded-xl border-b border-white/20 px-2 pb-3">
             <input
               type="email"
               value={emailValue}
@@ -436,7 +436,7 @@ export function ProfileReviewStepRenderer({
               {[1, 2, 3].map((item) => (
                 <div
                   key={item}
-                  className="aspect-[3/4] rounded-[22px] bg-[linear-gradient(180deg,rgba(255,255,255,0.18),rgba(255,255,255,0.04))]"
+                  className="aspect-[3/4] rounded-xl bg-[linear-gradient(180deg,rgba(255,255,255,0.18),rgba(255,255,255,0.04))]"
                 />
               ))}
             </div>
@@ -455,10 +455,10 @@ export function ProfileReviewStepRenderer({
         subtitle="One last optional bonus before we show your preview."
       >
         <div className="relative">
-          <div className="pointer-events-none absolute inset-0 rounded-[32px] bg-[radial-gradient(circle,rgba(99,242,118,0.14),transparent_55%)] blur-3xl" />
-          <div className="relative mx-auto max-w-xl rounded-[30px] border border-white/10 bg-[#050706] p-6 shadow-[0_0_40px_rgba(0,0,0,0.35)] sm:p-8">
-            <div className="mx-auto aspect-[4/3] w-full max-w-[220px] rounded-[22px] bg-[linear-gradient(180deg,rgba(255,255,255,0.16),rgba(255,255,255,0.03)),radial-gradient(circle_at_top,rgba(99,242,118,0.18),transparent_55%)]" />
-            <h3 className="mt-6 text-center text-2xl font-black uppercase tracking-[-0.03em] text-white sm:text-3xl">
+          <div className="pointer-events-none absolute inset-0 rounded-2xl bg-[radial-gradient(circle,rgba(99,242,118,0.14),transparent_55%)] blur-3xl" />
+          <div className="relative mx-auto max-w-xl rounded-xl border border-white/10 bg-[#050706] p-6 shadow-[0_0_40px_rgba(0,0,0,0.35)] sm:p-8">
+            <div className="mx-auto aspect-[4/3] w-full max-w-[220px] rounded-xl bg-[linear-gradient(180deg,rgba(255,255,255,0.16),rgba(255,255,255,0.03)),radial-gradient(circle_at_top,rgba(99,242,118,0.18),transparent_55%)]" />
+            <h3 className="mt-6 text-center text-2xl font-black uppercase tracking-tight text-white sm:text-3xl">
               {step.title}
             </h3>
             <p className="mt-4 text-center text-base leading-7 text-white/65">{step.body}</p>

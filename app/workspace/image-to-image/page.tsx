@@ -52,19 +52,19 @@ type ModelOption = {
 const MODELS: ModelOption[] = [
   {
     id: "auto",
-    label: "Auto Balanced (⚡️ 3)",
+    label: "Auto Balanced (?? 3)",
     cost: 3,
     note: "Balanced mode for most scenarios.",
   },
   {
     id: "standard",
-    label: "Standard / Fast (⚡️ 2)",
+    label: "Standard / Fast (?? 2)",
     cost: 2,
     note: "Lower cost and faster generation.",
   },
   {
     id: "pro",
-    label: "Pro / High Quality (⚡️ 4)",
+    label: "Pro / High Quality (?? 4)",
     cost: 4,
     note: "Higher quality output for complex prompts.",
   },
@@ -559,7 +559,7 @@ function SettingsPanel({
       >
         <div>
           <p className="text-sm font-semibold text-white/80">
-            Advanced Options / 高级选项
+            Advanced Options
           </p>
           <p className="mt-1 text-xs text-white/45">
             Model quality, aspect ratio, and variation controls.
@@ -1197,7 +1197,7 @@ export default function ImageToImagePage() {
   };
 
   const stageTitle =
-    activeTab === "history" ? "优化结果预览" : "示例预览";
+    activeTab === "history" ? "Result Preview" : "Example Preview";
   const stageSubtitle =
     activeTab === "history"
       ? selectedHistory?.prompt || "History"
@@ -1279,7 +1279,7 @@ export default function ImageToImagePage() {
             <span className="text-[#0b0d10]">
               <Icon name="wand" className="h-4 w-4" />
             </span>
-            {loading ? "Optimizing..." : "优化照片"}
+            {loading ? "Optimizing..." : "Optimize Photos"}
           </button>
         </div>
       </div>
@@ -1362,4 +1362,3 @@ export default function ImageToImagePage() {
     </div>
   );
 }
-

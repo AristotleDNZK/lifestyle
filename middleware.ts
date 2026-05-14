@@ -1,9 +1,14 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import {
+  LOCAL_DEV_AUTH_COOKIE,
+  isLocalDevAuthEnabled,
+} from "@/lib/local-dev-auth";
 
 const isPublicRoute = createRouteMatcher([
   "/",
   "/sign-in(.*)",
   "/sign-up(.*)",
+  "/api/dev-login(.*)",
   "/api/webhooks/stripe(.*)",
 ]);
 
@@ -15,6 +20,13 @@ export default clerkMiddleware(async (auth, request) => {
   }
 
   if (isProtectedRoute(request)) {
+    if (
+      isLocalDevAuthEnabled() &&
+      request.cookies.has(LOCAL_DEV_AUTH_COOKIE)
+    ) {
+      return;
+    }
+
     await auth.protect();
   }
 });

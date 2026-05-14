@@ -161,7 +161,7 @@ function WorkspaceImageLightbox({
           </button>
         </div>
 
-        <div className="overflow-hidden rounded-[28px] border border-white/10 bg-[#070a0f] shadow-[0_28px_120px_rgba(0,0,0,0.55)]">
+        <div className="overflow-hidden rounded-xl border border-white/10 bg-[#070a0f] shadow-[0_28px_120px_rgba(0,0,0,0.55)]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={imageUrl}

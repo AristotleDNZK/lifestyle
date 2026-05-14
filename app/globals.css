@@ -3,21 +3,32 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #06090e;
+  --foreground: #f7fbf8;
+  --surface-0: #06090e;
+  --surface-1: #080b10;
+  --surface-2: #0b0f14;
+  --surface-3: #10151b;
+  --line-soft: rgba(255, 255, 255, 0.1);
+  --line-green: rgba(94, 243, 111, 0.24);
+  --accent-green: #5ef36f;
+  --accent-green-strong: #62f178;
+  --accent-mint: #50e7cf;
+  --text-muted: rgba(255, 255, 255, 0.62);
+  --text-dim: rgba(255, 255, 255, 0.42);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #06090e;
+    --foreground: #f7fbf8;
   }
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, Helvetica, sans-serif;
 }
 
 /* Google Translate widget cleanup */
@@ -41,5 +52,55 @@ body {
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  .dpai-page {
+    @apply min-h-screen bg-[#06090e] text-white;
+  }
+
+  .dpai-grid-bg {
+    background-image:
+      linear-gradient(rgba(94, 243, 111, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(94, 243, 111, 0.045) 1px, transparent 1px);
+    background-size: 58px 58px;
+  }
+
+  .dpai-radial-bg {
+    background:
+      radial-gradient(circle at 38% 18%, rgba(94, 243, 111, 0.12), rgba(6, 9, 14, 0) 30%),
+      radial-gradient(circle at 72% 10%, rgba(80, 231, 207, 0.08), rgba(6, 9, 14, 0) 28%),
+      #06090e;
+  }
+
+  .dpai-panel {
+    @apply rounded-2xl border border-white/10 bg-[#0f1319];
+  }
+
+  .dpai-panel-flat {
+    @apply rounded-xl border border-white/10 bg-[#090c12];
+  }
+
+  .dpai-label {
+    @apply text-xs font-semibold uppercase tracking-[0.1em] text-white/40;
+  }
+
+  .dpai-title {
+    @apply text-4xl font-semibold tracking-tight text-white;
+  }
+
+  .dpai-muted {
+    @apply text-white/55;
+  }
+
+  .dpai-primary-btn {
+    @apply inline-flex items-center justify-center rounded-md bg-[#5ef36f] px-5 py-2.5 text-sm font-semibold text-[#0b0d10] transition hover:bg-[#78ff88] disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .dpai-secondary-btn {
+    @apply inline-flex items-center justify-center rounded-md border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/80 transition hover:border-[#57f06d]/55 hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .dpai-input {
+    @apply rounded-xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/35 focus:border-[#57f06d]/60;
   }
 }

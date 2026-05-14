@@ -57,8 +57,8 @@ const plans: PlanTier[] = [
 
 function CheckIcon() {
   return (
-    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#1b492b] text-xs text-[#79f79a]">
-      ✓
+    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#1b492b] text-[10px] font-bold text-[#79f79a]">
+      OK
     </span>
   );
 }
@@ -137,7 +137,7 @@ export default function WorkspacePricingPage() {
 
             <div className="mt-3 flex items-end gap-2">
               <span className="text-sm text-white/35 line-through">{plan.oldPrice}</span>
-              <span className="font-['Bebas_Neue','Oswald','Arial_Narrow',sans-serif] text-[52px] uppercase leading-none tracking-[0.03em] text-white">
+              <span className="text-[48px] font-semibold leading-none tracking-tight text-white">
                 {plan.monthlyPrice}
               </span>
               <span className="mb-2 text-sm text-white/50">/month</span>
@@ -184,7 +184,7 @@ export default function WorkspacePricingPage() {
           ].map((question) => (
             <div key={question} className="flex items-center justify-between px-4 py-3 text-sm text-white/75">
               <span>{question}</span>
-              <span className="text-white/40">▾</span>
+              <span className="text-white/40">More</span>
             </div>
           ))}
         </div>

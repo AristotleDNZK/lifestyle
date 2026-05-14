@@ -46,7 +46,7 @@ function findImage(images: ProfileReviewReportImage[], imageId: string | null) {
 function ScoreChip({ score }: { score: number }) {
   return (
     <div className="text-center">
-      <div className="text-[78px] font-black leading-none tracking-[-0.08em] text-white sm:text-[110px]">
+      <div className="text-[78px] font-black leading-none tracking-tight text-white sm:text-[110px]">
         {score}
       </div>
       <div className="-mt-2 text-sm font-bold uppercase tracking-[0.22em] text-white/35">
@@ -114,7 +114,7 @@ function PreviewSection({
         </div>
 
         <section className="mt-10">
-          <h2 className="text-3xl font-black uppercase tracking-[-0.04em] text-white">
+          <h2 className="text-3xl font-black uppercase tracking-tight text-white">
             Photos
           </h2>
           <div className="mt-4">
@@ -127,7 +127,7 @@ function PreviewSection({
             />
           </div>
 
-          <div className="mt-5 overflow-hidden rounded-[6px] border border-white/10 bg-[#111111]">
+          <div className="mt-5 overflow-hidden rounded-md border border-white/10 bg-[#111111]">
             <div className="relative aspect-[4/5] bg-[#111111]">
               {bestImage ? (
                 <Image
@@ -151,7 +151,7 @@ function PreviewSection({
         </section>
 
         <section className="mt-10">
-          <h2 className="text-3xl font-black uppercase tracking-[-0.04em] text-white">
+          <h2 className="text-3xl font-black uppercase tracking-tight text-white">
             Full report
           </h2>
           <div className="mt-4">
@@ -210,7 +210,7 @@ function PreviewSection({
         </section>
 
         <section className="mt-12">
-          <h2 className="text-3xl font-black uppercase tracking-[-0.04em] text-white">
+          <h2 className="text-3xl font-black uppercase tracking-tight text-white">
             Maxx your profile
           </h2>
           <p className="mt-2 text-sm text-white/55">
@@ -245,7 +245,7 @@ function PreviewSection({
 function SectionTitle({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <div>
-      <h3 className="text-2xl font-black uppercase tracking-[-0.03em] text-white sm:text-3xl">
+      <h3 className="text-2xl font-black uppercase tracking-tight text-white sm:text-3xl">
         {title}
       </h3>
       {subtitle ? (
@@ -267,7 +267,7 @@ function ImageTile({
   score?: number | null;
 }) {
   return (
-    <div className="overflow-hidden rounded-[22px] border border-white/10 bg-[#0b0f0e]">
+    <div className="overflow-hidden rounded-xl border border-white/10 bg-[#0f1319]">
       <div className="relative aspect-[4/5] overflow-hidden bg-[#111]">
         {image ? (
           <Image
@@ -313,7 +313,7 @@ function MetricGrid({ scores }: { scores: ProfileReviewFullReport["dimensionScor
             {label}
           </div>
           <div className="mt-3 flex items-end justify-between gap-4">
-            <span className="text-4xl font-black tracking-[-0.05em] text-white">
+            <span className="text-4xl font-black tracking-tight text-white">
               {value}
             </span>
             <span className="pb-1 text-sm text-white/50">/ {max}</span>
@@ -336,14 +336,14 @@ function ActionCards({
       {items.map((item) => (
         <article
           key={`${item.priority}-${item.title}`}
-          className="rounded-3xl border border-white/10 bg-[#0d1110] p-5 sm:p-6"
+          className="rounded-xl border border-white/10 bg-[#0f1319] p-5 sm:p-6"
         >
           <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#63f276]">
             {item.priority} priority
           </div>
           <h4 className="mt-3 text-xl font-bold text-white">{item.title}</h4>
           <p className="mt-3 text-sm leading-6 text-white/62">{item.rationale}</p>
-          <div className="mt-4 rounded-2xl border border-[#1f3323] bg-[#0a0f0d] p-4">
+          <div className="mt-4 rounded-xl border border-[#1f3323] bg-[#0a0f0d] p-4">
             <div className="text-xs font-bold uppercase tracking-[0.12em] text-white/40">
               Action
             </div>
@@ -390,15 +390,15 @@ export function ProfileReviewReport({
   const worstImage = findImage(images, fullReport.worstPhotoId);
 
   return (
-    <div className="min-h-screen bg-[#030303] px-4 py-6 text-white sm:px-6 sm:py-8">
+    <div className="dpai-page dpai-grid-bg min-h-screen px-4 py-6 text-white sm:px-6 sm:py-8">
       <div className="mx-auto max-w-6xl">
-        <div className="rounded-[32px] border border-[#223328] bg-[radial-gradient(circle_at_top,rgba(99,242,118,0.12),rgba(9,12,10,0.96)_28%),linear-gradient(180deg,#0d110f,#060806)] p-6 shadow-[0_0_48px_rgba(99,242,118,0.08)] sm:p-10">
+        <div className="dpai-panel p-6 sm:p-10">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <div className="text-sm font-bold uppercase tracking-[0.18em] text-[#63f276]">
                 Your profile report
               </div>
-              <h1 className="mt-3 text-4xl font-black uppercase tracking-[-0.04em] text-white sm:text-6xl">
+              <h1 className="mt-3 text-4xl font-black uppercase tracking-tight text-white sm:text-6xl">
                 Full unlocked report
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-7 text-white/62 sm:text-lg">
@@ -407,7 +407,7 @@ export function ProfileReviewReport({
             </div>
 
             <div className="inline-flex items-end gap-2 rounded-2xl border border-[#27412d] bg-[#0c1110] px-5 py-4 shadow-[0_0_28px_rgba(99,242,118,0.12)]">
-              <span className="text-6xl font-black leading-none tracking-[-0.05em] text-white sm:text-7xl">
+              <span className="text-6xl font-black leading-none tracking-tight text-white sm:text-7xl">
                 {fullReport.overallScore}
               </span>
               <div className="pb-1">
@@ -422,7 +422,7 @@ export function ProfileReviewReport({
           </div>
 
           <div className="mt-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-            <div className="rounded-[28px] border border-white/10 bg-[#090d0b] p-6 sm:p-8">
+            <div className="rounded-xl border border-white/10 bg-[#0f1319] p-6 sm:p-8">
               <SectionTitle
                 title="Profile diagnosis"
                 subtitle={fullReport.profileSummary}
@@ -455,7 +455,7 @@ export function ProfileReviewReport({
               {fullReport.quickWins.map((item) => (
                 <article
                   key={item.title}
-                  className="rounded-3xl border border-white/10 bg-[#0d1110] p-5"
+                  className="rounded-xl border border-white/10 bg-[#0f1319] p-5"
                 >
                   <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#63f276]">
                     Quick win
@@ -482,13 +482,13 @@ export function ProfileReviewReport({
             </section>
 
             <section className="grid gap-6 lg:grid-cols-2">
-              <div className="rounded-[28px] border border-white/10 bg-[#090d0b] p-6 sm:p-8">
+              <div className="rounded-xl border border-white/10 bg-[#0f1319] p-6 sm:p-8">
                 <SectionTitle title="Recommended photo order" />
                 <div className="mt-6">
                   <BulletList items={fullReport.recommendedOrder} />
                 </div>
               </div>
-              <div className="rounded-[28px] border border-white/10 bg-[#090d0b] p-6 sm:p-8">
+              <div className="rounded-xl border border-white/10 bg-[#0f1319] p-6 sm:p-8">
                 <SectionTitle title="Delete and retake list" />
                 <div className="mt-6 grid gap-6 sm:grid-cols-2">
                   <div>
@@ -521,7 +521,7 @@ export function ProfileReviewReport({
                   return (
                     <article
                       key={photoReview.imageId}
-                      className="grid gap-5 rounded-[30px] border border-white/10 bg-[#090d0b] p-5 sm:p-6 lg:grid-cols-[280px_minmax(0,1fr)]"
+                      className="grid gap-5 rounded-xl border border-white/10 bg-[#0f1319] p-5 sm:p-6 lg:grid-cols-[280px_minmax(0,1fr)]"
                     >
                       <ImageTile
                         image={image}
@@ -530,7 +530,7 @@ export function ProfileReviewReport({
                       />
                       <div>
                         <div className="flex flex-wrap items-center gap-3">
-                          <h4 className="text-2xl font-black uppercase tracking-[-0.03em] text-white">
+                          <h4 className="text-2xl font-black uppercase tracking-tight text-white">
                             {photoReview.quickLabel}
                           </h4>
                           <span className="rounded-full border border-[#203225] bg-[#101612] px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-[#63f276]">
@@ -597,19 +597,19 @@ export function ProfileReviewReport({
             </section>
 
             <section className="grid gap-6 lg:grid-cols-3">
-              <div className="rounded-[28px] border border-white/10 bg-[#090d0b] p-6">
+              <div className="rounded-xl border border-white/10 bg-[#0f1319] p-6">
                 <SectionTitle title="Bio angles" />
                 <div className="mt-6">
                   <BulletList items={fullReport.bioSuggestions} />
                 </div>
               </div>
-              <div className="rounded-[28px] border border-white/10 bg-[#090d0b] p-6">
+              <div className="rounded-xl border border-white/10 bg-[#0f1319] p-6">
                 <SectionTitle title="Prompt ideas" />
                 <div className="mt-6">
                   <BulletList items={fullReport.promptSuggestions} />
                 </div>
               </div>
-              <div className="rounded-[28px] border border-white/10 bg-[#090d0b] p-6">
+              <div className="rounded-xl border border-white/10 bg-[#0f1319] p-6">
                 <SectionTitle title="Confidence notes" />
                 <div className="mt-6">
                   <BulletList items={fullReport.confidenceNotes} />

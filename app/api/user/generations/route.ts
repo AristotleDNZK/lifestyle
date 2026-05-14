@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { getAppAuthSession } from "@/lib/local-dev-auth";
 import { retryAsync } from "@/lib/retry";
 import { supabaseAdmin } from "@/lib/supabase";
 import { findUserIdentityRecords } from "@/lib/user-identity";
@@ -13,9 +13,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   try {
     // Authenticate user
-    const { userId } = await auth();
-    const clerkUser = await currentUser();
-    const email = clerkUser?.emailAddresses?.[0]?.emailAddress || "";
+    const { userId, email } = await getAppAuthSession();
 
     if (!userId) {
       return NextResponse.json(

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { createClient } from "@supabase/supabase-js";
+import { getAppAuthSession } from "@/lib/local-dev-auth";
 import { resolveUserStatsRecord } from "@/lib/user-stats";
 import { findUserIdentityRecords } from "@/lib/user-identity";
 
@@ -9,9 +9,7 @@ export const runtime = "nodejs";
 
 export async function GET() {
   try {
-    const { userId } = await auth();
-    const clerkUser = await currentUser();
-    const email = clerkUser?.emailAddresses?.[0]?.emailAddress || "";
+    const { userId, email } = await getAppAuthSession();
 
     if (!userId) {
       return NextResponse.json(

@@ -97,7 +97,7 @@ export default function DatingProfileReviewReportPage() {
 
   if (loading || !isLoaded) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#030303] text-white">
+      <main className="dpai-page dpai-grid-bg flex min-h-screen items-center justify-center text-white">
         <div className="text-center">
           <div className="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-white/10 border-t-[#63f276]" />
           <p className="mt-5 text-sm uppercase tracking-[0.14em] text-white/45">
@@ -110,10 +110,10 @@ export default function DatingProfileReviewReportPage() {
 
   if (!userId) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#030303] px-4 text-white">
-        <div className="w-full max-w-xl rounded-[32px] border border-white/10 bg-[#0b0f0e] p-8 text-center">
+      <main className="dpai-page dpai-grid-bg flex min-h-screen items-center justify-center px-4 text-white">
+        <div className="dpai-panel w-full max-w-xl p-8 text-center">
           <ProfileReviewLogo href="/" />
-          <h1 className="mt-6 text-3xl font-black uppercase tracking-[-0.03em]">
+          <h1 className="mt-6 text-3xl font-black uppercase tracking-tight">
             Sign in to view your unlocked report
           </h1>
           <p className="mt-4 text-base leading-7 text-white/60">
@@ -132,10 +132,10 @@ export default function DatingProfileReviewReportPage() {
 
   if (error || !report) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#030303] px-4 text-white">
-        <div className="w-full max-w-2xl rounded-[32px] border border-white/10 bg-[#0b0f0e] p-8 text-center">
+      <main className="dpai-page dpai-grid-bg flex min-h-screen items-center justify-center px-4 text-white">
+        <div className="dpai-panel w-full max-w-2xl p-8 text-center">
           <ProfileReviewLogo href="/" />
-          <h1 className="mt-6 text-3xl font-black uppercase tracking-[-0.03em]">
+          <h1 className="mt-6 text-3xl font-black uppercase tracking-tight">
             Full report locked
           </h1>
           <p className="mt-4 text-base leading-7 text-white/60">
@@ -161,7 +161,7 @@ export default function DatingProfileReviewReportPage() {
   }
 
   return (
-    <main className="bg-[#030303]">
+    <main className="dpai-page dpai-grid-bg">
       {emailSent || email ? (
         <div className="border-b border-[#203124] bg-[#0a0f0c] px-4 py-4 text-white sm:px-6">
           <div className="mx-auto flex max-w-6xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">

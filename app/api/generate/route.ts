@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { tasks } from "@trigger.dev/sdk/v3";
 import { addCredits, deductCredits } from "@/lib/credits";
 import {
@@ -8,6 +7,7 @@ import {
   safeString,
 } from "@/lib/generation-jobs";
 import { DEFAULT_AI_PHOTO_OPTIMIZATION_PROMPT } from "@/lib/ai-photo-optimization";
+import { getAppAuthSession } from "@/lib/local-dev-auth";
 import { supabaseAdmin } from "@/lib/supabase";
 import { findUserIdentityRecords } from "@/lib/user-identity";
 
@@ -68,10 +68,7 @@ async function markJobFailed(jobId: string, message: string) {
 
 export async function POST(req: NextRequest) {
   try {
-    const authResult = await auth();
-    const userId = authResult.userId;
-    const clerkUser = await currentUser();
-    const email = clerkUser?.emailAddresses?.[0]?.emailAddress || "";
+    const { userId, email } = await getAppAuthSession();
 
     if (!userId) {
       return NextResponse.json(

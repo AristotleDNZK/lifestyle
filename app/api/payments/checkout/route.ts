@@ -1,4 +1,3 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import {
   type BillingSku,
@@ -8,13 +7,14 @@ import {
 } from "@/lib/billing/catalog";
 import { createBillingOrder } from "@/lib/billing/store";
 import { ensureUserExists } from "@/lib/credits";
+import { getAppAuthSession } from "@/lib/local-dev-auth";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId } = await auth();
+    const { userId, email } = await getAppAuthSession();
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized - Please sign in" }, { status: 401 });
@@ -35,9 +35,6 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-
-    const user = await currentUser();
-    const email = user?.emailAddresses?.[0]?.emailAddress || "";
 
     if (!email) {
       return NextResponse.json(

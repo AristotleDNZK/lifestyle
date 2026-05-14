@@ -46,13 +46,49 @@ test("blog keeps one clickable example article with a detail route", () => {
 test("homepage AI Photos CTA enters the questionnaire funnel", () => {
   const home = source("app/page.tsx");
   const aiPhotos = source("app/ai-photos/page.tsx");
+  const pricing = source("app/pricing/page.tsx");
 
   assert.match(home, /href=\{?"\/ai-photos"\}?/);
+  assert.match(home, /Get my AI photos/);
+  assert.match(home, /forceRedirectUrl="\/workspace\/image-to-image"/);
+  assert.match(home, /href="\/workspace\/image-to-image"/);
+  assert.doesNotMatch(home, /forceRedirectUrl="\/workspace"/);
+  assert.doesNotMatch(home, /href="\/workspace"/);
   assert.match(aiPhotos, /@\/lib\/credit-packages/);
+  assert.match(aiPhotos, /@clerk\/nextjs/);
+  assert.match(aiPhotos, /SignInButton/);
+  assert.match(aiPhotos, /SignUpButton/);
+  assert.doesNotMatch(aiPhotos, /forceRedirectUrl="\/workspace"/);
+  assert.doesNotMatch(aiPhotos, /href="\/workspace"/);
+  assert.doesNotMatch(aiPhotos, /lifestyle-one|vercel\.app/);
   assert.doesNotMatch(aiPhotos, /@\/lib\/stripe/);
   assert.match(aiPhotos, /CREDIT_PACKAGES/);
   assert.match(aiPhotos, /Question/);
   assert.match(aiPhotos, /Email/);
   assert.match(aiPhotos, /Upload/);
-  assert.match(aiPhotos, /\/workspace\/pricing/);
+  assert.match(aiPhotos, /\/pricing\?source=ai-photos&plan=/);
+  assert.match(aiPhotos, /\/workspace\/image-to-image/);
+  assert.match(aiPhotos, /forceRedirectUrl="\/workspace\/image-to-image"/);
+  assert.match(pricing, /\/workspace\/image-to-image\?success=true&orderId=/);
+  assert.match(pricing, /href="\/workspace\/image-to-image"/);
+  assert.doesNotMatch(pricing, /\/dashboard/);
+});
+
+test("dating profile review keeps the original scoring funnel entry", () => {
+  const profileReview = source("app/dating-profile-review/page.tsx");
+  const quizPage = source("app/dating-profile-review/quiz/page.tsx");
+
+  assert.match(profileReview, /Review my profile/);
+  assert.match(profileReview, /href="\/dating-profile-review\/quiz\?fresh=1"/);
+  assert.match(
+    profileReview,
+    /<PrimaryLink href="\/dating-profile-review\/quiz\?fresh=1">\s*Review my profile\s*<\/PrimaryLink>/
+  );
+  assert.doesNotMatch(
+    profileReview,
+    /<PrimaryLink href="\/ai-photos">\s*Get my AI photos\s*<\/PrimaryLink>/
+  );
+  assert.match(profileReview, /AI Dating Photos/);
+  assert.match(profileReview, /href="\/ai-photos"/);
+  assert.match(quizPage, /ProfileReviewQuizClient/);
 });

@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -29,8 +29,8 @@ function Section({
 
 export default function TermsAndConditionsPage() {
   return (
-    <main className="min-h-screen bg-[#080b09] px-4 py-12 text-white sm:px-6">
-      <div className="mx-auto max-w-4xl">
+    <main className="min-h-screen bg-[#06090e] px-4 py-12 text-white sm:px-6">
+      <div className="mx-auto max-w-5xl">
         <Link
           href="/"
           className="inline-flex rounded-sm border border-white/15 px-4 py-2 text-sm font-semibold text-white/72 transition hover:border-[#63f276]/55 hover:text-white"
@@ -42,7 +42,7 @@ export default function TermsAndConditionsPage() {
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#63f276]">
             Legal
           </p>
-          <h1 className="mt-3 text-4xl font-black tracking-[-0.04em] text-white sm:text-6xl">
+          <h1 className="mt-3 text-4xl font-black tracking-tight text-white sm:text-6xl">
             Terms and Conditions
           </h1>
           <p className="mt-5 text-base leading-8 text-white/64">

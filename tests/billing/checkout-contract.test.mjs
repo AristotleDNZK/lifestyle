@@ -12,8 +12,9 @@ function read(path) {
 test("generic Paddle checkout API creates internal orders from server catalog", () => {
   const source = read("app/api/payments/checkout/route.ts");
 
-  assert.match(source, /auth\(\)/);
-  assert.match(source, /currentUser\(\)/);
+  assert.match(source, /getAppAuthSession/);
+  assert.match(source, /if \(!userId\)/);
+  assert.match(source, /if \(!email\)/);
   assert.match(source, /getCatalogItem\(sku\)/);
   assert.match(source, /createBillingOrder/);
   assert.match(source, /getPaddlePriceId/);

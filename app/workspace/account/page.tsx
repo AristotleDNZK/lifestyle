@@ -11,9 +11,9 @@ interface CreditLog {
 }
 
 const creditLogs: CreditLog[] = [
-  { id: "log-1", action: "Image to Video Generation", amount: -8, createdAt: "2026-02-28 21:34" },
+  { id: "log-1", action: "AI Photo Optimization", amount: -8, createdAt: "2026-02-28 21:34" },
   { id: "log-2", action: "Monthly Plan Renewal", amount: +1000, createdAt: "2026-02-01 09:02" },
-  { id: "log-3", action: "Image Generation", amount: -2, createdAt: "2026-01-31 17:10" },
+  { id: "log-3", action: "AI Photo Optimization", amount: -2, createdAt: "2026-01-31 17:10" },
 ];
 
 function ProfileCard({
@@ -28,7 +28,7 @@ function ProfileCard({
   return (
     <article className="overflow-hidden rounded-2xl border border-white/10 bg-[#0f1319]">
       <div className="p-5">
-        <h2 className="text-3xl font-semibold">{title}</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
         <div className="mt-3">{children}</div>
       </div>
       {footer ? <div className="border-t border-white/10 bg-white/[0.03] p-4">{footer}</div> : null}
@@ -104,7 +104,7 @@ export default function WorkspaceAccountPage() {
           >
             <p className="text-white/55">Click upload button to upload a custom one</p>
             <div className="mt-6 flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#0f8ddb] text-3xl">
+              <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-[#5ef36f]/35 bg-[#102017] text-3xl font-semibold text-[#8df6aa]">
                 {displayName.charAt(0).toUpperCase()}
               </div>
               <button className="rounded-lg border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10">
@@ -117,7 +117,7 @@ export default function WorkspaceAccountPage() {
         <aside className="space-y-5">
           <article className="rounded-2xl border border-[#2a633f]/70 bg-[linear-gradient(180deg,rgba(32,63,43,0.35),rgba(13,18,24,0.95))] p-5">
             <p className="text-sm uppercase tracking-[0.08em] text-[#8ef5a8]">Credits</p>
-            <p className="mt-2 font-['Bebas_Neue','Oswald','Arial_Narrow',sans-serif] text-[62px] leading-none tracking-[0.03em] text-white">
+            <p className="mt-2 text-[56px] font-semibold leading-none tracking-tight text-white">
               {credits.toLocaleString()}
             </p>
             <p className="mt-1 text-sm text-white/55">Current available balance</p>

@@ -82,7 +82,7 @@ export default function DatingProfileReviewUnlockPage() {
   }, [accessToken, attached, attaching, isLoaded, sessionId, userId]);
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#000000] text-white">
+    <main className="dpai-page dpai-grid-bg min-h-screen overflow-hidden text-white">
       <div className="sticky top-0 z-10 flex h-10 items-center justify-between bg-[#1f8b38] px-4 text-[11px] font-bold uppercase tracking-[0.18em] text-[#081009]">
         <span>Discount ends in</span>
         <span>09 - 49 - 30</span>
@@ -96,7 +96,7 @@ export default function DatingProfileReviewUnlockPage() {
             <button
               type="button"
               onClick={() => router.back()}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-xl text-white/75 transition hover:border-white/20 hover:bg-white/10"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-xl text-white/75 transition hover:border-[#5ef36f]/45 hover:bg-white/10"
               aria-label="Go back"
             >
               {"<"}
@@ -107,10 +107,10 @@ export default function DatingProfileReviewUnlockPage() {
         </div>
 
         <div className="relative z-10 mx-auto flex min-h-[calc(100vh-2.5rem)] max-w-4xl items-center justify-center px-4 py-10">
-          <div className="w-full max-w-[760px] border border-white/12 bg-[#080808] px-6 py-7 shadow-[0_24px_80px_rgba(0,0,0,0.5)] sm:px-8">
+          <div className="dpai-panel w-full max-w-[760px] px-6 py-7 sm:px-8">
             <div className="flex items-start justify-between gap-6">
               <div>
-                <h1 className="text-3xl font-black uppercase leading-none tracking-[-0.04em] text-white sm:text-4xl">
+                <h1 className="text-3xl font-black uppercase leading-none tracking-tight text-white sm:text-4xl">
                   Unlock your full report & action plan
                 </h1>
                 <p className="mt-3 text-base text-white/60">

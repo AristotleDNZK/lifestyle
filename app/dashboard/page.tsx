@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -30,7 +30,6 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Fetch user stats
   const fetchStats = async () => {
     try {
       const response = await fetch("/api/user/stats");
@@ -43,7 +42,6 @@ export default function DashboardPage() {
     }
   };
 
-  // Fetch generation history
   const fetchGenerations = async (type?: TabType) => {
     try {
       const queryType = type === "all" ? "" : `?type=${type}`;
@@ -57,7 +55,6 @@ export default function DashboardPage() {
     }
   };
 
-  // Initial load
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -65,78 +62,62 @@ export default function DashboardPage() {
       setLoading(false);
     };
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Refresh when tab changes
   useEffect(() => {
     if (!loading) {
       fetchGenerations(activeTab);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
-  // Manual refresh
   const handleRefresh = async () => {
     setRefreshing(true);
     await Promise.all([fetchStats(), fetchGenerations(activeTab)]);
     setRefreshing(false);
   };
 
-  // Filter generations by tab
   const filteredGenerations =
     activeTab === "all"
       ? generations
       : generations.filter((g) => g.type === activeTab);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header with Stats */}
-      <div className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
+    <main className="dpai-page dpai-radial-bg">
+      <div className="border-b border-white/10 bg-[#080b10]/92">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-              <p className="text-gray-600 mt-1">
-                Manage your AI generations and credits
-              </p>
+              <p className="dpai-label">Workspace</p>
+              <h1 className="mt-2 text-3xl font-semibold text-white">Dashboard</h1>
+              <p className="mt-1 text-white/55">Manage your AI generations and credits</p>
             </div>
 
-            {/* Credit Balance */}
-            {stats && (
-              <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-4 rounded-lg shadow-lg">
-                <div className="text-sm font-medium opacity-90">
-                  Available Credits
-                </div>
-                <div className="text-3xl font-bold mt-1">
-                  {stats.credits.toLocaleString()}
-                </div>
-                <Link
-                  href="/pricing"
-                  className="text-sm underline opacity-90 hover:opacity-100 mt-2 inline-block"
-                >
-                  Purchase more →
+            {stats ? (
+              <div className="rounded-2xl border border-[#58ef70]/45 bg-[linear-gradient(180deg,rgba(31,69,43,0.46),rgba(12,16,22,0.96))] px-6 py-4 text-white">
+                <div className="text-sm font-medium text-white/70">Available Credits</div>
+                <div className="mt-1 text-3xl font-semibold">{stats.credits.toLocaleString()}</div>
+                <Link href="/pricing" className="mt-2 inline-block text-sm text-[#8df6aa] hover:text-[#b7ffc5]">
+                  Purchase more
                 </Link>
               </div>
-            )}
+            ) : null}
           </div>
 
-          {/* Quick Stats */}
-          {stats && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <div className="text-sm text-gray-600">Total Generations</div>
-                <div className="text-2xl font-bold text-gray-900 mt-1">
-                  {stats.totalGenerations}
-                </div>
+          {stats ? (
+            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div className="dpai-panel-flat p-4">
+                <div className="text-sm text-white/50">Total Generations</div>
+                <div className="mt-1 text-2xl font-semibold text-white">{stats.totalGenerations}</div>
               </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <div className="text-sm text-gray-600">Credits Spent</div>
-                <div className="text-2xl font-bold text-gray-900 mt-1">
-                  {stats.totalSpent}
-                </div>
+              <div className="dpai-panel-flat p-4">
+                <div className="text-sm text-white/50">Credits Spent</div>
+                <div className="mt-1 text-2xl font-semibold text-white">{stats.totalSpent}</div>
               </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <div className="text-sm text-gray-600">Avg. Cost</div>
-                <div className="text-2xl font-bold text-gray-900 mt-1">
+              <div className="dpai-panel-flat p-4">
+                <div className="text-sm text-white/50">Avg. Cost</div>
+                <div className="mt-1 text-2xl font-semibold text-white">
                   {stats.totalGenerations > 0
                     ? (stats.totalSpent / stats.totalGenerations).toFixed(1)
                     : "0"}{" "}
@@ -144,152 +125,107 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Action Buttons */}
-        <div className="flex gap-4 mb-6">
-          <Link
-            href="/generate"
-            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
-          >
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mb-6 flex gap-4">
+          <Link href="/generate" className="dpai-primary-btn">
             + New Generation
           </Link>
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="bg-white hover:bg-gray-50 text-gray-700 font-semibold py-2 px-6 rounded-lg border border-gray-300 transition-colors disabled:opacity-50"
-          >
+          <button onClick={handleRefresh} disabled={refreshing} className="dpai-secondary-btn">
             {refreshing ? "Refreshing..." : "Refresh"}
           </button>
         </div>
 
-        {/* Tabs */}
-        <div className="bg-white rounded-lg shadow-sm mb-6">
-          <div className="border-b border-gray-200">
-            <nav className="flex -mb-px">
-              <button
-                onClick={() => setActiveTab("all")}
-                className={`px-6 py-4 text-sm font-medium border-b-2 ${
-                  activeTab === "all"
-                    ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
-              >
-                All Generations
-              </button>
-              <button
-                onClick={() => setActiveTab("image")}
-                className={`px-6 py-4 text-sm font-medium border-b-2 ${
-                  activeTab === "image"
-                    ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
-              >
-                Images
-              </button>
-              <button
-                onClick={() => setActiveTab("video")}
-                className={`px-6 py-4 text-sm font-medium border-b-2 ${
-                  activeTab === "video"
-                    ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
-              >
-                Videos
-              </button>
+        <div className="dpai-panel mb-6">
+          <div className="border-b border-white/10">
+            <nav className="flex">
+              {[
+                ["all", "All Generations"],
+                ["image", "Images"],
+                ["video", "Videos"],
+              ].map(([value, label]) => (
+                <button
+                  key={value}
+                  onClick={() => setActiveTab(value as TabType)}
+                  className={`border-b-2 px-6 py-4 text-sm font-medium ${
+                    activeTab === value
+                      ? "border-[#5ef36f] text-[#62f178]"
+                      : "border-transparent text-white/50 hover:border-white/20 hover:text-white"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
             </nav>
           </div>
 
-          {/* Generation Grid */}
           <div className="p-6">
             {loading ? (
-              <div className="text-center py-12 text-gray-500">
-                Loading...
-              </div>
+              <div className="py-12 text-center text-white/45">Loading...</div>
             ) : filteredGenerations.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="text-4xl mb-4">🎨</div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  No generations yet
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Start creating amazing AI-generated content!
-                </p>
-                <Link
-                  href="/generate"
-                  className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
-                >
+              <div className="py-12 text-center">
+                <div className="mb-4 text-4xl font-semibold text-[#62f178]">AI</div>
+                <h3 className="mb-2 text-lg font-semibold text-white">No generations yet</h3>
+                <p className="mb-4 text-white/55">Start creating amazing AI-generated content.</p>
+                <Link href="/generate" className="dpai-primary-btn">
                   Create Your First Generation
                 </Link>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {filteredGenerations.map((generation) => (
-                  <div
+                  <article
                     key={generation.id}
-                    className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+                    className="overflow-hidden rounded-xl border border-white/10 bg-[#0c1016] transition hover:border-[#57f06d]/55"
                   >
-                    {/* Image Preview */}
-                    {generation.type === "image" && (
-                      <div className="relative h-48 bg-gray-100">
-                        <Image
-                          src={generation.url}
-                          alt={generation.prompt}
-                          fill
-                          className="object-cover"
-                        />
+                    {generation.type === "image" ? (
+                      <div className="relative h-48 bg-black/30">
+                        <Image src={generation.url} alt={generation.prompt} fill className="object-cover" />
                       </div>
-                    )}
+                    ) : null}
 
-                    {/* Content */}
                     <div className="p-4">
-                      {/* Type Badge */}
-                      <div className="flex items-center justify-between mb-2">
+                      <div className="mb-2 flex items-center justify-between">
                         <span
-                          className={`text-xs font-semibold px-2 py-1 rounded ${
+                          className={`rounded px-2 py-1 text-xs font-semibold ${
                             generation.type === "image"
-                              ? "bg-blue-100 text-blue-800"
-                              : "bg-purple-100 text-purple-800"
+                              ? "bg-[#102617] text-[#8df6aa]"
+                              : "bg-white/10 text-white/75"
                           }`}
                         >
                           {generation.type.toUpperCase()}
                         </span>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-white/45">
                           {new Date(generation.created_at).toLocaleDateString()}
                         </span>
                       </div>
 
-                      {/* Prompt */}
-                      <p className="text-sm text-gray-700 mb-3 line-clamp-2">
-                        {generation.prompt}
-                      </p>
+                      <p className="mb-3 line-clamp-2 text-sm text-white/65">{generation.prompt}</p>
 
-                      {/* Footer */}
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-500">
-                          Cost: {generation.cost} credit
-                          {generation.cost !== 1 ? "s" : ""}
+                        <span className="text-xs text-white/45">
+                          Cost: {generation.cost} credit{generation.cost !== 1 ? "s" : ""}
                         </span>
                         <a
                           href={generation.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-blue-500 hover:text-blue-600 font-medium"
+                          className="text-xs font-medium text-[#8df6aa] hover:text-[#b7ffc5]"
                         >
-                          View →
+                          View
                         </a>
                       </div>
                     </div>
-                  </div>
+                  </article>
                 ))}
               </div>
             )}
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

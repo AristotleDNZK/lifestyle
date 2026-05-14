@@ -1,4 +1,4 @@
-import assert from "node:assert/strict";
+﻿import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import test from "node:test";
@@ -11,9 +11,19 @@ test("workspace sidebar is focused on the active DatingPhotosAI tools", () => {
   const sidebar = source("app/workspace/_components/workspace-sidebar.tsx");
 
   assert.match(sidebar, /DatingPhotosAI/);
-  assert.match(sidebar, /AI 照片优化/);
+  assert.match(sidebar, /href: "\/workspace\/image-to-image"/);
+  assert.doesNotMatch(sidebar, /href: "\/workspace"/);
+  assert.match(sidebar, /AI Photo Optimization/);
   assert.doesNotMatch(sidebar, /AI Video|AI Image|Text to Image|Image to Image/);
   assert.doesNotMatch(sidebar, /Seedance|account@seedance\.ai/);
+});
+
+test("workspace root redirects to AI photo optimization workspace", () => {
+  const workspace = source("app/workspace/page.tsx");
+
+  assert.match(workspace, /from "next\/navigation"/);
+  assert.match(workspace, /redirect\("\/workspace\/image-to-image"\)/);
+  assert.doesNotMatch(workspace, /DatingPhotosAI Studio|Studio/);
 });
 
 test("AI photo optimization page handles empty prompt and initial history errors", () => {
@@ -44,7 +54,7 @@ test("AI photo optimization settings are advanced options collapsed by default",
     /showAdvancedOptions, setShowAdvancedOptions\] = useState\(false\)/
   );
   assert.match(page, /aria-expanded=\{showAdvancedOptions\}/);
-  assert.match(page, /Advanced Options|高级选项/);
+  assert.match(page, /Advanced Options/);
   assert.match(page, /\{showAdvancedOptions && \(/);
 });
 

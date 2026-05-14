@@ -2,8 +2,19 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import {
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  SignUpButton,
+  UserButton,
+} from "@clerk/nextjs";
 import { useMemo, useRef, useState } from "react";
 import { CREDIT_PACKAGES, type PackageType } from "@/lib/credit-packages";
+import {
+  LOCAL_DEV_WORKSPACE_LOGIN_URL,
+  isLocalDevAuthEnabled,
+} from "@/lib/local-dev-auth-shared";
 
 type FunnelStep = "question" | "email" | "upload" | "plan";
 
@@ -43,31 +54,75 @@ function PublicHeader() {
   ];
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[#20432f]/70 bg-[#0e1014]/88 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-[#06090e]/92 backdrop-blur">
       <Container>
         <div className="flex h-16 items-center justify-between gap-4">
-          <Link href="/" className="inline-flex -skew-x-12 bg-[#5ef36f] px-3 py-1">
-            <span className="skew-x-12 font-['Bebas_Neue','Oswald','Arial_Narrow',sans-serif] text-2xl uppercase tracking-[0.05em] text-[#111]">
+          <Link href="/" className="inline-flex items-center gap-2 rounded-lg border border-[#5ef36f]/25 bg-[#10161a] px-3 py-1.5">
+            <span className="font-semibold tracking-tight text-[#f6fbf7]">
               DatingPhotosAI
             </span>
           </Link>
-          <nav className="hidden items-center gap-8 text-[15px] text-white/65 lg:flex">
+          <nav className="hidden items-center gap-8 text-sm text-white/60 lg:flex">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className={item.href === "/ai-photos" ? "text-white" : "transition-colors hover:text-[#63f276]"}
+                className={item.href === "/ai-photos" ? "text-white" : "transition-colors hover:text-[#63f276]" }
               >
                 {item.label}
               </Link>
             ))}
           </nav>
-          <Link
-            href="/blog"
-            className="rounded-sm border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white transition-colors hover:border-[#57f06d]/50"
-          >
-            Resources
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/blog"
+              className="hidden rounded-lg border border-white/10 bg-white/[0.03] px-4 py-2 text-sm font-medium text-white transition-colors hover:border-[#5ef36f]/45 hover:bg-white/[0.06] sm:inline-flex"
+            >
+              Resources
+            </Link>
+
+            <SignedOut>
+              {isLocalDevAuthEnabled() ? (
+                <>
+                  <Link
+                    href={LOCAL_DEV_WORKSPACE_LOGIN_URL}
+                    className="rounded-lg border border-white/10 bg-white/[0.03] px-4 py-2 text-sm font-medium text-white transition-colors hover:border-[#5ef36f]/45 hover:bg-white/[0.06]"
+                  >
+                    Log in
+                  </Link>
+                  <Link
+                    href={LOCAL_DEV_WORKSPACE_LOGIN_URL}
+                    className="rounded-lg bg-[#5ef36f] px-4 py-2 text-sm font-semibold text-[#0f1215] transition-all hover:bg-[#7bff89]"
+                  >
+                    Sign up
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <SignInButton mode="modal" forceRedirectUrl="/workspace/image-to-image">
+                    <button className="rounded-lg border border-white/10 bg-white/[0.03] px-4 py-2 text-sm font-medium text-white transition-colors hover:border-[#5ef36f]/45 hover:bg-white/[0.06]">
+                      Log in
+                    </button>
+                  </SignInButton>
+                  <SignUpButton mode="modal" forceRedirectUrl="/workspace/image-to-image">
+                    <button className="rounded-lg bg-[#5ef36f] px-4 py-2 text-sm font-semibold text-[#0f1215] transition-all hover:bg-[#7bff89]">
+                      Sign up
+                    </button>
+                  </SignUpButton>
+                </>
+              )}
+            </SignedOut>
+
+            <SignedIn>
+              <Link
+                href="/workspace/image-to-image"
+                className="rounded-lg bg-[#5ef36f] px-4 py-2 text-sm font-semibold text-[#0f1215] transition-all hover:bg-[#7bff89]"
+              >
+                Enter workspace
+              </Link>
+              <UserButton afterSignOutUrl="/" />
+            </SignedIn>
+          </div>
         </div>
       </Container>
     </header>
@@ -77,11 +132,7 @@ function PublicHeader() {
 function StepPill({ active, done, label }: { active: boolean; done: boolean; label: string }) {
   return (
     <div className="flex items-center gap-2 text-sm">
-      <span
-        className={`h-2.5 w-2.5 rounded-full ${
-          active || done ? "bg-[#63f276]" : "bg-white/18"
-        }`}
-      />
+      <span className={`h-2.5 w-2.5 rounded-full ${active || done ? "bg-[#63f276]" : "bg-white/18"}`} />
       <span className={active ? "text-white" : done ? "text-[#9cf7aa]" : "text-white/42"}>{label}</span>
     </div>
   );
@@ -101,7 +152,7 @@ function PrimaryButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex min-h-[48px] items-center justify-center rounded-sm bg-[#5ef36f] px-6 text-sm font-black uppercase tracking-[0.06em] text-[#0b0d10] transition hover:bg-[#78ff88] disabled:cursor-not-allowed disabled:bg-[#2a5032] disabled:text-white/35"
+      className="inline-flex min-h-[48px] items-center justify-center rounded-xl bg-[#5ef36f] px-6 text-sm font-semibold tracking-tight text-[#0b0d10] transition hover:bg-[#78ff88] disabled:cursor-not-allowed disabled:bg-[#2a5032] disabled:text-white/35"
     >
       {children}
     </button>
@@ -123,27 +174,27 @@ function PlanCard({
     <button
       type="button"
       onClick={onSelect}
-      className={`text-left transition ${
+      className={`rounded-2xl border p-4 text-left transition ${
         selected
-          ? "border-[#63f276] bg-[#183523] shadow-[0_0_26px_rgba(94,243,111,0.2)]"
-          : "border-white/10 bg-[#10151b] hover:border-[#63f276]/50"
-      } rounded-md border p-5`}
+          ? "border-[#63f276]/55 bg-[#0f1713]"
+          : "border-white/10 bg-[#0d1117] hover:border-[#63f276]/35"
+      }`}
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h3 className="text-xl font-bold text-white">{plan.name}</h3>
-          <p className="mt-1 text-sm text-white/52">{plan.description}</p>
+          <h3 className="text-lg font-semibold tracking-tight text-white">{plan.name}</h3>
+          <p className="mt-1 text-sm text-white/50">{plan.description}</p>
         </div>
         {plan.popular ? (
-          <span className="rounded-full bg-[#63f276] px-2 py-1 text-[10px] font-bold uppercase text-[#071009]">
+          <span className="rounded-full bg-[#63f276] px-2 py-1 text-[10px] font-semibold uppercase text-[#071009]">
             Popular
           </span>
         ) : null}
       </div>
-      <p className="mt-5 font-['Bebas_Neue','Oswald','Arial_Narrow',sans-serif] text-5xl uppercase leading-none text-[#63f276]">
+      <p className="mt-5 text-4xl font-semibold tracking-tight text-[#63f276]">
         {plan.priceFormatted}
       </p>
-      <p className="mt-2 text-sm text-white/52">{plan.credits} credits for AI photo generation</p>
+      <p className="mt-2 text-sm text-white/50">{plan.credits} credits for AI photo generation</p>
     </button>
   );
 }
@@ -194,44 +245,44 @@ export default function AiPhotosPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#0b0d10] text-white">
+    <main className="min-h-screen bg-[#06090e] text-white">
       <PublicHeader />
 
       <section className="relative overflow-hidden pb-16 pt-12 sm:pb-24 sm:pt-20">
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(88,255,136,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(88,255,136,0.05)_1px,transparent_1px)] bg-[size:58px_58px]" />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(88,255,136,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(88,255,136,0.035)_1px,transparent_1px)] bg-[size:58px_58px]" />
         <Container>
           <div className="relative grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
             <div>
-              <p className="inline-flex border border-[#2d5b3f] bg-[#183022]/70 px-4 py-2 text-sm font-semibold uppercase tracking-[0.05em] text-[#62f175]">
+              <p className="inline-flex rounded-full border border-[#5ef36f]/25 bg-[#10161a] px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#63f276]">
                 AI Dating Photos
               </p>
-              <h1 className="mt-5 font-['Bebas_Neue','Oswald','Arial_Narrow',sans-serif] text-[64px] uppercase leading-[0.9] tracking-[0.04em] sm:text-[92px]">
+              <h1 className="mt-5 max-w-xl text-[56px] font-semibold leading-[0.95] tracking-tight sm:text-[76px]">
                 Get better dating photos in one flow
               </h1>
-              <p className="mt-5 max-w-xl text-xl leading-8 text-white/58">
+              <p className="mt-5 max-w-xl text-lg leading-8 text-white/58 sm:text-xl">
                 Answer a quick questionnaire, leave your email, upload photos, choose a plan, and continue in the workspace.
               </p>
 
               <div className="mt-8 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
-                <div className="relative h-64 overflow-hidden border border-[#d94144]/70">
+                <div className="relative h-64 overflow-hidden rounded-2xl border border-white/10 bg-[#0d1117]">
                   <Image src="/homepage/hero-before.png" alt="Before dating photo" fill className="object-cover" />
-                  <span className="absolute bottom-2 right-2 border border-[#df4747] bg-[#301919] px-2 py-1 text-2xl font-bold text-[#ea4b4b]">
+                  <span className="absolute bottom-3 right-3 rounded-lg border border-[#df4747] bg-[#301919] px-2 py-1 text-lg font-semibold text-[#ea4b4b]">
                     31
                   </span>
                 </div>
-                <div className="flex h-11 w-11 items-center justify-center rounded-sm border border-[#2e5a3f] bg-[#15221a] text-xl font-bold text-[#67f378]">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#2e5a3f] bg-[#10161a] text-xl font-semibold text-[#67f378]">
                   &gt;&gt;
                 </div>
-                <div className="relative h-64 overflow-hidden border border-[#57f06d]/70 shadow-[0_0_24px_rgba(94,243,111,0.28)]">
+                <div className="relative h-64 overflow-hidden rounded-2xl border border-[#57f06d]/40 shadow-[0_0_24px_rgba(94,243,111,0.16)]">
                   <Image src="/homepage/hero-after.png" alt="After dating photo" fill className="object-cover" />
-                  <span className="absolute bottom-2 right-2 border border-[#57f06d] bg-[#183123] px-2 py-1 text-2xl font-bold text-[#63f276]">
+                  <span className="absolute bottom-3 right-3 rounded-lg border border-[#57f06d] bg-[#183123] px-2 py-1 text-lg font-semibold text-[#63f276]">
                     87
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-md border border-[#284d35] bg-[#10151b]/96 p-5 shadow-[0_0_42px_rgba(94,243,111,0.08)] sm:p-7">
+            <div className="rounded-2xl border border-white/10 bg-[#0f1319] p-5 shadow-[0_0_42px_rgba(94,243,111,0.05)] sm:p-7">
               <div className="flex flex-wrap gap-x-5 gap-y-3 border-b border-white/10 pb-5">
                 <StepPill label="Question" active={step === "question"} done={questionDone} />
                 <StepPill label="Email" active={step === "email"} done={emailDone} />
@@ -241,17 +292,17 @@ export default function AiPhotosPage() {
 
               {step === "question" ? (
                 <div className="pt-7">
-                  <p className="text-sm font-semibold uppercase tracking-[0.12em] text-[#63f276]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#63f276]">
                     Question {questionIndex + 1} of {questions.length}
                   </p>
-                  <h2 className="mt-3 text-3xl font-bold leading-tight">{currentQuestion.title}</h2>
+                  <h2 className="mt-3 text-2xl font-semibold leading-tight tracking-tight">{currentQuestion.title}</h2>
                   <div className="mt-6 grid gap-3">
                     {currentQuestion.options.map((option) => (
                       <button
                         key={option}
                         type="button"
                         onClick={() => chooseAnswer(option)}
-                        className="rounded-md border border-white/10 bg-black/20 px-4 py-4 text-left text-base text-white/78 transition hover:border-[#63f276]/65 hover:bg-[#132018]"
+                        className="rounded-xl border border-white/10 bg-black/20 px-4 py-4 text-left text-base text-white/78 transition hover:border-[#63f276]/45 hover:bg-[#132018]"
                       >
                         {option}
                       </button>
@@ -262,15 +313,15 @@ export default function AiPhotosPage() {
 
               {step === "email" ? (
                 <div className="pt-7">
-                  <p className="text-sm font-semibold uppercase tracking-[0.12em] text-[#63f276]">Email</p>
-                  <h2 className="mt-3 text-3xl font-bold leading-tight">Where should we keep your photo plan?</h2>
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#63f276]">Email</p>
+                  <h2 className="mt-3 text-2xl font-semibold leading-tight tracking-tight">Where should we keep your photo plan?</h2>
                   <p className="mt-3 text-white/58">Use the same email when you enter the workspace.</p>
                   <input
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
                     type="email"
                     placeholder="you@example.com"
-                    className="mt-6 w-full rounded-md border border-white/10 bg-black/25 px-4 py-4 text-base text-white outline-none transition focus:border-[#63f276]/70"
+                    className="mt-6 w-full rounded-xl border border-white/10 bg-black/25 px-4 py-4 text-base text-white outline-none transition focus:border-[#63f276]/70"
                   />
                   <div className="mt-5">
                     <PrimaryButton onClick={continueToUpload} disabled={!validEmail}>
@@ -282,13 +333,13 @@ export default function AiPhotosPage() {
 
               {step === "upload" ? (
                 <div className="pt-7">
-                  <p className="text-sm font-semibold uppercase tracking-[0.12em] text-[#63f276]">Upload</p>
-                  <h2 className="mt-3 text-3xl font-bold leading-tight">Upload your starting photos</h2>
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#63f276]">Upload</p>
+                  <h2 className="mt-3 text-2xl font-semibold leading-tight tracking-tight">Upload your starting photos</h2>
                   <p className="mt-3 text-white/58">Use 4-10 clear selfies or existing profile photos for best output.</p>
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="mt-6 flex min-h-[170px] w-full flex-col items-center justify-center rounded-md border border-dashed border-[#63f276]/45 bg-black/25 px-5 text-center transition hover:bg-[#102016]"
+                    className="mt-6 flex min-h-[170px] w-full flex-col items-center justify-center rounded-2xl border border-dashed border-[#63f276]/35 bg-black/25 px-5 text-center transition hover:bg-[#102016]"
                   >
                     <span className="text-lg font-semibold">Select photos</span>
                     <span className="mt-2 text-sm text-white/45">JPG, PNG, or WebP</span>
@@ -321,8 +372,11 @@ export default function AiPhotosPage() {
 
               {step === "plan" ? (
                 <div className="pt-7">
-                  <p className="text-sm font-semibold uppercase tracking-[0.12em] text-[#63f276]">Purchase Plan</p>
-                  <h2 className="mt-3 text-3xl font-bold leading-tight">Choose the same plan used across the site</h2>
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#63f276]">Purchase Plan</p>
+                  <h2 className="mt-3 text-2xl font-semibold leading-tight tracking-tight">Choose the same plan used across the site</h2>
+                  <p className="mt-3 text-white/58">
+                    This uses the same purchase plans as the main pricing page. After buying credits, continue to the workspace and generate manually.
+                  </p>
                   <div className="mt-6 grid gap-3">
                     {(Object.keys(CREDIT_PACKAGES) as PackageType[]).map((packageType) => (
                       <PlanCard
@@ -334,11 +388,41 @@ export default function AiPhotosPage() {
                     ))}
                   </div>
                   <Link
-                    href={`/workspace/pricing?source=ai-photos&plan=${selectedPlan}`}
-                    className="mt-6 inline-flex min-h-[50px] w-full items-center justify-center rounded-sm bg-[#5ef36f] px-6 text-sm font-black uppercase tracking-[0.06em] text-[#0b0d10] transition hover:bg-[#78ff88]"
+                    href={`/pricing?source=ai-photos&plan=${selectedPlan}`}
+                    className="mt-6 inline-flex min-h-[50px] w-full items-center justify-center rounded-xl bg-[#5ef36f] px-6 text-sm font-semibold tracking-tight text-[#0b0d10] transition hover:bg-[#78ff88]"
                   >
-                    Continue to workspace
+                    Choose purchase plan
                   </Link>
+                  <SignedOut>
+                    {isLocalDevAuthEnabled() ? (
+                      <Link
+                        href={LOCAL_DEV_WORKSPACE_LOGIN_URL}
+                        className="mt-3 inline-flex min-h-[50px] w-full items-center justify-center rounded-xl border border-white/14 px-6 text-sm font-semibold tracking-tight text-white transition hover:border-[#63f276]/60 hover:bg-white/5"
+                      >
+                        Continue to workspace
+                      </Link>
+                    ) : (
+                      <SignUpButton
+                        mode="modal"
+                        forceRedirectUrl="/workspace/image-to-image"
+                      >
+                        <button
+                          type="button"
+                          className="mt-3 inline-flex min-h-[50px] w-full items-center justify-center rounded-xl border border-white/14 px-6 text-sm font-semibold tracking-tight text-white transition hover:border-[#63f276]/60 hover:bg-white/5"
+                        >
+                          Continue to workspace
+                        </button>
+                      </SignUpButton>
+                    )}
+                  </SignedOut>
+                  <SignedIn>
+                    <Link
+                      href="/workspace/image-to-image"
+                      className="mt-3 inline-flex min-h-[50px] w-full items-center justify-center rounded-xl border border-white/14 px-6 text-sm font-semibold tracking-tight text-white transition hover:border-[#63f276]/60 hover:bg-white/5"
+                    >
+                      Continue to workspace
+                    </Link>
+                  </SignedIn>
                 </div>
               ) : null}
             </div>

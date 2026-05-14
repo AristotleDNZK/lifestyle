@@ -76,41 +76,38 @@ export default function GeneratePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <h1 className="text-2xl font-bold text-gray-900">
-            AI Generation Studio
-          </h1>
+    <main className="dpai-page dpai-radial-bg">
+      <header className="border-b border-white/10 bg-[#080b10]/92">
+        <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+          <p className="dpai-label">Studio</p>
+          <h1 className="mt-2 text-3xl font-semibold text-white">AI Generation Studio</h1>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Tabs */}
-        <div className="bg-white rounded-lg shadow-sm mb-6">
-          <div className="border-b border-gray-200">
-            <nav className="flex -mb-px">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <section className="dpai-panel mb-6">
+          <div className="border-b border-white/10">
+            <nav className="flex">
               <button
                 onClick={() => setActiveTab("image")}
-                className={`px-6 py-4 text-sm font-medium border-b-2 ${
+                className={`border-b-2 px-6 py-4 text-sm font-medium ${
                   activeTab === "image"
-                    ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    ? "border-[#5ef36f] text-[#62f178]"
+                    : "border-transparent text-white/50 hover:border-white/20 hover:text-white"
                 }`}
               >
                 Image Generation
               </button>
               <button
                 onClick={() => setActiveTab("video")}
-                className={`px-6 py-4 text-sm font-medium border-b-2 ${
+                className={`border-b-2 px-6 py-4 text-sm font-medium ${
                   activeTab === "video"
-                    ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    ? "border-[#5ef36f] text-[#62f178]"
+                    : "border-transparent text-white/50 hover:border-white/20 hover:text-white"
                 }`}
               >
                 Video Generation
-                <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
+                <span className="ml-2 rounded-full border border-[#57f06d]/25 bg-[#102617] px-2 py-1 text-xs text-[#8df6aa]">
                   Coming Soon
                 </span>
               </button>
@@ -118,12 +115,8 @@ export default function GeneratePage() {
           </div>
 
           <div className="p-6">
-            {/* Prompt Input */}
             <div className="mb-4">
-              <label
-                htmlFor="prompt"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
+              <label htmlFor="prompt" className="dpai-label mb-2 block">
                 Prompt
               </label>
               <textarea
@@ -131,7 +124,7 @@ export default function GeneratePage() {
                 rows={4}
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="dpai-input w-full resize-none"
                 placeholder={
                   activeTab === "image"
                     ? "Describe the image you want to generate..."
@@ -140,133 +133,86 @@ export default function GeneratePage() {
               />
             </div>
 
-            {/* Image-specific options */}
-            {activeTab === "image" && (
+            {activeTab === "image" ? (
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Aspect Ratio
-                </label>
-                <div className="flex gap-2">
-                  {(["1:1", "16:9", "9:16", "4:3", "3:4"] as AspectRatio[]).map(
-                    (ratio) => (
-                      <button
-                        key={ratio}
-                        onClick={() => setAspectRatio(ratio)}
-                        className={`px-4 py-2 rounded-lg border ${
-                          aspectRatio === ratio
-                            ? "bg-blue-500 text-white border-blue-500"
-                            : "bg-white text-gray-700 border-gray-300 hover:border-gray-400"
-                        }`}
-                      >
-                        {ratio}
-                      </button>
-                    )
-                  )}
+                <label className="dpai-label mb-2 block">Aspect Ratio</label>
+                <div className="flex flex-wrap gap-2">
+                  {(["1:1", "16:9", "9:16", "4:3", "3:4"] as AspectRatio[]).map((ratio) => (
+                    <button
+                      key={ratio}
+                      onClick={() => setAspectRatio(ratio)}
+                      className={`rounded-lg border px-4 py-2 text-sm transition ${
+                        aspectRatio === ratio
+                          ? "border-[#5ef36f] bg-[#102617] text-[#8df6aa]"
+                          : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+                      }`}
+                    >
+                      {ratio}
+                    </button>
+                  ))}
                 </div>
               </div>
-            )}
+            ) : null}
 
-            {/* Generate Button */}
             <button
               onClick={handleGenerate}
               disabled={loading || !prompt.trim()}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="dpai-primary-btn w-full py-3"
             >
-              {loading
-                ? "Generating..."
-                : `Generate ${activeTab === "image" ? "Image" : "Video"}`}
+              {loading ? "Generating..." : `Generate ${activeTab === "image" ? "Image" : "Video"}`}
             </button>
 
-            {/* Cost info */}
-            <p className="text-sm text-gray-500 mt-2 text-center">
-              Cost: {activeTab === "image" ? "1 credit" : "10 credits"} per
-              generation
+            <p className="mt-2 text-center text-sm text-white/45">
+              Cost: {activeTab === "image" ? "1 credit" : "10 credits"} per generation
             </p>
           </div>
-        </div>
+        </section>
 
-        {/* Error Display */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-red-400"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+        {error ? (
+          <section className="mb-6 rounded-xl border border-[#ff4b4b]/40 bg-[#2a1010] p-4">
+            <h2 className="text-sm font-semibold text-[#ffb3b3]">Generation Failed</h2>
+            <p className="mt-1 text-sm text-[#ffb3b3]/85">{error}</p>
+          </section>
+        ) : null}
+
+        {result ? (
+          <section className="dpai-panel p-6">
+            <h2 className="mb-4 text-lg font-semibold text-white">Result</h2>
+
+            {result.status === "coming_soon" ? (
+              <div className="rounded-xl border border-[#57f06d]/25 bg-[#102617] p-6 text-center">
+                <div className="mb-4 text-4xl font-semibold text-[#62f178]">AI</div>
+                <h3 className="mb-2 text-lg font-semibold text-white">{result.message}</h3>
+                <p className="text-white/60">We're working hard to bring video generation to you. Stay tuned.</p>
               </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">
-                  Generation Failed
-                </h3>
-                <p className="text-sm text-red-700 mt-1">{error}</p>
-              </div>
-            </div>
-          </div>
-        )}
+            ) : null}
 
-        {/* Result Display */}
-        {result && (
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Result
-            </h2>
-
-            {/* Coming Soon Message (for video) */}
-            {result.status === "coming_soon" && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
-                <div className="text-4xl mb-4">🎬</div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {result.message}
-                </h3>
-                <p className="text-gray-600">
-                  We're working hard to bring video generation to you. Stay
-                  tuned!
-                </p>
-              </div>
-            )}
-
-            {/* Image Result */}
-            {result.success && result.type === "image" && result.url && (
+            {result.success && result.type === "image" && result.url ? (
               <div>
-                <div className="mb-4 bg-gray-100 rounded-lg overflow-hidden">
-                  <Image
-                    src={result.url}
-                    alt={result.prompt}
-                    width={800}
-                    height={800}
-                    className="w-full h-auto"
-                  />
+                <div className="mb-4 overflow-hidden rounded-xl border border-white/10 bg-black/30">
+                  <Image src={result.url} alt={result.prompt} width={800} height={800} className="h-auto w-full" />
                 </div>
-                <div className="space-y-2 text-sm text-gray-600">
+                <div className="space-y-2 text-sm text-white/60">
                   <p>
-                    <span className="font-medium">Prompt:</span> {result.prompt}
+                    <span className="font-medium text-white/80">Prompt:</span> {result.prompt}
                   </p>
                   <p>
-                    <span className="font-medium">Credits Used:</span>{" "}
-                    {result.creditsUsed}
+                    <span className="font-medium text-white/80">Credits Used:</span> {result.creditsUsed}
                   </p>
                   <a
                     href={result.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-block text-blue-500 hover:text-blue-600"
+                    className="inline-block text-[#8df6aa] hover:text-[#b7ffc5]"
                   >
-                    Open in new tab →
+                    Open in new tab
                   </a>
                 </div>
               </div>
-            )}
-          </div>
-        )}
+            ) : null}
+          </section>
+        ) : null}
       </div>
-    </div>
+    </main>
   );
 }

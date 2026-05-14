@@ -73,7 +73,7 @@ export default function DatingProfileReviewCheckoutPage() {
 
   if (!isLoaded) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#151824] text-white">
+      <main className="dpai-page dpai-grid-bg flex min-h-screen items-center justify-center text-white">
         <div className="text-center">
           <div className="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-white/10 border-t-[#63f276]" />
           <p className="mt-5 text-sm uppercase tracking-[0.14em] text-white/45">
@@ -86,10 +86,10 @@ export default function DatingProfileReviewCheckoutPage() {
 
   if (!userId) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#151824] px-4 text-white">
-        <div className="w-full max-w-xl rounded-[32px] border border-white/10 bg-[#11131b] p-8 text-center">
+      <main className="dpai-page dpai-grid-bg flex min-h-screen items-center justify-center px-4 text-white">
+        <div className="dpai-panel w-full max-w-xl p-8 text-center">
           <ProfileReviewLogo href="/" />
-          <h1 className="mt-6 text-3xl font-black uppercase tracking-[-0.03em]">
+          <h1 className="mt-6 text-3xl font-black uppercase tracking-tight">
             Sign in required
           </h1>
           <p className="mt-4 text-base leading-7 text-white/60">
@@ -115,14 +115,14 @@ export default function DatingProfileReviewCheckoutPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#efefef] text-[#121318]">
+    <main className="dpai-page dpai-grid-bg min-h-screen text-white">
       <div className="grid min-h-screen lg:grid-cols-[0.9fr_1.1fr]">
-        <section className="bg-[#171a24] px-6 py-8 text-white sm:px-10 lg:px-14">
+        <section className="border-b border-white/10 bg-[#070a0f]/96 px-6 py-8 text-white sm:px-10 lg:border-b-0 lg:border-r lg:px-14">
           <div className="flex items-center justify-between">
             <button
               type="button"
               onClick={() => router.back()}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-xl text-white/75 transition hover:border-white/20 hover:bg-white/10"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-xl text-white/75 transition hover:border-[#5ef36f]/45 hover:bg-white/10"
               aria-label="Go back"
             >
               {"<"}
@@ -135,7 +135,7 @@ export default function DatingProfileReviewCheckoutPage() {
             <div className="text-sm font-bold uppercase tracking-[0.16em] text-[#63f276]">
               Payment
             </div>
-            <h1 className="mt-4 text-5xl font-black tracking-[-0.05em]">
+            <h1 className="mt-4 text-5xl font-black tracking-tight">
               US${price.toFixed(2)}
             </h1>
             <p className="mt-2 text-lg text-white/55">
@@ -179,21 +179,21 @@ export default function DatingProfileReviewCheckoutPage() {
           </div>
         </section>
 
-        <section className="bg-[#f3f2ef] px-6 py-8 sm:px-10 lg:px-14">
+        <section className="bg-[#090d13]/92 px-6 py-8 sm:px-10 lg:px-14">
           <div className="mx-auto max-w-xl">
-            <div className="rounded-[28px] border border-[#d9d7d2] bg-white p-6 shadow-[0_16px_48px_rgba(0,0,0,0.08)] sm:p-8">
-              <h2 className="text-3xl font-black tracking-[-0.03em] text-[#14161d]">
+            <div className="dpai-panel p-6 sm:p-8">
+              <h2 className="text-3xl font-black tracking-tight text-white">
                 Enter payment details
               </h2>
-              <p className="mt-3 text-sm leading-7 text-[#5f6470]">
+              <p className="mt-3 text-sm leading-7 text-white/58">
                 Continue to secure checkout. The report unlocks after Paddle confirms payment.
               </p>
 
-              <div className="mt-6 rounded-2xl border border-[#e5e3de] bg-[#faf9f7] px-4 py-3">
-                <div className="text-xs font-bold uppercase tracking-[0.12em] text-[#6c7380]">
+              <div className="mt-6 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3">
+                <div className="text-xs font-bold uppercase tracking-[0.12em] text-[#5ef36f]">
                   Email
                 </div>
-                <div className="mt-1 text-sm font-medium text-[#1d222d]">{email}</div>
+                <div className="mt-1 text-sm font-medium text-white/82">{email}</div>
               </div>
 
               <button
@@ -201,14 +201,14 @@ export default function DatingProfileReviewCheckoutPage() {
                 onClick={handleCheckout}
                 disabled={!userId || !email || submitting}
                 className={classes(
-                  "mt-8 inline-flex min-h-[56px] w-full items-center justify-center rounded-xl bg-[#171a24] px-6 text-base font-black uppercase tracking-[0.06em] text-white transition",
-                  "hover:bg-[#222738] disabled:cursor-not-allowed disabled:bg-[#8f94a0]"
+                  "mt-8 inline-flex min-h-[56px] w-full items-center justify-center rounded-lg bg-[#5ef36f] px-6 text-base font-black uppercase tracking-[0.06em] text-[#061009] transition",
+                  "hover:bg-[#78ff88] disabled:cursor-not-allowed disabled:bg-white/20 disabled:text-white/45"
                 )}
               >
                 {submitting ? "Unlocking report..." : "Pay and start trial"}
               </button>
 
-              <p className="mt-4 text-center text-xs leading-6 text-[#6b6f79]">
+              <p className="mt-4 text-center text-xs leading-6 text-white/45">
                 Payment confirmation unlocks the report on-site and sends the full report to your email.
               </p>
 

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -12,9 +12,8 @@ type NavItem = {
 };
 
 const toolItems: NavItem[] = [
-  { label: "My Studio", href: "/workspace", match: "exact" },
   {
-    label: "AI 照片优化",
+    label: "AI Photo Optimization",
     href: "/workspace/image-to-image",
     match: "prefix",
   },
@@ -109,7 +108,7 @@ export function WorkspaceSidebar() {
   return (
     <aside className="relative w-full border-b border-white/10 bg-[#080b10] lg:w-[272px] lg:border-b-0 lg:border-r">
       <div className="border-b border-white/10 px-4 py-5">
-        <Link href="/workspace" className="flex items-center gap-2">
+        <Link href="/workspace/image-to-image" className="flex items-center gap-2">
           <span className="text-2xl font-bold text-[#50e7cf]">D</span>
           <span className="text-2xl font-semibold tracking-tight text-white">
             DatingPhotosAI
