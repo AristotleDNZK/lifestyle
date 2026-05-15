@@ -85,20 +85,20 @@ export default function DashboardPage() {
 
   return (
     <main className="dpai-page dpai-radial-bg">
-      <div className="border-b border-white/10 bg-[#080b10]/92">
+      <div className="border-b border-white/10 bg-[#101010]/92">
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="dpai-label">Workspace</p>
-              <h1 className="mt-2 text-3xl font-semibold text-white">Dashboard</h1>
+              <h1 className="mt-2 text-xl font-semibold text-white">Dashboard</h1>
               <p className="mt-1 text-white/55">Manage your AI generations and credits</p>
             </div>
 
             {stats ? (
-              <div className="rounded-2xl border border-[#58ef70]/45 bg-[linear-gradient(180deg,rgba(31,69,43,0.46),rgba(12,16,22,0.96))] px-6 py-4 text-white">
+              <div className="rounded-xl border border-[#e5e5e5]/45 bg-[#121212] px-6 py-4 text-white">
                 <div className="text-sm font-medium text-white/70">Available Credits</div>
-                <div className="mt-1 text-3xl font-semibold">{stats.credits.toLocaleString()}</div>
-                <Link href="/pricing" className="mt-2 inline-block text-sm text-[#8df6aa] hover:text-[#b7ffc5]">
+                <div className="mt-1 text-xl font-semibold">{stats.credits.toLocaleString()}</div>
+                <Link href="/pricing" className="mt-2 inline-block text-sm text-[#d4d4d8] hover:text-[#f1f1f1]">
                   Purchase more
                 </Link>
               </div>
@@ -109,15 +109,15 @@ export default function DashboardPage() {
             <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
               <div className="dpai-panel-flat p-4">
                 <div className="text-sm text-white/50">Total Generations</div>
-                <div className="mt-1 text-2xl font-semibold text-white">{stats.totalGenerations}</div>
+                <div className="mt-1 text-base font-semibold text-white">{stats.totalGenerations}</div>
               </div>
               <div className="dpai-panel-flat p-4">
                 <div className="text-sm text-white/50">Credits Spent</div>
-                <div className="mt-1 text-2xl font-semibold text-white">{stats.totalSpent}</div>
+                <div className="mt-1 text-base font-semibold text-white">{stats.totalSpent}</div>
               </div>
               <div className="dpai-panel-flat p-4">
                 <div className="text-sm text-white/50">Avg. Cost</div>
-                <div className="mt-1 text-2xl font-semibold text-white">
+                <div className="mt-1 text-base font-semibold text-white">
                   {stats.totalGenerations > 0
                     ? (stats.totalSpent / stats.totalGenerations).toFixed(1)
                     : "0"}{" "}
@@ -152,7 +152,7 @@ export default function DashboardPage() {
                   onClick={() => setActiveTab(value as TabType)}
                   className={`border-b-2 px-6 py-4 text-sm font-medium ${
                     activeTab === value
-                      ? "border-[#5ef36f] text-[#62f178]"
+                      ? "border-[#e5e5e5] text-[#d4d4d8]"
                       : "border-transparent text-white/50 hover:border-white/20 hover:text-white"
                   }`}
                 >
@@ -167,7 +167,7 @@ export default function DashboardPage() {
               <div className="py-12 text-center text-white/45">Loading...</div>
             ) : filteredGenerations.length === 0 ? (
               <div className="py-12 text-center">
-                <div className="mb-4 text-4xl font-semibold text-[#62f178]">AI</div>
+                <div className="mb-4 text-xl font-semibold text-[#d4d4d8]">AI</div>
                 <h3 className="mb-2 text-lg font-semibold text-white">No generations yet</h3>
                 <p className="mb-4 text-white/55">Start creating amazing AI-generated content.</p>
                 <Link href="/generate" className="dpai-primary-btn">
@@ -179,7 +179,7 @@ export default function DashboardPage() {
                 {filteredGenerations.map((generation) => (
                   <article
                     key={generation.id}
-                    className="overflow-hidden rounded-xl border border-white/10 bg-[#0c1016] transition hover:border-[#57f06d]/55"
+                    className="overflow-hidden rounded-xl border border-white/10 bg-[#101010] transition hover:border-[#a1a1aa]/55"
                   >
                     {generation.type === "image" ? (
                       <div className="relative h-48 bg-black/30">
@@ -192,7 +192,7 @@ export default function DashboardPage() {
                         <span
                           className={`rounded px-2 py-1 text-xs font-semibold ${
                             generation.type === "image"
-                              ? "bg-[#102617] text-[#8df6aa]"
+                              ? "bg-[#202020] text-[#d4d4d8]"
                               : "bg-white/10 text-white/75"
                           }`}
                         >
@@ -213,7 +213,7 @@ export default function DashboardPage() {
                           href={generation.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs font-medium text-[#8df6aa] hover:text-[#b7ffc5]"
+                          className="text-xs font-medium text-[#d4d4d8] hover:text-[#f1f1f1]"
                         >
                           View
                         </a>

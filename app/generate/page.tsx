@@ -77,10 +77,10 @@ export default function GeneratePage() {
 
   return (
     <main className="dpai-page dpai-radial-bg">
-      <header className="border-b border-white/10 bg-[#080b10]/92">
+      <header className="border-b border-white/10 bg-[#101010]/92">
         <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
           <p className="dpai-label">Studio</p>
-          <h1 className="mt-2 text-3xl font-semibold text-white">AI Generation Studio</h1>
+          <h1 className="mt-2 text-xl font-semibold text-white">AI Generation Studio</h1>
         </div>
       </header>
 
@@ -92,7 +92,7 @@ export default function GeneratePage() {
                 onClick={() => setActiveTab("image")}
                 className={`border-b-2 px-6 py-4 text-sm font-medium ${
                   activeTab === "image"
-                    ? "border-[#5ef36f] text-[#62f178]"
+                    ? "border-[#e5e5e5] text-[#d4d4d8]"
                     : "border-transparent text-white/50 hover:border-white/20 hover:text-white"
                 }`}
               >
@@ -102,12 +102,12 @@ export default function GeneratePage() {
                 onClick={() => setActiveTab("video")}
                 className={`border-b-2 px-6 py-4 text-sm font-medium ${
                   activeTab === "video"
-                    ? "border-[#5ef36f] text-[#62f178]"
+                    ? "border-[#e5e5e5] text-[#d4d4d8]"
                     : "border-transparent text-white/50 hover:border-white/20 hover:text-white"
                 }`}
               >
                 Video Generation
-                <span className="ml-2 rounded-full border border-[#57f06d]/25 bg-[#102617] px-2 py-1 text-xs text-[#8df6aa]">
+                <span className="ml-2 rounded-full border border-[#a1a1aa]/25 bg-[#202020] px-2 py-1 text-xs text-[#d4d4d8]">
                   Coming Soon
                 </span>
               </button>
@@ -143,7 +143,7 @@ export default function GeneratePage() {
                       onClick={() => setAspectRatio(ratio)}
                       className={`rounded-lg border px-4 py-2 text-sm transition ${
                         aspectRatio === ratio
-                          ? "border-[#5ef36f] bg-[#102617] text-[#8df6aa]"
+                          ? "border-[#e5e5e5] bg-[#202020] text-[#d4d4d8]"
                           : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
                       }`}
                     >
@@ -180,8 +180,8 @@ export default function GeneratePage() {
             <h2 className="mb-4 text-lg font-semibold text-white">Result</h2>
 
             {result.status === "coming_soon" ? (
-              <div className="rounded-xl border border-[#57f06d]/25 bg-[#102617] p-6 text-center">
-                <div className="mb-4 text-4xl font-semibold text-[#62f178]">AI</div>
+              <div className="rounded-xl border border-[#a1a1aa]/25 bg-[#202020] p-6 text-center">
+                <div className="mb-4 text-xl font-semibold text-[#d4d4d8]">AI</div>
                 <h3 className="mb-2 text-lg font-semibold text-white">{result.message}</h3>
                 <p className="text-white/60">We're working hard to bring video generation to you. Stay tuned.</p>
               </div>
@@ -203,7 +203,7 @@ export default function GeneratePage() {
                     href={result.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-block text-[#8df6aa] hover:text-[#b7ffc5]"
+                    className="inline-block text-[#d4d4d8] hover:text-[#f1f1f1]"
                   >
                     Open in new tab
                   </a>

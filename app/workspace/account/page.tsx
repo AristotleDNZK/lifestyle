@@ -26,9 +26,9 @@ function ProfileCard({
   footer?: React.ReactNode;
 }) {
   return (
-    <article className="overflow-hidden rounded-2xl border border-white/10 bg-[#0f1319]">
+    <article className="overflow-hidden rounded-xl border border-white/10 bg-[#121212]">
       <div className="p-5">
-        <h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
+        <h2 className="text-base font-semibold tracking-tight">{title}</h2>
         <div className="mt-3">{children}</div>
       </div>
       {footer ? <div className="border-t border-white/10 bg-white/[0.03] p-4">{footer}</div> : null}
@@ -73,7 +73,7 @@ export default function WorkspaceAccountPage() {
     <>
       <header className="mb-5 border-b border-white/10 pb-4">
         <p className="text-xs uppercase tracking-[0.1em] text-white/40">Settings</p>
-        <h1 className="mt-2 text-4xl font-semibold tracking-tight">Profile</h1>
+        <h1 className="mt-2 text-xl font-semibold tracking-tight">Profile</h1>
         <p className="mt-1 text-white/55">Manage your account information</p>
       </header>
 
@@ -94,7 +94,7 @@ export default function WorkspaceAccountPage() {
             <input
               type="text"
               defaultValue={displayName}
-              className="mt-4 w-full rounded-lg border border-white/10 bg-[#121821] px-4 py-3 text-white outline-none transition focus:border-[#57f06d]/70"
+              className="mt-4 w-full rounded-lg border border-white/10 bg-[#151515] px-4 py-3 text-white outline-none transition focus:border-[#a1a1aa]/70"
             />
           </ProfileCard>
 
@@ -104,7 +104,7 @@ export default function WorkspaceAccountPage() {
           >
             <p className="text-white/55">Click upload button to upload a custom one</p>
             <div className="mt-6 flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-[#5ef36f]/35 bg-[#102017] text-3xl font-semibold text-[#8df6aa]">
+              <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-[#e5e5e5]/35 bg-[#151515] text-xl font-semibold text-[#d4d4d8]">
                 {displayName.charAt(0).toUpperCase()}
               </div>
               <button className="rounded-lg border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10">
@@ -115,18 +115,18 @@ export default function WorkspaceAccountPage() {
         </div>
 
         <aside className="space-y-5">
-          <article className="rounded-2xl border border-[#2a633f]/70 bg-[linear-gradient(180deg,rgba(32,63,43,0.35),rgba(13,18,24,0.95))] p-5">
-            <p className="text-sm uppercase tracking-[0.08em] text-[#8ef5a8]">Credits</p>
-            <p className="mt-2 text-[56px] font-semibold leading-none tracking-tight text-white">
+          <article className="rounded-xl border border-[rgba(255,255,255,0.12)]/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(13,18,24,0.95))] p-5">
+            <p className="text-sm uppercase tracking-[0.08em] text-[#a1a1aa]">Credits</p>
+            <p className="mt-2 text-base font-semibold leading-none tracking-tight text-white">
               {credits.toLocaleString()}
             </p>
             <p className="mt-1 text-sm text-white/55">Current available balance</p>
-            <button className="mt-4 w-full rounded-md bg-[#5ef36f] px-4 py-2.5 text-sm font-semibold text-[#0e1213] transition hover:bg-[#78ff88]">
+            <button className="mt-4 w-full rounded-md bg-[#e5e5e5] px-4 py-2.5 text-sm font-semibold text-[#0e1213] transition hover:bg-[#f1f1f1]">
               Recharge Credits
             </button>
           </article>
 
-          <article className="rounded-2xl border border-white/10 bg-[#0f1319] p-5">
+          <article className="rounded-xl border border-white/10 bg-[#121212] p-5">
             <h3 className="text-lg font-semibold">Account Info</h3>
             <div className="mt-3 space-y-2 text-sm text-white/65">
               <p className="break-all">{email}</p>
@@ -135,7 +135,7 @@ export default function WorkspaceAccountPage() {
             </div>
           </article>
 
-          <article className="rounded-2xl border border-white/10 bg-[#0f1319] p-5">
+          <article className="rounded-xl border border-white/10 bg-[#121212] p-5">
             <h3 className="text-lg font-semibold">Recent Credit Activity</h3>
             <div className="mt-3 space-y-3">
               {creditLogs.map((log) => (

@@ -680,7 +680,7 @@ export function ProfileReviewQuizClient({
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#030303] px-6 text-white">
         <div className="text-center">
-          <div className="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-white/10 border-t-[#63f276]" />
+          <div className="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-white/10 border-t-[#d4d4d8]" />
           <p className="mt-5 text-sm uppercase tracking-[0.14em] text-white/45">
             Initializing review flow
           </p>

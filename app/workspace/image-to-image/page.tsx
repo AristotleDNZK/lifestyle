@@ -422,7 +422,7 @@ function UploadZone({
   };
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#090c12] p-4 sm:p-5">
+    <div className="rounded-xl border border-white/10 bg-[#101010] p-4 sm:p-5">
       <p className="text-sm font-semibold text-white/80">Image</p>
       <div
         onDragOver={(e) => {
@@ -433,8 +433,8 @@ function UploadZone({
         onDrop={onDrop}
         onPaste={onPaste}
         tabIndex={0}
-        className={`mt-3 flex min-h-[150px] cursor-pointer flex-col items-center justify-center rounded-2xl border border-white/10 bg-black/20 px-4 text-center outline-none transition ${
-          dragOver ? "border-[#57f06d]/70 bg-[#0b1310]" : "hover:bg-black/30"
+        className={`mt-3 flex min-h-[150px] cursor-pointer flex-col items-center justify-center rounded-xl border border-white/10 bg-black/20 px-4 text-center outline-none transition ${
+          dragOver ? "border-[#a1a1aa]/70 bg-[#0b1310]" : "hover:bg-black/30"
         }`}
         onClick={() => inputRef.current?.click()}
       >
@@ -512,7 +512,7 @@ function Toggle({
       onClick={() => onChange(!checked)}
       className={`relative h-6 w-12 rounded-full border transition ${
         checked
-          ? "border-[#57f06d]/60 bg-[#183123]"
+          ? "border-[#a1a1aa]/60 bg-[#202020]"
           : "border-white/15 bg-white/5"
       }`}
     >
@@ -550,7 +550,7 @@ function SettingsPanel({
   );
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#090c12] p-4 sm:p-5">
+    <div className="rounded-xl border border-white/10 bg-[#101010] p-4 sm:p-5">
       <button
         type="button"
         aria-expanded={showAdvancedOptions}
@@ -580,13 +580,13 @@ function SettingsPanel({
               <select
                 value={modelId}
                 onChange={(e) => setModelId(e.target.value)}
-                className="w-full appearance-none rounded-md bg-[#080b10] text-sm text-white outline-none [color-scheme:dark] focus:ring-0"
+                className="w-full appearance-none rounded-md bg-[#101010] text-sm text-white outline-none [color-scheme:dark] focus:ring-0"
               >
                 {MODELS.map((m) => (
                   <option
                     key={m.id}
                     value={m.id}
-                    className="bg-[#080b10] text-white"
+                    className="bg-[#101010] text-white"
                   >
                     {m.label}
                   </option>
@@ -675,7 +675,7 @@ function HistoryGallery({
     return (
       <div className="flex h-full items-center justify-center">
         <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/70">
-          <span className="inline-block h-3 w-3 animate-pulse rounded-full bg-[#57f06d]" />
+          <span className="inline-block h-3 w-3 animate-pulse rounded-full bg-[#a1a1aa]" />
           Generating...
         </div>
       </div>
@@ -714,7 +714,7 @@ function HistoryGallery({
               key={item.id}
               className={`group overflow-hidden rounded-xl border bg-black/20 transition ${
                 selectedId === item.id
-                  ? "border-[#57f06d]/55 shadow-[0_14px_40px_rgba(87,240,109,0.12)]"
+                  ? "border-[#a1a1aa]/55 "
                   : "border-white/10 hover:border-white/20"
               }`}
             >
@@ -809,8 +809,8 @@ function ExamplesGallery({
               key={ex.id}
               className={`group overflow-hidden rounded-xl border bg-black/20 transition ${
                 selected
-                  ? "border-[#57f06d]/55 shadow-[0_14px_40px_rgba(87,240,109,0.12)]"
-                  : "border-white/10 hover:border-[#57f06d]/50 hover:shadow-[0_14px_40px_rgba(87,240,109,0.10)]"
+                  ? "border-[#a1a1aa]/55 "
+                  : "border-white/10 hover:border-[#a1a1aa]/50 "
               }`}
             >
               <button
@@ -866,7 +866,7 @@ function PreviewStage({
         {title} {subtitle}
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/30">
+      <div className="overflow-hidden rounded-xl border border-white/10 bg-black/30">
         <div className="relative h-[520px] w-full bg-[radial-gradient(circle_at_35%_15%,rgba(255,255,255,0.06),rgba(0,0,0,0)_55%)]">
           {imageUrl && downloadName ? (
             <WorkspaceImageActionOverlay
@@ -1223,7 +1223,7 @@ export default function ImageToImagePage() {
       <div className="space-y-4">
         <UploadZone images={uploadedImages} setImages={setUploadedImages} />
 
-        <div className="rounded-2xl border border-white/10 bg-[#090c12] p-4 sm:p-5">
+        <div className="rounded-xl border border-white/10 bg-[#101010] p-4 sm:p-5">
           <p className="text-sm font-semibold text-white/80">
             Prompt <span className="text-white/35">(optional)</span>
           </p>
@@ -1232,7 +1232,7 @@ export default function ImageToImagePage() {
             onChange={(e) => setPrompt(e.target.value)}
             rows={3}
             placeholder="Leave blank to use the built-in dating photo optimization prompt, or describe the look you want."
-            className="mt-3 w-full resize-none rounded-xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/80 outline-none transition focus:border-[#57f06d]/60"
+            className="mt-3 w-full resize-none rounded-xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/80 outline-none transition focus:border-[#a1a1aa]/60"
           />
         </div>
 
@@ -1248,7 +1248,7 @@ export default function ImageToImagePage() {
         />
 
         <div className="space-y-3">
-          <div className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-[#090c12] px-5 py-4">
+          <div className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-[#101010] px-5 py-4">
             <div>
               <p className="text-xs text-white/55">
                 Credits:{" "}
@@ -1284,7 +1284,7 @@ export default function ImageToImagePage() {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#090c12]">
+      <div className="overflow-hidden rounded-xl border border-white/10 bg-[#101010]">
         <div className="flex items-center justify-between border-b border-white/10 bg-black/20 px-4 py-3">
           <div className="flex gap-2">
             <PillTab

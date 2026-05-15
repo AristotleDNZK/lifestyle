@@ -83,7 +83,7 @@ export default function DatingProfileReviewUnlockPage() {
 
   return (
     <main className="dpai-page dpai-grid-bg min-h-screen overflow-hidden text-white">
-      <div className="sticky top-0 z-10 flex h-10 items-center justify-between bg-[#1f8b38] px-4 text-[11px] font-bold uppercase tracking-[0.18em] text-[#081009]">
+      <div className="sticky top-0 z-10 flex h-10 items-center justify-between bg-[#d4d4d8] px-4 text-[11px] font-bold uppercase tracking-[0.18em] text-[#111111]">
         <span>Discount ends in</span>
         <span>09 - 49 - 30</span>
       </div>
@@ -96,7 +96,7 @@ export default function DatingProfileReviewUnlockPage() {
             <button
               type="button"
               onClick={() => router.back()}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-xl text-white/75 transition hover:border-[#5ef36f]/45 hover:bg-white/10"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-xl text-white/75 transition hover:border-[#e5e5e5]/45 hover:bg-white/10"
               aria-label="Go back"
             >
               {"<"}
@@ -110,7 +110,7 @@ export default function DatingProfileReviewUnlockPage() {
           <div className="dpai-panel w-full max-w-[760px] px-6 py-7 sm:px-8">
             <div className="flex items-start justify-between gap-6">
               <div>
-                <h1 className="text-3xl font-black uppercase leading-none tracking-tight text-white sm:text-4xl">
+                <h1 className="text-xl font-semibold uppercase leading-none tracking-tight text-white sm:text-xl">
                   Unlock your full report & action plan
                 </h1>
                 <p className="mt-3 text-base text-white/60">
@@ -135,7 +135,7 @@ export default function DatingProfileReviewUnlockPage() {
                 "Over 200 actionable lessons",
               ].map((item) => (
                 <div key={item} className="flex items-start gap-3">
-                  <span className="mt-1.5 h-2.5 w-2.5 rounded-full bg-[#63f276]" />
+                  <span className="mt-1.5 h-2.5 w-2.5 rounded-full bg-[#d4d4d8]" />
                   <span>{item}</span>
                 </div>
               ))}
@@ -154,12 +154,12 @@ export default function DatingProfileReviewUnlockPage() {
 
             <div className="mt-8 space-y-3">
               {!isLoaded ? (
-                <div className="rounded-sm border border-white/10 bg-white/[0.03] px-4 py-4 text-sm text-white/55">
+                <div className="rounded-lg border border-white/10 bg-white/[0.03] px-4 py-4 text-sm text-white/55">
                   Loading authentication state...
                 </div>
               ) : userId ? (
                 <>
-                  <div className="rounded-sm border border-[#1d3223] bg-[#0c140e] px-4 py-4 text-sm text-white/70">
+                  <div className="rounded-lg border border-white/10 bg-[#151515] px-4 py-4 text-sm text-white/70">
                     {attaching
                       ? "Linking this preview session to your account..."
                       : attached
@@ -182,8 +182,8 @@ export default function DatingProfileReviewUnlockPage() {
                   <Link
                     href={`/sign-up?redirect_url=${encodeURIComponent(redirectTarget)}`}
                     className={classes(
-                      "inline-flex min-h-[56px] w-full items-center justify-center rounded-sm bg-[#63f276] px-6 text-base font-black uppercase tracking-[0.06em] text-[#081009] transition",
-                      "hover:bg-[#79ff8d]"
+                      "inline-flex min-h-[56px] w-full items-center justify-center rounded-lg bg-[#d4d4d8] px-6 text-base font-semibold uppercase tracking-[0.06em] text-[#111111] transition",
+                      "hover:bg-[#f1f1f1]"
                     )}
                   >
                     Register to continue
@@ -191,8 +191,8 @@ export default function DatingProfileReviewUnlockPage() {
                   <Link
                     href={`/sign-in?redirect_url=${encodeURIComponent(redirectTarget)}`}
                     className={classes(
-                      "inline-flex min-h-[56px] w-full items-center justify-center rounded-sm border border-white/18 bg-transparent px-6 text-base font-bold uppercase tracking-[0.05em] text-white transition",
-                      "hover:border-[#63f276]/60 hover:bg-white/5"
+                      "inline-flex min-h-[56px] w-full items-center justify-center rounded-lg border border-white/18 bg-transparent px-6 text-base font-bold uppercase tracking-[0.05em] text-white transition",
+                      "hover:border-[#d4d4d8]/60 hover:bg-white/5"
                     )}
                   >
                     I already have an account

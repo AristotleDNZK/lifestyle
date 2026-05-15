@@ -17,7 +17,7 @@ function Section({
 }) {
   return (
     <section className="border-t border-white/10 pt-8">
-      <h2 className="text-2xl font-bold text-white">{title}</h2>
+      <h2 className="text-base font-semibold text-white">{title}</h2>
       <div className="mt-4 space-y-4 text-base leading-8 text-white/68">
         {children}
       </div>
@@ -27,20 +27,20 @@ function Section({
 
 export default function PrivacyPage() {
   return (
-    <main className="min-h-screen bg-[#06090e] px-4 py-12 text-white sm:px-6">
+    <main className="min-h-screen bg-[#0b0b0c] px-4 py-12 text-white sm:px-6">
       <div className="mx-auto max-w-5xl">
         <Link
           href="/"
-          className="inline-flex rounded-sm border border-white/15 px-4 py-2 text-sm font-semibold text-white/72 transition hover:border-[#63f276]/55 hover:text-white"
+          className="inline-flex rounded-lg border border-white/15 px-4 py-2 text-sm font-semibold text-white/72 transition hover:border-[#d4d4d8]/55 hover:text-white"
         >
           Back to DatingPhotosAI
         </Link>
 
         <header className="mt-10">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#63f276]">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#d4d4d8]">
             Legal
           </p>
-          <h1 className="mt-3 text-4xl font-black tracking-tight text-white sm:text-6xl">
+          <h1 className="mt-3 text-xl font-semibold tracking-tight text-white sm:text-2xl">
             Privacy Policy
           </h1>
           <p className="mt-5 text-base leading-8 text-white/64">

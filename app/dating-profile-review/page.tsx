@@ -16,7 +16,7 @@ function NavLink({
   return (
     <Link
       href={href}
-      className="text-xs font-semibold uppercase tracking-[0.18em] text-white/58 transition hover:text-[#63f276]"
+      className="text-xs font-semibold uppercase tracking-[0.18em] text-white/58 transition hover:text-[#d4d4d8]"
     >
       {children}
     </Link>
@@ -33,7 +33,7 @@ function PrimaryLink({
   return (
     <Link
       href={href}
-      className="inline-flex min-h-[52px] items-center justify-center rounded-sm bg-[#63f276] px-7 text-sm font-black uppercase tracking-[0.08em] text-[#081009] transition hover:bg-[#7dff90]"
+      className="inline-flex min-h-[52px] items-center justify-center rounded-lg bg-[#d4d4d8] px-7 text-sm font-semibold uppercase tracking-[0.08em] text-[#111111] transition hover:bg-[#f1f1f1]"
     >
       {children}
     </Link>
@@ -50,7 +50,7 @@ function SecondaryLink({
   return (
     <Link
       href={href}
-      className="inline-flex min-h-[52px] items-center justify-center rounded-sm border border-white/14 px-7 text-sm font-bold uppercase tracking-[0.08em] text-white transition hover:border-[#63f276]/45 hover:bg-white/5"
+      className="inline-flex min-h-[52px] items-center justify-center rounded-lg border border-white/14 px-7 text-sm font-bold uppercase tracking-[0.08em] text-white transition hover:border-[#d4d4d8]/45 hover:bg-white/5"
     >
       {children}
     </Link>
@@ -66,7 +66,7 @@ function SectionTitle({
 }) {
   return (
     <div className="mx-auto max-w-3xl text-center">
-      <h2 className="text-3xl font-black uppercase tracking-tight text-white sm:text-5xl">
+      <h2 className="text-xl font-semibold uppercase tracking-tight text-white sm:text-2xl">
         {title}
       </h2>
       {subtitle ? (
@@ -88,11 +88,11 @@ function StepCard({
   body: string;
 }) {
   return (
-    <article className="rounded-2xl border border-[#223729] bg-[#0d120e] p-6 shadow-[0_0_24px_rgba(99,242,118,0.06)]">
-      <div className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#28422e] bg-[#111914] text-sm font-black uppercase tracking-[0.14em] text-[#63f276]">
+    <article className="rounded-xl border border-[rgba(255,255,255,0.10)] bg-[#121212] p-6 ">
+      <div className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[rgba(255,255,255,0.12)] bg-[#151515] text-sm font-semibold uppercase tracking-[0.14em] text-[#d4d4d8]">
         {step}
       </div>
-      <h3 className="mt-5 text-2xl font-black uppercase tracking-tight text-white">
+      <h3 className="mt-5 text-base font-semibold uppercase tracking-tight text-white">
         {title}
       </h3>
       <p className="mt-4 text-sm leading-7 text-white/62">{body}</p>
@@ -108,7 +108,7 @@ function FAQItem({
   answer: string;
 }) {
   return (
-    <article className="rounded-xl border border-white/10 bg-[#0b0f0e] p-6">
+    <article className="rounded-xl border border-white/10 bg-[#121212] p-6">
       <h3 className="text-lg font-bold text-white">{question}</h3>
       <p className="mt-3 text-sm leading-7 text-white/60">{answer}</p>
     </article>
@@ -128,11 +128,11 @@ function ScoreCard({
 }) {
   const accentClasses =
     accent === "green"
-      ? "border-[#2d6a3b] bg-[#101712] text-[#63f276]"
-      : "border-[#613033] bg-[#140f10] text-[#ff8484]";
+      ? "border-[rgba(255,255,255,0.20)] bg-[#101712] text-[#d4d4d8]"
+      : "border-white/15 bg-[#202020] text-[#e5e5e5]";
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#090d0b] p-3">
+    <div className="overflow-hidden rounded-xl border border-white/10 bg-[#101010] p-3">
       <div className="relative aspect-[4/5] overflow-hidden rounded-xl">
         <Image src={src} alt={label} fill className="object-cover" />
       </div>
@@ -142,7 +142,7 @@ function ScoreCard({
         </div>
         <div
           className={classes(
-            "rounded-xl border px-3 py-2 text-2xl font-black",
+            "rounded-xl border px-3 py-2 text-base font-semibold",
             accentClasses
           )}
         >
@@ -155,12 +155,12 @@ function ScoreCard({
 
 export default function DatingProfileReviewLandingPage() {
   return (
-    <main className="min-h-screen overflow-hidden bg-[#050706] text-white">
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(99,242,118,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(99,242,118,0.05)_1px,transparent_1px)] bg-[size:54px_54px]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(99,242,118,0.12),transparent_25%)]" />
+    <main className="min-h-screen overflow-hidden bg-[#0b0b0c] text-white">
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:54px_54px]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.06),transparent_25%)]" />
 
       <div className="relative">
-        <header className="sticky top-0 z-30 border-b border-[#17301e] bg-[#070a08]/90 backdrop-blur">
+        <header className="sticky top-0 z-30 border-b border-[rgba(255,255,255,0.10)] bg-[#0b0b0c]/90 backdrop-blur">
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-4 py-4 sm:px-6">
             <ProfileReviewLogo />
             <nav className="hidden items-center gap-8 lg:flex">
@@ -177,10 +177,10 @@ export default function DatingProfileReviewLandingPage() {
         <section className="px-4 pb-20 pt-14 sm:px-6 sm:pb-24 sm:pt-20">
           <div className="mx-auto grid max-w-6xl gap-14 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
             <div>
-              <div className="inline-flex items-center rounded-full border border-[#234129] bg-[#0d1510] px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[#63f276]">
+              <div className="inline-flex items-center rounded-full border border-[rgba(255,255,255,0.12)] bg-[#0d1510] px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[#d4d4d8]">
                 Boost your match rate with better photos
               </div>
-              <h1 className="mt-6 text-5xl font-black uppercase leading-[0.92] tracking-tight text-white sm:text-7xl xl:text-[5.7rem]">
+              <h1 className="mt-6 text-base font-semibold uppercase leading-tight text-white sm:text-xl xl:text-2xl">
                 10x your dates with a dating profile review
               </h1>
               <p className="mt-6 max-w-2xl text-lg leading-8 text-white/62 sm:text-xl">
@@ -203,7 +203,7 @@ export default function DatingProfileReviewLandingPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-[#223729] bg-[radial-gradient(circle_at_top,rgba(99,242,118,0.12),rgba(10,13,11,0.96)_40%),linear-gradient(180deg,#0f1310,#090b09)] p-5 shadow-[0_0_48px_rgba(99,242,118,0.08)] sm:p-8">
+            <div className="rounded-xl border border-[rgba(255,255,255,0.10)] bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.06),rgba(10,13,11,0.96)_40%),linear-gradient(180deg,#0f1310,#090b09)] p-5  sm:p-8">
               <div className="grid items-center gap-4 sm:grid-cols-[1fr_auto_1fr]">
                 <ScoreCard
                   src="/homepage/hero-before.png"
@@ -211,7 +211,7 @@ export default function DatingProfileReviewLandingPage() {
                   score={23}
                   accent="red"
                 />
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-[#28412f] bg-[#101713] text-xl text-[#63f276]">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-[rgba(255,255,255,0.12)] bg-[#151515] text-xl text-[#d4d4d8]">
                   {">"}
                 </div>
                 <ScoreCard
@@ -222,8 +222,8 @@ export default function DatingProfileReviewLandingPage() {
                 />
               </div>
 
-              <div className="mt-6 rounded-2xl border border-white/10 bg-[#090d0b] p-5">
-                <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#63f276]">
+              <div className="mt-6 rounded-xl border border-white/10 bg-[#101010] p-5">
+                <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#d4d4d8]">
                   What the report includes
                 </div>
                 <ul className="mt-4 space-y-3 text-sm leading-6 text-white/68">
@@ -237,7 +237,7 @@ export default function DatingProfileReviewLandingPage() {
           </div>
         </section>
 
-        <section className="bg-[#63f276] px-4 py-8 sm:px-6 sm:py-10">
+        <section className="bg-[#d4d4d8] px-4 py-8 sm:px-6 sm:py-10">
           <div className="mx-auto grid max-w-6xl grid-cols-2 gap-y-8 md:grid-cols-4">
             {[
               ["464+", "Profiles reviewed"],
@@ -246,10 +246,10 @@ export default function DatingProfileReviewLandingPage() {
               ["4.8/5", "Average satisfaction"],
             ].map(([value, label]) => (
               <div key={label} className="text-center">
-                <div className="text-4xl font-black tracking-tight text-[#081009] sm:text-5xl">
+                <div className="text-xl font-semibold tracking-tight text-[#111111] sm:text-2xl">
                   {value}
                 </div>
-                <div className="mt-2 text-sm font-semibold uppercase tracking-[0.08em] text-[#19311f]">
+                <div className="mt-2 text-sm font-semibold uppercase tracking-[0.08em] text-[#111111]">
                   {label}
                 </div>
               </div>
@@ -290,7 +290,7 @@ export default function DatingProfileReviewLandingPage() {
               subtitle="The review focuses on first-photo impact, trust signals, visible style choices, and how well your photos match the type of connection you want."
             />
             <div className="mt-12 grid gap-6 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
-              <div className="rounded-2xl border border-[#3d2a2a] bg-[#120f10] p-4">
+              <div className="rounded-xl border border-white/10 bg-[#121212] p-4">
                 <div className="relative aspect-[4/5] overflow-hidden rounded-xl">
                   <Image
                     src="/homepage/compare-before.png"
@@ -299,7 +299,7 @@ export default function DatingProfileReviewLandingPage() {
                     className="object-cover"
                   />
                 </div>
-                <div className="mt-4 text-sm font-bold uppercase tracking-[0.14em] text-[#ff8c8c]">
+                <div className="mt-4 text-sm font-bold uppercase tracking-[0.14em] text-[#d4d4d8]">
                   Weak first impression
                 </div>
                 <ul className="mt-4 space-y-2 text-sm leading-6 text-white/60">
@@ -308,10 +308,10 @@ export default function DatingProfileReviewLandingPage() {
                   <li>No clear lifestyle positioning</li>
                 </ul>
               </div>
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-[#28412f] bg-[#101713] text-2xl text-[#63f276]">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-[rgba(255,255,255,0.12)] bg-[#151515] text-2xl text-[#d4d4d8]">
                 {">"}
               </div>
-              <div className="rounded-2xl border border-[#223729] bg-[#0c100d] p-4">
+              <div className="rounded-xl border border-[rgba(255,255,255,0.10)] bg-[#121212] p-4">
                 <div className="relative aspect-[4/5] overflow-hidden rounded-xl">
                   <Image
                     src="/homepage/compare-after.png"
@@ -320,7 +320,7 @@ export default function DatingProfileReviewLandingPage() {
                     className="object-cover"
                   />
                 </div>
-                <div className="mt-4 text-sm font-bold uppercase tracking-[0.14em] text-[#63f276]">
+                <div className="mt-4 text-sm font-bold uppercase tracking-[0.14em] text-[#d4d4d8]">
                   Sharper dating signal
                 </div>
                 <ul className="mt-4 space-y-2 text-sm leading-6 text-white/60">
@@ -356,12 +356,12 @@ export default function DatingProfileReviewLandingPage() {
               ].map(([title, body]) => (
                 <article
                   key={title}
-                  className="rounded-2xl border border-white/10 bg-[#0b0f0e] p-6"
+                  className="rounded-xl border border-white/10 bg-[#121212] p-6"
                 >
-                  <div className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#28422e] bg-[#111914] text-sm font-black uppercase tracking-[0.14em] text-[#63f276]">
+                  <div className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[rgba(255,255,255,0.12)] bg-[#151515] text-sm font-semibold uppercase tracking-[0.14em] text-[#d4d4d8]">
                     AI
                   </div>
-                  <h3 className="mt-5 text-2xl font-black uppercase tracking-tight text-white">
+                  <h3 className="mt-5 text-base font-semibold uppercase tracking-tight text-white">
                     {title}
                   </h3>
                   <p className="mt-4 text-sm leading-7 text-white/62">{body}</p>
@@ -372,7 +372,7 @@ export default function DatingProfileReviewLandingPage() {
         </section>
 
         <section className="px-4 pb-20 sm:px-6 sm:pb-28">
-          <div className="mx-auto max-w-6xl rounded-2xl border border-[#223729] bg-[#0b0f0e] p-6 sm:p-8">
+          <div className="mx-auto max-w-6xl rounded-xl border border-[rgba(255,255,255,0.10)] bg-[#121212] p-6 sm:p-8">
             <SectionTitle
               title="Clarity changes online dating results"
               subtitle="The full report turns vague dissatisfaction into a prioritized execution list."
@@ -383,8 +383,8 @@ export default function DatingProfileReviewLandingPage() {
                 ["Quick wins", "The easiest changes with the highest expected return."],
                 ["7-day sprint", "A practical order of operations for the next week."],
               ].map(([title, body]) => (
-                <div key={title} className="rounded-xl border border-white/10 bg-[#101612] p-5">
-                  <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#63f276]">
+                <div key={title} className="rounded-xl border border-white/10 bg-[#151515] p-5">
+                  <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#d4d4d8]">
                     Included
                   </div>
                   <div className="mt-3 text-xl font-bold text-white">{title}</div>
@@ -428,11 +428,11 @@ export default function DatingProfileReviewLandingPage() {
         </section>
 
         <section className="px-4 pb-24 sm:px-6 sm:pb-28">
-          <div className="mx-auto max-w-6xl rounded-2xl border border-[#224129] bg-[linear-gradient(180deg,#111a13,#0a0f0b)] px-6 py-10 text-center shadow-[0_0_40px_rgba(99,242,118,0.08)] sm:px-12 sm:py-14">
-            <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#63f276]">
+          <div className="mx-auto max-w-6xl rounded-xl border border-[rgba(255,255,255,0.10)] bg-[linear-gradient(180deg,#111a13,#0a0f0b)] px-6 py-10 text-center  sm:px-12 sm:py-14">
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#d4d4d8]">
               Ready to be seen?
             </p>
-            <h2 className="mt-3 text-4xl font-black uppercase tracking-tight text-white sm:text-6xl">
+            <h2 className="mt-3 text-xl font-semibold uppercase tracking-tight text-white sm:text-2xl">
               Review your profile now
             </h2>
             <p className="mx-auto mt-5 max-w-3xl text-base leading-7 text-white/60 sm:text-lg">
@@ -448,7 +448,7 @@ export default function DatingProfileReviewLandingPage() {
           </div>
         </section>
 
-        <footer className="border-t border-[#17301e] bg-[#060906] px-4 py-10 sm:px-6">
+        <footer className="border-t border-[rgba(255,255,255,0.10)] bg-[#060906] px-4 py-10 sm:px-6">
           <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-2 lg:grid-cols-4">
             <div>
               <ProfileReviewLogo href="/" />

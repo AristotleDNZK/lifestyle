@@ -27,7 +27,7 @@ function BulletList({ items }: { items: string[] }) {
           key={item}
           className="flex items-start gap-2.5 text-sm leading-6 text-white/72"
         >
-          <span className="mt-2 h-2 w-2 rounded-full bg-[#63f276]" />
+          <span className="mt-2 h-2 w-2 rounded-full bg-[#d4d4d8]" />
           <span>{item}</span>
         </li>
       ))}
@@ -46,7 +46,7 @@ function findImage(images: ProfileReviewReportImage[], imageId: string | null) {
 function ScoreChip({ score }: { score: number }) {
   return (
     <div className="text-center">
-      <div className="text-[78px] font-black leading-none tracking-tight text-white sm:text-[110px]">
+      <div className="text-xl font-semibold leading-none tracking-tight text-white sm:text-xl">
         {score}
       </div>
       <div className="-mt-2 text-sm font-bold uppercase tracking-[0.22em] text-white/35">
@@ -71,7 +71,7 @@ function PreviewSection({
 }) {
   const bestImage = findImage(images, report.bestPhotoId) || images[0];
   const buttonClass =
-    "mt-6 inline-flex min-h-[52px] w-full items-center justify-center rounded-sm bg-[#5cff68] px-6 text-sm font-black uppercase tracking-[0.08em] text-[#081009] transition hover:bg-[#79ff82]";
+    "mt-6 inline-flex min-h-[52px] w-full items-center justify-center rounded-lg bg-[#e5e5e5] px-6 text-sm font-semibold uppercase tracking-[0.08em] text-[#111111] transition hover:bg-[#f1f1f1]";
   const unlockLabel = `Unlock for $${unlockPriceUsd?.toFixed(2) || "3.99"}`;
 
   function renderUnlockCta(extraClassName?: string) {
@@ -96,14 +96,14 @@ function PreviewSection({
 
   return (
     <div className="min-h-screen bg-[#000000] text-white">
-      <div className="sticky top-0 z-10 flex h-10 items-center justify-between bg-[#1f8b38] px-4 text-[11px] font-bold uppercase tracking-[0.18em] text-[#081009]">
+      <div className="sticky top-0 z-10 flex h-10 items-center justify-between bg-[#d4d4d8] px-4 text-[11px] font-bold uppercase tracking-[0.18em] text-[#111111]">
         <span>Discount ends in</span>
         <span>09 - 49 - 30</span>
       </div>
 
       <div className="mx-auto max-w-md px-4 pb-20 pt-8">
         <div className="text-center">
-          <div className="text-sm font-black uppercase tracking-[0.18em] text-white/80">
+          <div className="text-sm font-semibold uppercase tracking-[0.18em] text-white/80">
             Your score
           </div>
           <ScoreChip score={report.overallScore} />
@@ -114,7 +114,7 @@ function PreviewSection({
         </div>
 
         <section className="mt-10">
-          <h2 className="text-3xl font-black uppercase tracking-tight text-white">
+          <h2 className="text-xl font-semibold uppercase tracking-tight text-white">
             Photos
           </h2>
           <div className="mt-4">
@@ -137,7 +137,7 @@ function PreviewSection({
                   className="object-cover"
                 />
               ) : (
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(99,242,118,0.16),rgba(12,12,12,0.96)_70%)]" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),rgba(12,12,12,0.96)_70%)]" />
               )}
               {typeof bestImage?.analysisScore === "number" ? (
                 <div className="absolute bottom-2 left-2 rounded bg-black/75 px-2 py-1 text-xs font-bold text-white">
@@ -151,7 +151,7 @@ function PreviewSection({
         </section>
 
         <section className="mt-10">
-          <h2 className="text-3xl font-black uppercase tracking-tight text-white">
+          <h2 className="text-xl font-semibold uppercase tracking-tight text-white">
             Full report
           </h2>
           <div className="mt-4">
@@ -169,7 +169,7 @@ function PreviewSection({
             {[1, 2, 3].map((item) => (
               <div
                 key={item}
-                className="flex items-center justify-between rounded-sm border border-white/8 bg-[#111111] px-4 py-4"
+                className="flex items-center justify-between rounded-lg border border-white/8 bg-[#111111] px-4 py-4"
               >
                 <div className="h-3 w-40 rounded-full bg-white/8" />
                 <div className="text-white/25">LOCK</div>
@@ -177,7 +177,7 @@ function PreviewSection({
             ))}
           </div>
 
-          <div className="mt-5 rounded-sm border border-[#1d3223] bg-[#0b140d] p-4">
+          <div className="mt-5 rounded-lg border border-white/10 bg-[#151515] p-4">
             <p className="text-sm leading-6 text-white/72">
               Register and continue to payment to unlock the full report,
               detailed photo fixes, and delivery to your email.
@@ -186,10 +186,10 @@ function PreviewSection({
           </div>
         </section>
 
-        <section className="mt-12 rounded-sm bg-[#111111] p-5">
+        <section className="mt-12 rounded-lg bg-[#111111] p-5">
           <div className="text-center text-sm font-semibold text-white/80">
             You're only getting
-            <div className="text-[#63f276]">4% of your potential</div>
+            <div className="text-[#d4d4d8]">4% of your potential</div>
           </div>
           <div className="mt-6 flex items-end justify-center gap-8">
             <div className="flex flex-col items-center">
@@ -199,10 +199,10 @@ function PreviewSection({
               </div>
             </div>
             <div className="flex flex-col items-center">
-              <div className="flex h-36 w-20 items-center justify-center rounded-md bg-[#5cff68] text-4xl font-black text-[#081009]">
+              <div className="flex h-36 w-20 items-center justify-center rounded-md bg-[#e5e5e5] text-xl font-semibold text-[#111111]">
                 x10
               </div>
-              <div className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#63f276]">
+              <div className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#d4d4d8]">
                 With DatingPhotosAI
               </div>
             </div>
@@ -210,7 +210,7 @@ function PreviewSection({
         </section>
 
         <section className="mt-12">
-          <h2 className="text-3xl font-black uppercase tracking-tight text-white">
+          <h2 className="text-xl font-semibold uppercase tracking-tight text-white">
             Maxx your profile
           </h2>
           <p className="mt-2 text-sm text-white/55">
@@ -224,7 +224,7 @@ function PreviewSection({
             ].map((quote, index) => (
               <div
                 key={quote}
-                className="rounded-sm border border-white/8 bg-[#111111] p-4"
+                className="rounded-lg border border-white/8 bg-[#111111] p-4"
               >
                 <div className="text-sm font-bold text-[#f6d05d]">
                   {"*".repeat(5)}
@@ -245,7 +245,7 @@ function PreviewSection({
 function SectionTitle({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <div>
-      <h3 className="text-2xl font-black uppercase tracking-tight text-white sm:text-3xl">
+      <h3 className="text-base font-semibold uppercase tracking-tight text-white sm:text-2xl">
         {title}
       </h3>
       {subtitle ? (
@@ -267,7 +267,7 @@ function ImageTile({
   score?: number | null;
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-white/10 bg-[#0f1319]">
+    <div className="overflow-hidden rounded-xl border border-white/10 bg-[#121212]">
       <div className="relative aspect-[4/5] overflow-hidden bg-[#111]">
         {image ? (
           <Image
@@ -277,15 +277,15 @@ function ImageTile({
             className="object-cover"
           />
         ) : (
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(99,242,118,0.18),rgba(10,13,11,0.96)_70%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),rgba(10,13,11,0.96)_70%)]" />
         )}
         {badge ? (
-          <div className="absolute left-4 top-4 rounded-full bg-black/75 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-[#63f276]">
+          <div className="absolute left-4 top-4 rounded-full bg-black/75 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-[#d4d4d8]">
             {badge}
           </div>
         ) : null}
         {typeof score === "number" ? (
-          <div className="absolute bottom-4 right-4 rounded-xl bg-[#63f276] px-3 py-2 text-lg font-black text-[#081009] shadow-[0_0_20px_rgba(99,242,118,0.32)]">
+          <div className="absolute bottom-4 right-4 rounded-xl bg-[#d4d4d8] px-3 py-2 text-lg font-semibold text-[#111111] ">
             {score}
           </div>
         ) : null}
@@ -308,12 +308,12 @@ function MetricGrid({ scores }: { scores: ProfileReviewFullReport["dimensionScor
   return (
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {items.map(([label, value, max]) => (
-        <div key={label} className="rounded-2xl border border-white/10 bg-[#0d1110] p-4">
+        <div key={label} className="rounded-xl border border-white/10 bg-[#0d1110] p-4">
           <div className="text-xs font-bold uppercase tracking-[0.12em] text-white/45">
             {label}
           </div>
           <div className="mt-3 flex items-end justify-between gap-4">
-            <span className="text-4xl font-black tracking-tight text-white">
+            <span className="text-xl font-semibold tracking-tight text-white">
               {value}
             </span>
             <span className="pb-1 text-sm text-white/50">/ {max}</span>
@@ -336,9 +336,9 @@ function ActionCards({
       {items.map((item) => (
         <article
           key={`${item.priority}-${item.title}`}
-          className="rounded-xl border border-white/10 bg-[#0f1319] p-5 sm:p-6"
+          className="rounded-xl border border-white/10 bg-[#121212] p-5 sm:p-6"
         >
-          <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#63f276]">
+          <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#d4d4d8]">
             {item.priority} priority
           </div>
           <h4 className="mt-3 text-xl font-bold text-white">{item.title}</h4>
@@ -395,10 +395,10 @@ export function ProfileReviewReport({
         <div className="dpai-panel p-6 sm:p-10">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <div className="text-sm font-bold uppercase tracking-[0.18em] text-[#63f276]">
+              <div className="text-sm font-bold uppercase tracking-[0.18em] text-[#d4d4d8]">
                 Your profile report
               </div>
-              <h1 className="mt-3 text-4xl font-black uppercase tracking-tight text-white sm:text-6xl">
+              <h1 className="mt-3 text-xl font-semibold uppercase tracking-tight text-white sm:text-2xl">
                 Full unlocked report
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-7 text-white/62 sm:text-lg">
@@ -406,12 +406,12 @@ export function ProfileReviewReport({
               </p>
             </div>
 
-            <div className="inline-flex items-end gap-2 rounded-2xl border border-[#27412d] bg-[#0c1110] px-5 py-4 shadow-[0_0_28px_rgba(99,242,118,0.12)]">
-              <span className="text-6xl font-black leading-none tracking-tight text-white sm:text-7xl">
+            <div className="inline-flex items-end gap-2 rounded-xl border border-[rgba(255,255,255,0.12)] bg-[#151515] px-5 py-4 ">
+              <span className="text-2xl font-semibold leading-none tracking-tight text-white sm:text-2xl">
                 {fullReport.overallScore}
               </span>
               <div className="pb-1">
-                <div className="text-sm font-semibold uppercase tracking-[0.16em] text-[#63f276]">
+                <div className="text-sm font-semibold uppercase tracking-[0.16em] text-[#d4d4d8]">
                   out of 50
                 </div>
                 <div className="mt-1 text-lg font-semibold text-white/75">
@@ -422,7 +422,7 @@ export function ProfileReviewReport({
           </div>
 
           <div className="mt-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-            <div className="rounded-xl border border-white/10 bg-[#0f1319] p-6 sm:p-8">
+            <div className="rounded-xl border border-white/10 bg-[#121212] p-6 sm:p-8">
               <SectionTitle
                 title="Profile diagnosis"
                 subtitle={fullReport.profileSummary}
@@ -455,9 +455,9 @@ export function ProfileReviewReport({
               {fullReport.quickWins.map((item) => (
                 <article
                   key={item.title}
-                  className="rounded-xl border border-white/10 bg-[#0f1319] p-5"
+                  className="rounded-xl border border-white/10 bg-[#121212] p-5"
                 >
-                  <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#63f276]">
+                  <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#d4d4d8]">
                     Quick win
                   </div>
                   <h4 className="mt-3 text-xl font-bold text-white">{item.title}</h4>
@@ -482,23 +482,23 @@ export function ProfileReviewReport({
             </section>
 
             <section className="grid gap-6 lg:grid-cols-2">
-              <div className="rounded-xl border border-white/10 bg-[#0f1319] p-6 sm:p-8">
+              <div className="rounded-xl border border-white/10 bg-[#121212] p-6 sm:p-8">
                 <SectionTitle title="Recommended photo order" />
                 <div className="mt-6">
                   <BulletList items={fullReport.recommendedOrder} />
                 </div>
               </div>
-              <div className="rounded-xl border border-white/10 bg-[#0f1319] p-6 sm:p-8">
+              <div className="rounded-xl border border-white/10 bg-[#121212] p-6 sm:p-8">
                 <SectionTitle title="Delete and retake list" />
                 <div className="mt-6 grid gap-6 sm:grid-cols-2">
                   <div>
-                    <div className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-[#63f276]">
+                    <div className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-[#d4d4d8]">
                       Delete
                     </div>
                     <BulletList items={fullReport.photosToDelete} />
                   </div>
                   <div>
-                    <div className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-[#63f276]">
+                    <div className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-[#d4d4d8]">
                       Retake
                     </div>
                     <BulletList items={fullReport.photosToRetake} />
@@ -521,7 +521,7 @@ export function ProfileReviewReport({
                   return (
                     <article
                       key={photoReview.imageId}
-                      className="grid gap-5 rounded-xl border border-white/10 bg-[#0f1319] p-5 sm:p-6 lg:grid-cols-[280px_minmax(0,1fr)]"
+                      className="grid gap-5 rounded-xl border border-white/10 bg-[#121212] p-5 sm:p-6 lg:grid-cols-[280px_minmax(0,1fr)]"
                     >
                       <ImageTile
                         image={image}
@@ -530,10 +530,10 @@ export function ProfileReviewReport({
                       />
                       <div>
                         <div className="flex flex-wrap items-center gap-3">
-                          <h4 className="text-2xl font-black uppercase tracking-tight text-white">
+                          <h4 className="text-base font-semibold uppercase tracking-tight text-white">
                             {photoReview.quickLabel}
                           </h4>
-                          <span className="rounded-full border border-[#203225] bg-[#101612] px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-[#63f276]">
+                          <span className="rounded-full border border-[rgba(255,255,255,0.12)] bg-[#151515] px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-[#d4d4d8]">
                             Photo {photoReview.sortOrder}
                           </span>
                         </div>
@@ -542,13 +542,13 @@ export function ProfileReviewReport({
                         </p>
                         <div className="mt-5 grid gap-5 lg:grid-cols-2">
                           <div>
-                            <div className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-[#63f276]">
+                            <div className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-[#d4d4d8]">
                               Strengths
                             </div>
                             <BulletList items={photoReview.strengths} />
                           </div>
                           <div>
-                            <div className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-[#63f276]">
+                            <div className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-[#d4d4d8]">
                               Weaknesses
                             </div>
                             <BulletList items={photoReview.weaknesses} />
@@ -556,13 +556,13 @@ export function ProfileReviewReport({
                         </div>
                         <div className="mt-5 grid gap-5 lg:grid-cols-2">
                           <div>
-                            <div className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-[#63f276]">
+                            <div className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-[#d4d4d8]">
                               Clarity notes
                             </div>
                             <BulletList items={photoReview.clarityNotes} />
                           </div>
                           <div>
-                            <div className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-[#63f276]">
+                            <div className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-[#d4d4d8]">
                               Retake blueprint
                             </div>
                             <BulletList items={photoReview.retakeBlueprint} />
@@ -597,19 +597,19 @@ export function ProfileReviewReport({
             </section>
 
             <section className="grid gap-6 lg:grid-cols-3">
-              <div className="rounded-xl border border-white/10 bg-[#0f1319] p-6">
+              <div className="rounded-xl border border-white/10 bg-[#121212] p-6">
                 <SectionTitle title="Bio angles" />
                 <div className="mt-6">
                   <BulletList items={fullReport.bioSuggestions} />
                 </div>
               </div>
-              <div className="rounded-xl border border-white/10 bg-[#0f1319] p-6">
+              <div className="rounded-xl border border-white/10 bg-[#121212] p-6">
                 <SectionTitle title="Prompt ideas" />
                 <div className="mt-6">
                   <BulletList items={fullReport.promptSuggestions} />
                 </div>
               </div>
-              <div className="rounded-xl border border-white/10 bg-[#0f1319] p-6">
+              <div className="rounded-xl border border-white/10 bg-[#121212] p-6">
                 <SectionTitle title="Confidence notes" />
                 <div className="mt-6">
                   <BulletList items={fullReport.confidenceNotes} />

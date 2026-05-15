@@ -47,8 +47,8 @@ function SidebarItem({
   const baseClass =
     "flex w-full items-center rounded-xl px-3 py-2 text-sm transition-colors";
   const activeClass = active
-    ? "bg-[linear-gradient(90deg,rgba(23,82,43,0.75),rgba(16,22,20,0.4))] text-[#62f178]"
-    : "text-white/68 hover:bg-white/5 hover:text-white";
+    ? "bg-[#1a1a1a] text-white"
+    : "text-white/60 hover:bg-[#1b1b1c] hover:text-white";
 
   if (!item.href) {
     return (
@@ -106,11 +106,11 @@ export function WorkspaceSidebar() {
   const { user } = useUser();
 
   return (
-    <aside className="relative w-full border-b border-white/10 bg-[#080b10] lg:w-[272px] lg:border-b-0 lg:border-r">
+    <aside className="relative w-full border-b border-white/10 bg-[#101010] lg:w-[272px] lg:border-b-0 lg:border-r">
       <div className="border-b border-white/10 px-4 py-5">
         <Link href="/workspace/image-to-image" className="flex items-center gap-2">
-          <span className="text-2xl font-bold text-[#50e7cf]">D</span>
-          <span className="text-2xl font-semibold tracking-tight text-white">
+          <span className="text-lg font-semibold text-[#e5e5e5]">D</span>
+          <span className="text-base font-semibold text-white">
             DatingPhotosAI
           </span>
         </Link>
@@ -120,7 +120,7 @@ export function WorkspaceSidebar() {
       <SidebarGroup title="Account" items={accountItems} pathname={pathname} />
 
       <div className="px-3 pb-4 pt-8 lg:absolute lg:bottom-0 lg:w-[272px]">
-        <div className="rounded-xl border border-white/10 bg-[#0f1319] px-3 py-3">
+        <div className="rounded-xl border border-white/10 bg-[#121212] px-3 py-3">
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
               <p className="truncate text-sm text-white/90">
@@ -134,14 +134,14 @@ export function WorkspaceSidebar() {
           </div>
         </div>
 
-        <div className="mt-3 rounded-xl border border-white/10 bg-[#0f1319] px-3 py-3">
+        <div className="mt-3 rounded-xl border border-white/10 bg-[#121212] px-3 py-3">
           <p className="text-sm font-semibold text-white">Upgrade</p>
           <p className="mt-1 text-xs text-white/55">
             Get more credits and faster generation.
           </p>
           <Link
             href="/workspace/pricing"
-            className="mt-3 inline-flex w-full items-center justify-center rounded-md border border-[#356d43] bg-[#15251b] px-3 py-2 text-sm text-[#a2f2b2] transition hover:bg-[#1d3223]"
+            className="mt-3 inline-flex w-full items-center justify-center rounded-lg border border-white/10 bg-[#151515] px-3 py-2 text-sm text-white/85 transition hover:border-white/20 hover:bg-[#1b1b1c]"
           >
             Upgrade Now
           </Link>

@@ -99,7 +99,7 @@ export default function DatingProfileReviewReportPage() {
     return (
       <main className="dpai-page dpai-grid-bg flex min-h-screen items-center justify-center text-white">
         <div className="text-center">
-          <div className="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-white/10 border-t-[#63f276]" />
+          <div className="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-white/10 border-t-[#d4d4d8]" />
           <p className="mt-5 text-sm uppercase tracking-[0.14em] text-white/45">
             Loading full report
           </p>
@@ -113,7 +113,7 @@ export default function DatingProfileReviewReportPage() {
       <main className="dpai-page dpai-grid-bg flex min-h-screen items-center justify-center px-4 text-white">
         <div className="dpai-panel w-full max-w-xl p-8 text-center">
           <ProfileReviewLogo href="/" />
-          <h1 className="mt-6 text-3xl font-black uppercase tracking-tight">
+          <h1 className="mt-6 text-xl font-semibold uppercase tracking-tight">
             Sign in to view your unlocked report
           </h1>
           <p className="mt-4 text-base leading-7 text-white/60">
@@ -121,7 +121,7 @@ export default function DatingProfileReviewReportPage() {
           </p>
           <Link
             href={`/sign-in?redirect_url=${encodeURIComponent(`/dating-profile-review/report/${params.sessionId}`)}`}
-            className="mt-8 inline-flex min-h-[56px] w-full items-center justify-center rounded-sm bg-[#63f276] px-6 text-base font-black uppercase tracking-[0.06em] text-[#081009]"
+            className="mt-8 inline-flex min-h-[56px] w-full items-center justify-center rounded-lg bg-[#d4d4d8] px-6 text-base font-semibold uppercase tracking-[0.06em] text-[#111111]"
           >
             Sign in
           </Link>
@@ -135,7 +135,7 @@ export default function DatingProfileReviewReportPage() {
       <main className="dpai-page dpai-grid-bg flex min-h-screen items-center justify-center px-4 text-white">
         <div className="dpai-panel w-full max-w-2xl p-8 text-center">
           <ProfileReviewLogo href="/" />
-          <h1 className="mt-6 text-3xl font-black uppercase tracking-tight">
+          <h1 className="mt-6 text-xl font-semibold uppercase tracking-tight">
             Full report locked
           </h1>
           <p className="mt-4 text-base leading-7 text-white/60">
@@ -144,13 +144,13 @@ export default function DatingProfileReviewReportPage() {
           <div className="mt-8 grid gap-3">
             <Link
               href={`/dating-profile-review/unlock/${params.sessionId}${accessToken ? `?accessToken=${encodeURIComponent(accessToken)}` : ""}`}
-              className="inline-flex min-h-[56px] items-center justify-center rounded-sm bg-[#63f276] px-6 text-base font-black uppercase tracking-[0.06em] text-[#081009]"
+              className="inline-flex min-h-[56px] items-center justify-center rounded-lg bg-[#d4d4d8] px-6 text-base font-semibold uppercase tracking-[0.06em] text-[#111111]"
             >
               Go to unlock page
             </Link>
             <Link
               href={`/dating-profile-review/quiz?sessionId=${encodeURIComponent(params.sessionId)}${accessToken ? `&accessToken=${encodeURIComponent(accessToken)}` : ""}&step=23`}
-              className="inline-flex min-h-[56px] items-center justify-center rounded-sm border border-white/18 px-6 text-base font-bold uppercase tracking-[0.05em] text-white"
+              className="inline-flex min-h-[56px] items-center justify-center rounded-lg border border-white/18 px-6 text-base font-bold uppercase tracking-[0.05em] text-white"
             >
               Back to preview
             </Link>
@@ -166,7 +166,7 @@ export default function DatingProfileReviewReportPage() {
         <div className="border-b border-[#203124] bg-[#0a0f0c] px-4 py-4 text-white sm:px-6">
           <div className="mx-auto flex max-w-6xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <div className="text-sm font-bold uppercase tracking-[0.14em] text-[#63f276]">
+              <div className="text-sm font-bold uppercase tracking-[0.14em] text-[#d4d4d8]">
                 Report unlocked
               </div>
               <div className="mt-1 text-sm text-white/62">
@@ -177,7 +177,7 @@ export default function DatingProfileReviewReportPage() {
             </div>
             <Link
               href="/"
-              className="text-sm font-semibold uppercase tracking-[0.1em] text-white/55 transition hover:text-[#63f276]"
+              className="text-sm font-semibold uppercase tracking-[0.1em] text-white/55 transition hover:text-[#d4d4d8]"
             >
               Back home
             </Link>

@@ -106,23 +106,23 @@ export default function WorkspacePricingPage() {
     <>
       <header className="border-b border-white/10 pb-5">
         <p className="text-xs uppercase tracking-[0.1em] text-white/40">Workspace</p>
-        <h1 className="mt-2 text-4xl font-semibold tracking-tight">DatingPhotosAI Pricing Plans</h1>
+        <h1 className="mt-2 text-xl font-semibold tracking-tight">DatingPhotosAI Pricing Plans</h1>
         <p className="mt-1 text-white/55">Choose a plan and start optimizing dating profile photos.</p>
       </header>
 
       <div className="mt-6 inline-flex items-center rounded-full border border-white/10 bg-[#0f141c] p-1 text-sm">
         <button className="rounded-full px-4 py-1.5 text-white/70 transition hover:text-white">Monthly</button>
         <button className="rounded-full bg-white/10 px-4 py-1.5 text-white">Yearly</button>
-        <span className="ml-2 rounded-full bg-[#1e3526] px-2 py-0.5 text-xs text-[#8df6aa]">40% OFF</span>
+        <span className="ml-2 rounded-full bg-[#202020] px-2 py-0.5 text-xs text-[#d4d4d8]">40% OFF</span>
       </div>
 
       <section className="mt-8 grid grid-cols-1 gap-4 xl:grid-cols-3">
         {plans.map((plan) => (
           <article
             key={plan.id}
-            className={`rounded-2xl border p-5 ${
+            className={`rounded-xl border p-5 ${
               plan.highlight
-                ? "border-[#58ef70]/70 bg-[linear-gradient(180deg,rgba(31,69,43,0.38),rgba(12,16,22,0.96))] shadow-[0_0_40px_rgba(87,240,109,0.2)]"
+                ? "border-[#e5e5e5]/70 bg-[#121212] "
                 : "border-white/10 bg-[#0e1218]"
             }`}
           >
@@ -137,7 +137,7 @@ export default function WorkspacePricingPage() {
 
             <div className="mt-3 flex items-end gap-2">
               <span className="text-sm text-white/35 line-through">{plan.oldPrice}</span>
-              <span className="text-[48px] font-semibold leading-none tracking-tight text-white">
+              <span className="text-base font-semibold leading-none tracking-tight text-white">
                 {plan.monthlyPrice}
               </span>
               <span className="mb-2 text-sm text-white/50">/month</span>
@@ -158,7 +158,7 @@ export default function WorkspacePricingPage() {
               disabled={loadingSku !== null}
               className={`mt-6 inline-flex w-full items-center justify-center rounded-md px-4 py-2.5 text-sm font-semibold transition ${
                 plan.highlight
-                  ? "bg-[#5ef36f] text-[#0e1213] hover:bg-[#78ff88]"
+                  ? "bg-[#e5e5e5] text-[#0e1213] hover:bg-[#f1f1f1]"
                   : "border border-white/15 bg-white/5 text-white hover:bg-white/10"
               } disabled:cursor-not-allowed disabled:opacity-60`}
             >
@@ -172,9 +172,9 @@ export default function WorkspacePricingPage() {
       </section>
 
       <section className="mt-12 max-w-4xl">
-        <h3 className="text-3xl font-semibold">Frequently Asked Questions</h3>
+        <h3 className="text-xl font-semibold">Frequently Asked Questions</h3>
         <p className="mt-1 text-white/55">Everything you need to know about our pricing and plans.</p>
-        <div className="mt-5 divide-y divide-white/10 rounded-xl border border-white/10 bg-[#0d1117]">
+        <div className="mt-5 divide-y divide-white/10 rounded-xl border border-white/10 bg-[#121212]">
           {[
             "What are credits and how do they work?",
             "Can I upgrade or downgrade my plan anytime?",

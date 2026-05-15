@@ -181,13 +181,13 @@ export function GlobalLanguageSwitcher() {
       <div className="notranslate fixed right-4 top-4 z-[90]">
         <button
           onClick={() => setPanelOpen((s) => !s)}
-          className="rounded-full border border-white/20 bg-[#0f1319]/95 px-4 py-2 text-sm font-medium text-white shadow-[0_8px_28px_rgba(0,0,0,0.45)] backdrop-blur transition hover:border-[#57f06d]/70"
+          className="rounded-full border border-white/20 bg-[#121212]/95 px-4 py-2 text-sm font-medium text-white shadow-[0_8px_28px_rgba(0,0,0,0.45)] backdrop-blur transition hover:border-[#a1a1aa]/70"
         >
           Language
         </button>
 
         {panelOpen ? (
-          <div className="mt-2 w-72 rounded-xl border border-white/15 bg-[#0f1319] p-4 text-white shadow-[0_14px_40px_rgba(0,0,0,0.55)]">
+          <div className="mt-2 w-72 rounded-xl border border-white/15 bg-[#121212] p-4 text-white shadow-none">
             <p className="text-sm font-semibold">Choose Language</p>
             <p className="mt-1 text-xs text-white/55">
               Supports 50+ languages. Selection applies globally.
@@ -196,7 +196,7 @@ export function GlobalLanguageSwitcher() {
             <select
               value={lang}
               onChange={(e) => setLang(e.target.value)}
-              className="mt-3 w-full rounded-lg border border-white/15 bg-[#101822] px-3 py-2 text-sm outline-none transition focus:border-[#57f06d]/70"
+              className="mt-3 w-full rounded-lg border border-white/15 bg-[#151515] px-3 py-2 text-sm outline-none transition focus:border-[#a1a1aa]/70"
             >
               {LANGUAGES.map((item) => (
                 <option key={item.code} value={item.code}>
@@ -208,7 +208,7 @@ export function GlobalLanguageSwitcher() {
             <div className="mt-3 flex gap-2">
               <button
                 onClick={applyLanguage}
-                className="flex-1 rounded-md bg-[#5ef36f] px-3 py-2 text-sm font-semibold text-[#0d1216] transition hover:bg-[#79ff89]"
+                className="flex-1 rounded-md bg-[#e5e5e5] px-3 py-2 text-sm font-semibold text-[#0d1216] transition hover:bg-[#f1f1f1]"
               >
                 Confirm
               </button>

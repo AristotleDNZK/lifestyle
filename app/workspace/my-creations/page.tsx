@@ -73,7 +73,7 @@ function CreationCard({ item }: { item: GenerationRecord }) {
       : null;
 
   return (
-    <article className="group overflow-hidden rounded-xl border border-white/10 bg-[#0c1016] transition-all duration-300 hover:-translate-y-1 hover:border-[#57f06d]/60 hover:shadow-[0_14px_42px_rgba(87,240,109,0.2)]">
+    <article className="group overflow-hidden rounded-xl border border-white/10 bg-[#101010] transition-all duration-300 hover:-translate-y-1 hover:border-[#a1a1aa]/60 ">
       <div className="relative h-52 overflow-hidden bg-black/30">
         {item.url && item.type === "image" && downloadName ? (
           <WorkspaceImageActionOverlay
@@ -139,7 +139,7 @@ function LoadingGrid() {
       {Array.from({ length: 6 }).map((_, idx) => (
         <div
           key={`skeleton-${idx}`}
-          className="overflow-hidden rounded-xl border border-white/10 bg-[#0c1016]"
+          className="overflow-hidden rounded-xl border border-white/10 bg-[#101010]"
         >
           <div className="h-52 animate-pulse bg-white/[0.06]" />
           <div className="space-y-2 p-4">
@@ -210,11 +210,11 @@ export default function MyCreationsPage() {
     <>
       <header className="mb-5 border-b border-white/10 pb-4">
         <p className="text-xs uppercase tracking-[0.1em] text-white/40">Workspace</p>
-        <h1 className="mt-2 text-4xl font-semibold tracking-tight">My Creations</h1>
+        <h1 className="mt-2 text-xl font-semibold tracking-tight">My Creations</h1>
         <p className="mt-1 text-white/55">Browse your generated image and video history.</p>
       </header>
 
-      <div className="mb-6 inline-flex rounded-lg border border-white/10 bg-[#0d1117] p-1">
+      <div className="mb-6 inline-flex rounded-lg border border-white/10 bg-[#121212] p-1">
         <button
           type="button"
           onClick={() => setTab("videos")}
@@ -248,7 +248,7 @@ export default function MyCreationsPage() {
       ) : null}
 
       {!loading && !error && !filtered.length ? (
-        <div className="rounded-xl border border-white/10 bg-[#0d1117] p-10 text-center">
+        <div className="rounded-xl border border-white/10 bg-[#121212] p-10 text-center">
           <p className="text-base font-semibold text-white/80">No creations yet</p>
           <p className="mt-2 text-sm text-white/50">
             You have not generated any {tab === "images" ? "images" : "videos"} yet.

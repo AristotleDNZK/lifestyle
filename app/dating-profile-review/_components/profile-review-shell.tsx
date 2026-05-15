@@ -11,7 +11,7 @@ export function ProfileReviewLogo({ href = "/" }: { href?: string }) {
   return (
     <Link
       href={href}
-      className="inline-flex rounded-lg border border-[#63f276]/25 bg-[#10161a] px-3 py-1.5"
+      className="inline-flex rounded-lg border border-[#d4d4d8]/25 bg-[#151515] px-3 py-1.5"
     >
       <span className="text-sm font-semibold tracking-tight text-white">
         DatingPhotosAI
@@ -39,8 +39,8 @@ export function ProfileReviewPrimaryButton({
       onClick={onClick}
       disabled={disabled}
       className={classes(
-        "inline-flex min-h-[56px] w-full items-center justify-center rounded-xl bg-[#63f276] px-6 text-base font-semibold tracking-tight text-[#081009] transition",
-        "hover:bg-[#79ff8d] disabled:cursor-not-allowed disabled:bg-[#2d4f34] disabled:text-white/45",
+        "inline-flex min-h-[56px] w-full items-center justify-center rounded-xl bg-[#d4d4d8] px-6 text-base font-semibold tracking-tight text-[#111111] transition",
+        "hover:bg-[#f1f1f1] disabled:cursor-not-allowed disabled:bg-[#2a2a2a] disabled:text-white/45",
         className
       )}
     >
@@ -67,7 +67,7 @@ export function ProfileReviewSecondaryButton({
       disabled={disabled}
       className={classes(
         "inline-flex min-h-[56px] w-full items-center justify-center rounded-xl border border-white/18 bg-transparent px-6 text-base font-semibold tracking-tight text-white transition",
-        "hover:border-[#63f276]/60 hover:bg-white/5 disabled:cursor-not-allowed disabled:border-white/8 disabled:text-white/30",
+        "hover:border-[#d4d4d8]/60 hover:bg-white/5 disabled:cursor-not-allowed disabled:border-white/8 disabled:text-white/30",
         className
       )}
     >
@@ -105,11 +105,11 @@ export function ProfileReviewShell({
     <div
       className={classes(
         "relative min-h-screen overflow-hidden px-5 py-6 text-white sm:px-6",
-        greenTheme ? "bg-[#06120b]" : "bg-[#06090e]"
+        greenTheme ? "bg-[#06120b]" : "bg-[#0b0b0c]"
       )}
     >
       <div className="pointer-events-none absolute inset-0 dpai-grid-bg opacity-70" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_40%_12%,rgba(99,242,118,0.12),rgba(6,9,14,0)_32%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_40%_12%,rgba(255,255,255,0.06),rgba(6,9,14,0)_32%)]" />
 
       <div className="relative mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-3xl flex-col">
         <div className="flex min-h-[52px] items-center justify-between">
@@ -118,7 +118,7 @@ export function ProfileReviewShell({
               <button
                 type="button"
                 onClick={onBack}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-xl text-white/80 transition hover:border-[#63f276]/45 hover:bg-white/10"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-xl text-white/80 transition hover:border-[#d4d4d8]/45 hover:bg-white/10"
                 aria-label="Go back"
               >
                 {"<"}
@@ -132,7 +132,7 @@ export function ProfileReviewShell({
         {typeof progress === "number" ? (
           <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-white/10">
             <div
-              className="h-full rounded-full bg-[#63f276] transition-all duration-300"
+              className="h-full rounded-full bg-[#d4d4d8] transition-all duration-300"
               style={{ width: `${Math.max(0, Math.min(progress, 1)) * 100}%` }}
             />
           </div>
@@ -141,7 +141,7 @@ export function ProfileReviewShell({
         <div className="flex flex-1 flex-col">
           {heroTitle ? (
             <div className="mx-auto mt-16 max-w-2xl text-center sm:mt-24">
-              <h1 className="text-4xl font-black uppercase leading-[0.95] tracking-tight text-white sm:text-6xl">
+              <h1 className="text-xl font-semibold uppercase leading-[0.95] tracking-tight text-white sm:text-2xl">
                 {heroTitle}
               </h1>
               {heroSubtitle ? (
@@ -159,7 +159,7 @@ export function ProfileReviewShell({
                 heroTitle ? "mt-16 sm:mt-20" : "mt-20 sm:mt-28"
               )}
             >
-              <h2 className="text-3xl font-black uppercase leading-none tracking-tight text-white sm:text-5xl">
+              <h2 className="text-xl font-semibold uppercase leading-none tracking-tight text-white sm:text-2xl">
                 {title}
               </h2>
               {subtitle ? (

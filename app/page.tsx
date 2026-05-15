@@ -87,11 +87,11 @@ function SectionHeader({
   return (
     <div className="max-w-3xl">
       {kicker ? (
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#63f276]">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#d4d4d8]">
           {kicker}
         </p>
       ) : null}
-      <h2 className="mt-3 text-4xl font-semibold leading-tight tracking-tight text-white sm:text-5xl">
+      <h2 className="mt-3 text-xl font-semibold leading-tight tracking-tight text-white sm:text-2xl">
         {title}
       </h2>
       {desc ? <p className="mt-4 text-lg leading-8 text-white/58">{desc}</p> : null}
@@ -109,7 +109,7 @@ function PrimaryButton({
   return (
     <Link
       href={href}
-      className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#5ef36f] px-6 py-3 text-sm font-semibold text-[#0b0d10] transition hover:bg-[#78ff88]"
+      className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#e5e5e5] px-6 py-3 text-sm font-semibold text-[#0b0d10] transition hover:bg-[#f1f1f1]"
     >
       {children}
       <span aria-hidden="true">-&gt;</span>
@@ -127,7 +127,7 @@ function SecondaryButton({
   return (
     <Link
       href={href}
-      className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] px-6 py-3 text-sm font-semibold text-white transition hover:border-[#5ef36f]/45 hover:bg-white/[0.06]"
+      className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] px-6 py-3 text-sm font-semibold text-white transition hover:border-[#e5e5e5]/45 hover:bg-white/[0.06]"
     >
       {children}
     </Link>
@@ -136,10 +136,10 @@ function SecondaryButton({
 
 function SiteNavbar() {
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#06090e]/92 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#0b0b0c]/92 backdrop-blur">
       <Container>
         <div className="flex h-16 items-center justify-between gap-4">
-          <Link href="/" className="inline-flex items-center gap-2 rounded-lg border border-[#5ef36f]/25 bg-[#10161a] px-3 py-1.5">
+          <Link href="/" className="inline-flex items-center gap-2 rounded-lg border border-[#e5e5e5]/25 bg-[#151515] px-3 py-1.5">
             <span translate="no" className="notranslate font-semibold tracking-tight text-white">
               DatingPhotosAI
             </span>
@@ -147,7 +147,7 @@ function SiteNavbar() {
 
           <nav className="hidden items-center gap-8 text-sm text-white/60 lg:flex">
             {navLinks.map((link) => (
-              <Link key={link.label} href={link.href} className="transition-colors hover:text-[#63f276]">
+              <Link key={link.label} href={link.href} className="transition-colors hover:text-[#d4d4d8]">
                 {link.label}
               </Link>
             ))}
@@ -156,12 +156,12 @@ function SiteNavbar() {
           <div className="flex items-center gap-3">
             <SignedOut>
               <SignInButton mode="modal" forceRedirectUrl="/workspace/image-to-image">
-                <button className="rounded-lg border border-white/10 bg-white/[0.03] px-4 py-2 text-sm font-medium text-white transition-colors hover:border-[#5ef36f]/45 hover:bg-white/[0.06]">
+                <button className="rounded-lg border border-white/10 bg-white/[0.03] px-4 py-2 text-sm font-medium text-white transition-colors hover:border-[#e5e5e5]/45 hover:bg-white/[0.06]">
                   Log in
                 </button>
               </SignInButton>
               <SignUpButton mode="modal" forceRedirectUrl="/workspace/image-to-image">
-                <button className="rounded-lg bg-[#5ef36f] px-4 py-2 text-sm font-semibold text-[#0f1215] transition hover:bg-[#7bff89]">
+                <button className="rounded-lg bg-[#e5e5e5] px-4 py-2 text-sm font-semibold text-[#0f1215] transition hover:bg-[#f1f1f1]">
                   Sign up
                 </button>
               </SignUpButton>
@@ -170,7 +170,7 @@ function SiteNavbar() {
             <SignedIn>
               <Link
                 href="/workspace/image-to-image"
-                className="rounded-lg bg-[#5ef36f] px-4 py-2 text-sm font-semibold text-[#0f1215] transition hover:bg-[#7bff89]"
+                className="rounded-lg bg-[#e5e5e5] px-4 py-2 text-sm font-semibold text-[#0f1215] transition hover:bg-[#f1f1f1]"
               >
                 Enter workspace
               </Link>
@@ -195,15 +195,15 @@ function ScoreCard({
   good?: boolean;
 }) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#0f1319]">
+    <div className="relative overflow-hidden rounded-xl border border-white/10 bg-[#121212]">
       <Image src={src} alt={label} width={420} height={500} className="h-[360px] w-full object-cover" />
       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-4">
         <div className="flex items-end justify-between gap-4">
           <p className="text-sm font-medium text-white/72">{label}</p>
           <span
-            className={`rounded-lg border px-3 py-1 text-2xl font-semibold ${
+            className={`rounded-lg border px-3 py-1 text-base font-semibold ${
               good
-                ? "border-[#57f06d] bg-[#183123] text-[#63f276]"
+                ? "border-[#a1a1aa] bg-[#202020] text-[#d4d4d8]"
                 : "border-[#df4747] bg-[#301919] text-[#ea4b4b]"
             }`}
           >
@@ -221,11 +221,11 @@ function HeroSection() {
       <Container>
         <div className="grid items-center gap-10 lg:grid-cols-[0.95fr_1.05fr]">
           <div>
-            <p className="inline-flex rounded-full border border-[#5ef36f]/25 bg-[#10161a] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#63f276]">
+            <p className="inline-flex rounded-full border border-[#e5e5e5]/25 bg-[#151515] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#d4d4d8]">
               AI dating photos
             </p>
 
-            <h1 className="mt-5 max-w-3xl text-[56px] font-semibold leading-[0.95] tracking-tight text-white sm:text-[76px]">
+            <h1 className="mt-5 max-w-3xl text-base font-semibold leading-[0.95] tracking-tight text-white sm:text-2xl">
               Upgrade your dating photos with AI
             </h1>
 
@@ -241,10 +241,10 @@ function HeroSection() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-[#0f1319] p-4">
+          <div className="rounded-xl border border-white/10 bg-[#121212] p-4">
             <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
               <ScoreCard src="/homepage/hero-before.png" score="31" label="Before" />
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#2e5a3f] bg-[#10161a] text-lg font-semibold text-[#67f378]">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[rgba(255,255,255,0.12)] bg-[#151515] text-lg font-semibold text-[#e5e5e5]">
                 &gt;&gt;
               </div>
               <ScoreCard src="/homepage/hero-after.png" score="87" label="After" good />
@@ -258,12 +258,12 @@ function HeroSection() {
 
 function StatsBar() {
   return (
-    <section className="mt-16 border-y border-white/10 bg-[#0f1319] py-8">
+    <section className="mt-16 border-y border-white/10 bg-[#121212] py-8">
       <Container>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {stats.map((item) => (
-            <div key={item.value} className="rounded-2xl border border-white/10 bg-[#090c12] px-5 py-4">
-              <p className="text-4xl font-semibold tracking-tight text-[#63f276]">{item.value}</p>
+            <div key={item.value} className="rounded-xl border border-white/10 bg-[#101010] px-5 py-4">
+              <p className="text-xl font-semibold tracking-tight text-[#d4d4d8]">{item.value}</p>
               <p className="mt-2 text-sm text-white/55">{item.label}</p>
             </div>
           ))}
@@ -285,11 +285,11 @@ function StepsSection() {
 
         <div className="mt-10 grid gap-4 md:grid-cols-3">
           {steps.map((step, index) => (
-            <article key={step.title} className="rounded-2xl border border-white/10 bg-[#0f1319] p-6">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#142419] text-sm font-semibold text-[#63f276]">
+            <article key={step.title} className="rounded-xl border border-white/10 bg-[#121212] p-6">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#142419] text-sm font-semibold text-[#d4d4d8]">
                 {index + 1}
               </div>
-              <h3 className="mt-6 text-2xl font-semibold tracking-tight text-white">{step.title}</h3>
+              <h3 className="mt-6 text-base font-semibold tracking-tight text-white">{step.title}</h3>
               <p className="mt-3 text-sm leading-6 text-white/58">{step.desc}</p>
             </article>
           ))}
@@ -311,7 +311,7 @@ function BenefitsSection() {
 
         <div className="mt-10 grid gap-4 lg:grid-cols-3">
           {benefits.map((benefit) => (
-            <article key={benefit.title} className="rounded-2xl border border-white/10 bg-[#0f1319] p-6">
+            <article key={benefit.title} className="rounded-xl border border-white/10 bg-[#121212] p-6">
               <h3 className="text-xl font-semibold tracking-tight text-white">{benefit.title}</h3>
               <p className="mt-3 text-sm leading-6 text-white/58">{benefit.desc}</p>
             </article>
@@ -341,9 +341,9 @@ function GallerySection() {
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {images.map((src) => (
-            <article key={src} className="relative h-[320px] overflow-hidden rounded-2xl border border-white/10 bg-[#0f1319]">
+            <article key={src} className="relative h-[320px] overflow-hidden rounded-xl border border-white/10 bg-[#121212]">
               <Image src={src} alt="AI generated dating photo example" fill sizes="(max-width: 1024px) 50vw, 25vw" className="object-cover" />
-              <span className="absolute left-3 top-3 rounded-full border border-[#5ef36f]/35 bg-black/55 px-3 py-1 text-xs font-semibold text-[#63f276]">
+              <span className="absolute left-3 top-3 rounded-full border border-[#e5e5e5]/35 bg-black/55 px-3 py-1 text-xs font-semibold text-[#d4d4d8]">
                 Example
               </span>
             </article>
@@ -361,7 +361,7 @@ function FAQSection() {
         <SectionHeader title="Frequently asked questions" />
         <div className="mt-10 grid gap-4 lg:grid-cols-2">
           {faqs.map((item) => (
-            <article key={item.q} className="rounded-2xl border border-white/10 bg-[#0f1319] p-6">
+            <article key={item.q} className="rounded-xl border border-white/10 bg-[#121212] p-6">
               <h3 className="font-semibold text-white">{item.q}</h3>
               <p className="mt-3 text-sm leading-6 text-white/58">{item.a}</p>
             </article>
@@ -376,11 +376,11 @@ function CTASection() {
   return (
     <section className="pb-24 sm:pb-28">
       <Container>
-        <div className="rounded-2xl border border-[#5ef36f]/25 bg-[#0f1713] p-8 sm:p-10">
+        <div className="rounded-xl border border-[#e5e5e5]/25 bg-[#121212] p-8 sm:p-10">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#63f276]">Ready</p>
-              <h3 className="mt-3 text-4xl font-semibold tracking-tight text-white">Start your AI photo flow</h3>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#d4d4d8]">Ready</p>
+              <h3 className="mt-3 text-xl font-semibold tracking-tight text-white">Start your AI photo flow</h3>
               <p className="mt-3 max-w-2xl text-white/58">
                 Keep the original chain intact: questionnaire, email, upload, purchase plan, then manual generation in the workspace.
               </p>
@@ -395,7 +395,7 @@ function CTASection() {
 
 function SiteFooter() {
   return (
-    <footer className="border-t border-white/10 bg-[#080b10] pb-8 pt-10">
+    <footer className="border-t border-white/10 bg-[#101010] pb-8 pt-10">
       <Container>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <p translate="no" className="notranslate text-sm text-white/45">
@@ -414,8 +414,8 @@ function SiteFooter() {
 
 export default function HomePage() {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#06090e] text-white">
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(88,255,136,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(88,255,136,0.035)_1px,transparent_1px)] bg-[size:58px_58px]" />
+    <main className="relative min-h-screen overflow-hidden bg-[#0b0b0c] text-white">
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[size:58px_58px]" />
       <div className="relative z-10">
         <SiteNavbar />
         <HeroSection />
