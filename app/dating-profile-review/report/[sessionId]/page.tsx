@@ -22,6 +22,14 @@ type FullReportResponse = {
   }>;
 };
 
+type AppAuthSession = {
+  isSignedIn: boolean;
+  userId: string | null;
+  email: string;
+  isLocalDev: boolean;
+  localDevAuthEnabled: boolean;
+};
+
 function normalizeImages(
   images: FullReportResponse["images"]
 ): ProfileReviewReportImage[] {
@@ -38,6 +46,7 @@ export default function DatingProfileReviewReportPage() {
   const params = useParams<{ sessionId: string }>();
   const searchParams = useSearchParams();
   const { isLoaded, userId } = useAuth();
+  const [appAuth, setAppAuth] = useState<AppAuthSession | null>(null);
   const [report, setReport] = useState<ProfileReviewFullReport | null>(null);
   const [images, setImages] = useState<ProfileReviewReportImage[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +54,41 @@ export default function DatingProfileReviewReportPage() {
   const accessToken = searchParams.get("accessToken") || searchParams.get("token") || "";
   const emailSent = searchParams.get("emailSent") === "1";
   const email = searchParams.get("email") || "";
+  const effectiveUserId = userId || appAuth?.userId || null;
+  const authLoaded = isLoaded && appAuth !== null;
+  const reportRedirect = `/dating-profile-review/report/${params.sessionId}${accessToken ? `?accessToken=${encodeURIComponent(accessToken)}` : ""}`;
+  const localLoginHref = `/api/dev-login?redirect=${encodeURIComponent(reportRedirect)}`;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadAppAuth() {
+      try {
+        const response = await fetch("/api/auth/session", { cache: "no-store" });
+        const data = (await response.json()) as AppAuthSession;
+
+        if (!cancelled) {
+          setAppAuth(data);
+        }
+      } catch {
+        if (!cancelled) {
+          setAppAuth({
+            isSignedIn: false,
+            userId: null,
+            email: "",
+            isLocalDev: false,
+            localDevAuthEnabled: false,
+          });
+        }
+      }
+    }
+
+    void loadAppAuth();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -95,7 +139,7 @@ export default function DatingProfileReviewReportPage() {
     };
   }, [accessToken, params.sessionId]);
 
-  if (loading || !isLoaded) {
+  if (loading || !authLoaded) {
     return (
       <main className="dpai-page dpai-grid-bg flex min-h-screen items-center justify-center text-white">
         <div className="text-center">
@@ -108,7 +152,7 @@ export default function DatingProfileReviewReportPage() {
     );
   }
 
-  if (!userId) {
+  if (!effectiveUserId) {
     return (
       <main className="dpai-page dpai-grid-bg flex min-h-screen items-center justify-center px-4 text-white">
         <div className="dpai-panel w-full max-w-xl p-8 text-center">
@@ -120,7 +164,7 @@ export default function DatingProfileReviewReportPage() {
             This route only unlocks for the paid account owner.
           </p>
           <Link
-            href={`/sign-in?redirect_url=${encodeURIComponent(`/dating-profile-review/report/${params.sessionId}`)}`}
+            href={appAuth?.localDevAuthEnabled ? localLoginHref : `/sign-in?redirect_url=${encodeURIComponent(reportRedirect)}`}
             className="mt-8 inline-flex min-h-[56px] w-full items-center justify-center rounded-lg bg-[#d4d4d8] px-6 text-base font-semibold uppercase tracking-[0.06em] text-[#111111]"
           >
             Sign in

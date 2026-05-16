@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { getAppAuthSession } from "@/lib/local-dev-auth";
+import { isLocalDevAuthEnabled } from "@/lib/local-dev-auth-shared";
 import { resolveUserStatsRecord } from "@/lib/user-stats";
 import { findUserIdentityRecords } from "@/lib/user-identity";
 
@@ -15,6 +16,18 @@ export async function GET() {
       return NextResponse.json(
         { error: "Unauthorized - Please sign in" },
         { status: 401 }
+      );
+    }
+
+    if (isLocalDevAuthEnabled()) {
+      return NextResponse.json(
+        {
+          credits: 100,
+          generations: 0,
+          totalSpent: 0,
+          local: true,
+        },
+        { status: 200 }
       );
     }
 

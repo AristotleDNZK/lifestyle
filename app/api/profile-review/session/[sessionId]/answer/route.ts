@@ -5,6 +5,11 @@ import {
   saveProfileReviewAnswer,
 } from "@/lib/profile-review/session";
 import { profileReviewJsonError } from "@/lib/profile-review/http";
+import {
+  isLocalProfileReviewSession,
+  requireLocalProfileReviewAccess,
+  saveLocalProfileReviewAnswer,
+} from "@/lib/profile-review/local-dev-store";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -24,7 +29,6 @@ export async function POST(
 ) {
   try {
     const body = (await req.json()) as SaveAnswerBody;
-    const userId = await getCurrentUserId();
     const accessToken = req.headers.get("x-profile-review-token");
 
     if (
@@ -35,6 +39,31 @@ export async function POST(
     ) {
       return NextResponse.json({ error: "Missing answer payload" }, { status: 400 });
     }
+
+    if (isLocalProfileReviewSession(params.sessionId)) {
+      const session = requireLocalProfileReviewAccess({
+        sessionId: params.sessionId,
+        accessToken,
+      });
+
+      if (!session) {
+        return NextResponse.json({ error: "Review session not found" }, { status: 404 });
+      }
+
+      const answer = saveLocalProfileReviewAnswer({
+        sessionId: params.sessionId,
+        stepKey: body.stepKey,
+        question: body.question,
+        answerValue: body.answerValue,
+        answerLabel: body.answerLabel,
+        rawPayload: body.rawPayload,
+        currentStep: body.currentStep,
+      });
+
+      return NextResponse.json({ success: true, answer });
+    }
+
+    const userId = await getCurrentUserId();
 
     await requireProfileReviewAccess({
       sessionId: params.sessionId,

@@ -25,14 +25,44 @@ test("local dev auth bypass is available without Google OAuth", () => {
   assert.match(devAuthShared, /dev-user-datingphotosai/);
 
   assert.match(devLogin, /LOCAL_DEV_AUTH_COOKIE/);
+  assert.match(devLogin, /@\/lib\/local-dev-auth-shared/);
+  assert.doesNotMatch(devLogin, /@\/lib\/local-dev-auth";/);
   assert.match(devLogin, /httpOnly: true/);
   assert.match(devLogin, /sameSite: "lax"/);
   assert.match(devLogin, /\/workspace\/image-to-image/);
   assert.doesNotMatch(devLogin, /accounts\.google\.com|oauth2|googleusercontent/);
 
   assert.match(middleware, /LOCAL_DEV_AUTH_COOKIE/);
+  assert.match(middleware, /@\/lib\/local-dev-auth-shared/);
+  assert.doesNotMatch(middleware, /@\/lib\/local-dev-auth";/);
   assert.match(middleware, /isLocalDevAuthEnabled/);
   assert.match(middleware, /request\.cookies\.has\(LOCAL_DEV_AUTH_COOKIE\)/);
+  assert.match(middleware, /NextResponse\.redirect/);
+  assert.match(middleware, /\/api\/dev-login/);
+  assert.match(middleware, /request\.nextUrl\.pathname/);
+});
+
+test("profile review auth gates use the shared app auth session", () => {
+  const sessionRoute = source("app/api/auth/session/route.ts");
+  const unlockPage = source("app/dating-profile-review/unlock/[sessionId]/page.tsx");
+  const checkoutPage = source("app/dating-profile-review/checkout/[sessionId]/page.tsx");
+  const reportPage = source("app/dating-profile-review/report/[sessionId]/page.tsx");
+  const attachRoute = source("app/api/profile-review/session/[sessionId]/attach-user/route.ts");
+  const checkoutRoute = source("app/api/payments/profile-review/checkout/route.ts");
+  const mockCheckoutRoute = source("app/api/profile-review/session/[sessionId]/mock-checkout/route.ts");
+
+  assert.match(sessionRoute, /getAppAuthSession/);
+  assert.match(sessionRoute, /localDevAuthEnabled/);
+  assert.match(unlockPage, /\/api\/auth\/session/);
+  assert.match(checkoutPage, /\/api\/auth\/session/);
+  assert.match(reportPage, /\/api\/auth\/session/);
+  assert.match(unlockPage, /localDevAuthEnabled/);
+  assert.match(checkoutPage, /localDevAuthEnabled/);
+  assert.match(reportPage, /localDevAuthEnabled/);
+  assert.match(attachRoute, /getAppAuthSession/);
+  assert.match(checkoutRoute, /getAppAuthSession/);
+  assert.match(mockCheckoutRoute, /getAppAuthSession/);
+  assert.doesNotMatch(attachRoute, /const userId = await getCurrentUserId\(\)/);
 });
 
 test("AI Photos local development continue action uses site-local login", () => {

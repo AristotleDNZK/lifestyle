@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useAuth, useUser } from "@clerk/nextjs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { ProfileReviewLogo } from "@/app/dating-profile-review/_components/profile-review-shell";
 
@@ -10,18 +10,62 @@ function classes(...values: Array<string | false | null | undefined>) {
   return values.filter(Boolean).join(" ");
 }
 
+type AppAuthSession = {
+  isSignedIn: boolean;
+  userId: string | null;
+  email: string;
+  isLocalDev: boolean;
+  localDevAuthEnabled: boolean;
+};
+
 export default function DatingProfileReviewCheckoutPage() {
   const params = useParams<{ sessionId: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isLoaded, userId } = useAuth();
   const { user } = useUser();
+  const [appAuth, setAppAuth] = useState<AppAuthSession | null>(null);
   const sessionId = params.sessionId;
   const accessToken = searchParams.get("accessToken") || searchParams.get("token") || "";
   const price = Number(process.env.NEXT_PUBLIC_PROFILE_REVIEW_UNLOCK_PRICE_USD || "3.99");
-  const email = user?.emailAddresses?.[0]?.emailAddress || "";
+  const email = user?.emailAddresses?.[0]?.emailAddress || appAuth?.email || "";
+  const effectiveUserId = userId || appAuth?.userId || null;
+  const authLoaded = isLoaded && appAuth !== null;
+  const checkoutRedirect = `/dating-profile-review/checkout/${sessionId}?accessToken=${accessToken}`;
+  const localLoginHref = `/api/dev-login?redirect=${encodeURIComponent(checkoutRedirect)}`;
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadAppAuth() {
+      try {
+        const response = await fetch("/api/auth/session", { cache: "no-store" });
+        const data = (await response.json()) as AppAuthSession;
+
+        if (!cancelled) {
+          setAppAuth(data);
+        }
+      } catch {
+        if (!cancelled) {
+          setAppAuth({
+            isSignedIn: false,
+            userId: null,
+            email: "",
+            isLocalDev: false,
+            localDevAuthEnabled: false,
+          });
+        }
+      }
+    }
+
+    void loadAppAuth();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleCheckout = async () => {
     try {
@@ -40,6 +84,8 @@ export default function DatingProfileReviewCheckoutPage() {
         paddlePriceId?: string;
         customData?: Record<string, unknown>;
         email?: string;
+        provider?: string;
+        reportUrl?: string;
       };
 
       if (!response.ok) {
@@ -50,6 +96,11 @@ export default function DatingProfileReviewCheckoutPage() {
 
       if (!data.paddlePriceId || !data.orderId) {
         throw new Error("Paddle checkout response is incomplete");
+      }
+
+      if (data.provider === "local" && data.reportUrl) {
+        router.push(data.reportUrl);
+        return;
       }
 
       if (!window.Paddle) {
@@ -71,7 +122,7 @@ export default function DatingProfileReviewCheckoutPage() {
     }
   };
 
-  if (!isLoaded) {
+  if (!authLoaded) {
     return (
       <main className="dpai-page dpai-grid-bg flex min-h-screen items-center justify-center text-white">
         <div className="text-center">
@@ -84,7 +135,7 @@ export default function DatingProfileReviewCheckoutPage() {
     );
   }
 
-  if (!userId) {
+  if (!effectiveUserId) {
     return (
       <main className="dpai-page dpai-grid-bg flex min-h-screen items-center justify-center px-4 text-white">
         <div className="dpai-panel w-full max-w-xl p-8 text-center">
@@ -97,7 +148,7 @@ export default function DatingProfileReviewCheckoutPage() {
           </p>
           <div className="mt-8 grid gap-3">
             <Link
-              href={`/sign-in?redirect_url=${encodeURIComponent(`/dating-profile-review/checkout/${sessionId}?accessToken=${accessToken}`)}`}
+              href={appAuth?.localDevAuthEnabled ? localLoginHref : `/sign-in?redirect_url=${encodeURIComponent(checkoutRedirect)}`}
               className="inline-flex min-h-[56px] items-center justify-center rounded-lg bg-[#d4d4d8] px-6 text-base font-semibold uppercase tracking-[0.06em] text-[#111111]"
             >
               Sign in
@@ -199,7 +250,7 @@ export default function DatingProfileReviewCheckoutPage() {
               <button
                 type="button"
                 onClick={handleCheckout}
-                disabled={!userId || !email || submitting}
+                disabled={!effectiveUserId || !email || submitting}
                 className={classes(
                   "mt-8 inline-flex min-h-[56px] w-full items-center justify-center rounded-lg bg-[#e5e5e5] px-6 text-base font-semibold uppercase tracking-[0.06em] text-[#061009] transition",
                   "hover:bg-[#f1f1f1] disabled:cursor-not-allowed disabled:bg-white/20 disabled:text-white/45"

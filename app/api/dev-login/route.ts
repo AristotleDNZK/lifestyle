@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   LOCAL_DEV_AUTH_COOKIE,
   isLocalDevAuthEnabled,
-} from "@/lib/local-dev-auth";
+} from "@/lib/local-dev-auth-shared";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";

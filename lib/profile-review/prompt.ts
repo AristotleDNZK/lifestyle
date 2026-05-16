@@ -80,6 +80,7 @@ function inferNeedAnalysis(lookup: AnswerLookup) {
 export function buildProfileReviewObservationPrompt(params: {
   imagePosition: number;
   totalImages: number;
+  scoreMax: number;
 }) {
   return `
 You are a brutally practical dating profile photo strategist.
@@ -93,9 +94,9 @@ You are reviewing photo ${params.imagePosition} of ${params.totalImages}.
 Return structured JSON only.
 
 Scoring rules:
-- score this image on a strict 0-50 scale
+- score this image on a strict 0-${params.scoreMax} scale
 - be conservative
-- only strong, clearly high-performing profile photos should get close to 50
+- only strong, clearly high-performing profile photos should get close to ${params.scoreMax}
 - generic or weak photos should stay much lower
 
 Recommendation rules:
@@ -131,13 +132,13 @@ Hard constraints:
 - keep the tone direct, strategic, and useful
 
 Weighted scoring rubric, total ${params.scoreMax} points:
-- firstPhotoImpact: 0-10
-- trustAndAuthenticity: 0-8
-- appearancePresentation: 0-8
-- photoTechnique: 0-8
-- lifestyleSignals: 0-6
-- varietyAndBalance: 0-4
-- goalFit: 0-6
+- firstPhotoImpact: 0-20
+- trustAndAuthenticity: 0-16
+- appearancePresentation: 0-16
+- photoTechnique: 0-16
+- lifestyleSignals: 0-12
+- varietyAndBalance: 0-8
+- goalFit: 0-12
 
 User context:
 - Gender: ${answerLabel(lookup, "gender")}

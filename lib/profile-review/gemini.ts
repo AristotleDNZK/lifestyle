@@ -10,6 +10,12 @@ import {
   requireGeminiApiKey,
 } from "@/lib/profile-review/config";
 import {
+  PROFILE_REVIEW_DIMENSION_MAX,
+  applyScoreVariation,
+  clampScore,
+  createScoreRandomizer,
+} from "@/lib/profile-review/scoring";
+import {
   buildProfileReviewObservationPrompt,
   buildProfileReviewSummaryPrompt,
 } from "@/lib/profile-review/prompt";
@@ -267,7 +273,7 @@ const combinedReportSchema: ResponseSchema = {
 };
 
 function clamp(value: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, Math.round(value)));
+  return clampScore(value, min, max);
 }
 
 function safeJsonParse<T>(value: string): T {
@@ -285,24 +291,45 @@ function normalizeStringArray(value: unknown, fallback: string[] = []) {
 }
 
 function normalizeWeightedScores(
-  value: Partial<WeightedScoreBreakdown> | undefined
+  value: Partial<WeightedScoreBreakdown> | undefined,
+  variationSeed: () => number
 ): WeightedScoreBreakdown {
   return {
-    firstPhotoImpact: clamp(Number(value?.firstPhotoImpact ?? 0), 0, 10),
-    trustAndAuthenticity: clamp(
+    firstPhotoImpact: applyScoreVariation(
+      Number(value?.firstPhotoImpact ?? 0),
+      PROFILE_REVIEW_DIMENSION_MAX.firstPhotoImpact,
+      variationSeed
+    ),
+    trustAndAuthenticity: applyScoreVariation(
       Number(value?.trustAndAuthenticity ?? 0),
-      0,
-      8
+      PROFILE_REVIEW_DIMENSION_MAX.trustAndAuthenticity,
+      variationSeed
     ),
-    appearancePresentation: clamp(
+    appearancePresentation: applyScoreVariation(
       Number(value?.appearancePresentation ?? 0),
-      0,
-      8
+      PROFILE_REVIEW_DIMENSION_MAX.appearancePresentation,
+      variationSeed
     ),
-    photoTechnique: clamp(Number(value?.photoTechnique ?? 0), 0, 8),
-    lifestyleSignals: clamp(Number(value?.lifestyleSignals ?? 0), 0, 6),
-    varietyAndBalance: clamp(Number(value?.varietyAndBalance ?? 0), 0, 4),
-    goalFit: clamp(Number(value?.goalFit ?? 0), 0, 6),
+    photoTechnique: applyScoreVariation(
+      Number(value?.photoTechnique ?? 0),
+      PROFILE_REVIEW_DIMENSION_MAX.photoTechnique,
+      variationSeed
+    ),
+    lifestyleSignals: applyScoreVariation(
+      Number(value?.lifestyleSignals ?? 0),
+      PROFILE_REVIEW_DIMENSION_MAX.lifestyleSignals,
+      variationSeed
+    ),
+    varietyAndBalance: applyScoreVariation(
+      Number(value?.varietyAndBalance ?? 0),
+      PROFILE_REVIEW_DIMENSION_MAX.varietyAndBalance,
+      variationSeed
+    ),
+    goalFit: applyScoreVariation(
+      Number(value?.goalFit ?? 0),
+      PROFILE_REVIEW_DIMENSION_MAX.goalFit,
+      variationSeed
+    ),
   };
 }
 
@@ -348,7 +375,8 @@ function totalScore(breakdown: WeightedScoreBreakdown) {
 
 function normalizeObservation(
   raw: Partial<PhotoObservation>,
-  image: ModelImageInput
+  image: ModelImageInput,
+  variationSeed: () => number
 ): PhotoObservation {
   const keepRaw =
     typeof raw.keepOrDrop === "string" ? raw.keepOrDrop.toLowerCase() : "";
@@ -378,10 +406,11 @@ function normalizeObservation(
       raw.idealSlotInProfile == null
         ? null
         : clamp(Number(raw.idealSlotInProfile), 1, 9),
-    imageScore: clamp(
+    imageScore: applyScoreVariation(
       Number(raw.imageScore ?? 0),
-      0,
-      profileReviewConfig.scoreMax
+      profileReviewConfig.scoreMax,
+      variationSeed,
+      4
     ),
   };
 }
@@ -390,7 +419,11 @@ function normalizeCombinedReport(
   raw: RawCombinedReport,
   fallbackObservations: PhotoObservation[]
 ): ProfileReviewFullReport {
-  const dimensionScores = normalizeWeightedScores(raw.dimensionScores);
+  const variationSeed = createScoreRandomizer();
+  const dimensionScores = normalizeWeightedScores(
+    raw.dimensionScores,
+    variationSeed
+  );
 
   const normalizedPhotoReviews = (Array.isArray(raw.photoReviews)
     ? raw.photoReviews
@@ -404,12 +437,16 @@ function normalizeCombinedReport(
         return null;
       }
 
-      return normalizeObservation(review, {
-        id: match.imageId,
-        sortOrder: match.sortOrder,
-        mimeType: "image/jpeg",
-        base64: "",
-      });
+      return normalizeObservation(
+        review,
+        {
+          id: match.imageId,
+          sortOrder: match.sortOrder,
+          mimeType: "image/jpeg",
+          base64: "",
+        },
+        variationSeed
+      );
     })
     .filter(Boolean) as PhotoObservation[];
 
@@ -514,12 +551,19 @@ export async function generateProfileReviewReport(params: {
       prompt: buildProfileReviewObservationPrompt({
         imagePosition: image.sortOrder,
         totalImages: params.images.length,
+        scoreMax: profileReviewConfig.scoreMax,
       }),
       inlineImages: [image],
       schema: observationSchema,
     });
 
-    observations.push(normalizeObservation(safeJsonParse(jsonText), image));
+    observations.push(
+      normalizeObservation(
+        safeJsonParse(jsonText),
+        image,
+        createScoreRandomizer()
+      )
+    );
   }
 
   const combinedText = await generateStructuredJson({

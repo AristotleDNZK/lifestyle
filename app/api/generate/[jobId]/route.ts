@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAppAuthSession } from "@/lib/local-dev-auth";
+import {
+  getLocalGenerationJob,
+  isLocalDevGenerationStoreEnabled,
+  toGenerationJob,
+} from "@/lib/local-dev-generations";
 import { retryAsync } from "@/lib/retry";
 import { supabaseAdmin } from "@/lib/supabase";
 import { findUserIdentityRecords } from "@/lib/user-identity";
@@ -24,6 +29,23 @@ export async function GET(_req: NextRequest, context: RouteContext) {
     }
 
     const jobId = context.params.jobId;
+
+    if (isLocalDevGenerationStoreEnabled()) {
+      const localJob = getLocalGenerationJob({ jobId, userId });
+
+      if (!localJob) {
+        return NextResponse.json(
+          { error: "Generation job not found." },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        job: toGenerationJob(localJob),
+      });
+    }
+
     const identity = await findUserIdentityRecords({ userId, email });
 
     const { data: job, error } = await retryAsync(

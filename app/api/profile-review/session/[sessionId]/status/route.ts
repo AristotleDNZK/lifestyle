@@ -9,6 +9,10 @@ import {
   getProfileReviewAccessToken,
   profileReviewJsonError,
 } from "@/lib/profile-review/http";
+import {
+  isLocalProfileReviewSession,
+  requireLocalProfileReviewAccess,
+} from "@/lib/profile-review/local-dev-store";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -18,8 +22,29 @@ export async function GET(
   { params }: { params: { sessionId: string } }
 ) {
   try {
-    const userId = await getCurrentUserId();
     const accessToken = getProfileReviewAccessToken(req);
+
+    if (isLocalProfileReviewSession(params.sessionId)) {
+      const session = requireLocalProfileReviewAccess({
+        sessionId: params.sessionId,
+        accessToken,
+      });
+
+      if (!session) {
+        return NextResponse.json({ error: "Review session not found" }, { status: 404 });
+      }
+
+      return NextResponse.json({
+        sessionId: session.id,
+        status: session.status,
+        currentStep: session.current_step,
+        previewScore: session.preview_score,
+        reportReady: Boolean(session.previewReport),
+        isUnlocked: false,
+      });
+    }
+
+    const userId = await getCurrentUserId();
 
     const session = await requireProfileReviewAccess({
       sessionId: params.sessionId,

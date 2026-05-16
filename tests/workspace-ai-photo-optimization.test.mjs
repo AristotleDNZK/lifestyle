@@ -29,6 +29,7 @@ test("workspace root redirects to AI photo optimization workspace", () => {
 test("AI photo optimization page handles empty prompt and initial history errors", () => {
   const page = source("app/workspace/image-to-image/page.tsx");
   const generateRoute = source("app/api/generate/route.ts");
+  const defaultPrompt = source("lib/ai-photo-optimization.ts");
 
   assert.match(page, /DEFAULT_AI_PHOTO_OPTIMIZATION_PROMPT/);
   assert.match(generateRoute, /DEFAULT_AI_PHOTO_OPTIMIZATION_PROMPT/);
@@ -38,6 +39,10 @@ test("AI photo optimization page handles empty prompt and initial history errors
   );
   assert.doesNotMatch(page, /Prompt is required/);
   assert.doesNotMatch(generateRoute, /Prompt is required/);
+  assert.match(defaultPrompt, /Generate a series of related photos based on one original image/);
+  assert.match(defaultPrompt, /Do not modify the face in any way/);
+  assert.match(defaultPrompt, /Generate four photos of the same type/);
+  assert.match(defaultPrompt, /iPhone 17 Pro Max/);
 
   const start = page.indexOf("const fetchHistory = async");
   const end = page.indexOf("void fetchHistory(currentPage);", start);

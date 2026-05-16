@@ -41,6 +41,13 @@ export default function WorkspaceAccountPage() {
   const displayName = user?.fullName || user?.firstName || "lin ge";
   const email = user?.primaryEmailAddress?.emailAddress || "gelinlandao2000@gmail.com";
   const [credits, setCredits] = useState<number>(0);
+  const [nameValue, setNameValue] = useState(displayName);
+  const [savingName, setSavingName] = useState(false);
+  const [loadingRecharge, setLoadingRecharge] = useState(false);
+
+  useEffect(() => {
+    setNameValue(displayName);
+  }, [displayName]);
 
   useEffect(() => {
     let cancelled = false;
@@ -69,6 +76,57 @@ export default function WorkspaceAccountPage() {
     };
   }, []);
 
+  const handleSaveName = async () => {
+    const nextName = nameValue.trim();
+    if (!user || nextName.length < 3 || nextName.length > 30) {
+      alert("Please use 3-30 characters for your name.");
+      return;
+    }
+
+    try {
+      setSavingName(true);
+      await user.update({ firstName: nextName, lastName: "" });
+      await user.reload();
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Failed to save name.");
+    } finally {
+      setSavingName(false);
+    }
+  };
+
+  const handleRechargeCredits = async () => {
+    try {
+      setLoadingRecharge(true);
+      const response = await fetch("/api/payments/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sku: "credits_popular" }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to start checkout");
+      }
+
+      if (!window.Paddle) {
+        throw new Error("Paddle checkout is still loading. Please try again in a moment.");
+      }
+
+      window.Paddle?.Checkout.open({
+        items: [{ priceId: data.paddlePriceId, quantity: 1 }],
+        customData: data.customData,
+        customer: data.email ? { email: data.email } : undefined,
+        settings: {
+          successUrl: `${window.location.origin}/workspace/account?success=true&orderId=${data.orderId}`,
+        },
+      });
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Failed to start checkout.");
+    } finally {
+      setLoadingRecharge(false);
+    }
+  };
+
   return (
     <>
       <header className="mb-5 border-b border-white/10 pb-4">
@@ -84,8 +142,13 @@ export default function WorkspaceAccountPage() {
             footer={
               <div className="flex items-center justify-between">
                 <span className="text-sm text-white/45">Please use 3-30 characters for your name</span>
-                <button className="rounded-md bg-white px-4 py-2 text-sm font-semibold text-[#0e1213] hover:bg-white/90">
-                  Save
+                <button
+                  type="button"
+                  onClick={handleSaveName}
+                  disabled={savingName}
+                  className="rounded-md bg-white px-4 py-2 text-sm font-semibold text-[#0e1213] hover:bg-white/90 disabled:opacity-50"
+                >
+                  {savingName ? "Saving..." : "Save"}
                 </button>
               </div>
             }
@@ -93,23 +156,21 @@ export default function WorkspaceAccountPage() {
             <p className="text-white/55">Please enter your display name</p>
             <input
               type="text"
-              defaultValue={displayName}
+              value={nameValue}
+              onChange={(event) => setNameValue(event.target.value)}
               className="mt-4 w-full rounded-lg border border-white/10 bg-[#151515] px-4 py-3 text-white outline-none transition focus:border-[#a1a1aa]/70"
             />
           </ProfileCard>
 
           <ProfileCard
             title="Avatar"
-            footer={<span className="text-sm text-white/45">An avatar is optional but strongly recommended</span>}
+            footer={<span className="text-sm text-white/45">Avatar upload is currently hidden.</span>}
           >
-            <p className="text-white/55">Click upload button to upload a custom one</p>
+            <p className="text-white/55">Your account avatar is managed by your sign-in provider.</p>
             <div className="mt-6 flex items-center gap-4">
               <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-[#e5e5e5]/35 bg-[#151515] text-xl font-semibold text-[#d4d4d8]">
                 {displayName.charAt(0).toUpperCase()}
               </div>
-              <button className="rounded-lg border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10">
-                Upload Avatar
-              </button>
             </div>
           </ProfileCard>
         </div>
@@ -121,8 +182,13 @@ export default function WorkspaceAccountPage() {
               {credits.toLocaleString()}
             </p>
             <p className="mt-1 text-sm text-white/55">Current available balance</p>
-            <button className="mt-4 w-full rounded-md bg-[#e5e5e5] px-4 py-2.5 text-sm font-semibold text-[#0e1213] transition hover:bg-[#f1f1f1]">
-              Recharge Credits
+            <button
+              type="button"
+              onClick={handleRechargeCredits}
+              disabled={loadingRecharge}
+              className="mt-4 w-full rounded-md bg-[#e5e5e5] px-4 py-2.5 text-sm font-semibold text-[#0e1213] transition hover:bg-[#f1f1f1] disabled:opacity-50"
+            >
+              {loadingRecharge ? "Starting checkout..." : "Recharge Credits"}
             </button>
           </article>
 
@@ -136,7 +202,12 @@ export default function WorkspaceAccountPage() {
           </article>
 
           <article className="rounded-xl border border-white/10 bg-[#121212] p-5">
-            <h3 className="text-lg font-semibold">Recent Credit Activity</h3>
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="text-lg font-semibold">Recent Credit Activity</h3>
+              <span className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[10px] uppercase tracking-[0.08em] text-white/45">
+                Example activity
+              </span>
+            </div>
             <div className="mt-3 space-y-3">
               {creditLogs.map((log) => (
                 <div key={log.id} className="rounded-lg border border-white/10 bg-[#0c1118] px-3 py-2">

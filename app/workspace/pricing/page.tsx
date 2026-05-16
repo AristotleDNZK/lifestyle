@@ -7,6 +7,7 @@ interface PlanTier {
   sku: string;
   name: string;
   monthlyPrice: string;
+  yearlyPrice: string;
   oldPrice: string;
   highlight?: boolean;
   features: string[];
@@ -19,6 +20,7 @@ const plans: PlanTier[] = [
     name: "Mini Plan",
     oldPrice: "$15.00",
     monthlyPrice: "$9.00",
+    yearlyPrice: "$5.40",
     features: [
       "500 monthly credits",
       "AI photo optimization",
@@ -32,6 +34,7 @@ const plans: PlanTier[] = [
     name: "Standard Plan",
     oldPrice: "$50.00",
     monthlyPrice: "$30.00",
+    yearlyPrice: "$18.00",
     highlight: true,
     features: [
       "1000 monthly credits",
@@ -46,6 +49,7 @@ const plans: PlanTier[] = [
     name: "Plus Plan",
     oldPrice: "$99.00",
     monthlyPrice: "$60.00",
+    yearlyPrice: "$36.00",
     features: [
       "2500 monthly credits",
       "Top quality photo models",
@@ -65,6 +69,7 @@ function CheckIcon() {
 
 export default function WorkspacePricingPage() {
   const [loadingSku, setLoadingSku] = useState<string | null>(null);
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
 
   const handleSubscribe = async (sku: string) => {
     try {
@@ -111,8 +116,28 @@ export default function WorkspacePricingPage() {
       </header>
 
       <div className="mt-6 inline-flex items-center rounded-full border border-white/10 bg-[#0f141c] p-1 text-sm">
-        <button className="rounded-full px-4 py-1.5 text-white/70 transition hover:text-white">Monthly</button>
-        <button className="rounded-full bg-white/10 px-4 py-1.5 text-white">Yearly</button>
+        <button
+          type="button"
+          onClick={() => setBillingCycle("monthly")}
+          className={`rounded-full px-4 py-1.5 transition ${
+            billingCycle === "monthly"
+              ? "bg-white/10 text-white"
+              : "text-white/70 hover:text-white"
+          }`}
+        >
+          Monthly
+        </button>
+        <button
+          type="button"
+          onClick={() => setBillingCycle("yearly")}
+          className={`rounded-full px-4 py-1.5 transition ${
+            billingCycle === "yearly"
+              ? "bg-white/10 text-white"
+              : "text-white/70 hover:text-white"
+          }`}
+        >
+          Yearly
+        </button>
         <span className="ml-2 rounded-full bg-[#202020] px-2 py-0.5 text-xs text-[#d4d4d8]">40% OFF</span>
       </div>
 
@@ -138,10 +163,13 @@ export default function WorkspacePricingPage() {
             <div className="mt-3 flex items-end gap-2">
               <span className="text-sm text-white/35 line-through">{plan.oldPrice}</span>
               <span className="text-base font-semibold leading-none tracking-tight text-white">
-                {plan.monthlyPrice}
+                {billingCycle === "yearly" ? plan.yearlyPrice : plan.monthlyPrice}
               </span>
               <span className="mb-2 text-sm text-white/50">/month</span>
             </div>
+            <p className="mt-2 text-xs text-white/45">
+              billed {billingCycle}
+            </p>
 
             <ul className="mt-4 space-y-3">
               {plan.features.map((feature) => (
@@ -166,7 +194,9 @@ export default function WorkspacePricingPage() {
                 ? "Starting checkout..."
                 : `Subscribe to ${plan.name.replace(" Plan", "")}`}
             </button>
-            <p className="mt-2 text-center text-xs text-white/40">Subscription billed yearly</p>
+            <p className="mt-2 text-center text-xs text-white/40">
+              Subscription billed {billingCycle}
+            </p>
           </article>
         ))}
       </section>
@@ -184,7 +214,6 @@ export default function WorkspacePricingPage() {
           ].map((question) => (
             <div key={question} className="flex items-center justify-between px-4 py-3 text-sm text-white/75">
               <span>{question}</span>
-              <span className="text-white/40">More</span>
             </div>
           ))}
         </div>

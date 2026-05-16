@@ -38,6 +38,7 @@ export type ResolveImageJobInput = {
   model?: string;
   modelId?: string;
   imageBase64?: string;
+  images?: Array<{ imageBase64?: string }>;
 };
 
 export function safeString(value: unknown) {
@@ -60,7 +61,12 @@ export function resolveModelId(input: ResolveImageJobInput) {
 }
 
 export function resolveGenerationCost(input: ResolveImageJobInput) {
-  const hasSourceImage = safeString(input.imageBase64).trim().length > 0;
+  const hasSourceImage =
+    safeString(input.imageBase64).trim().length > 0 ||
+    (Array.isArray(input.images) &&
+      input.images.some(
+        (image) => safeString(image?.imageBase64).trim().length > 0
+      ));
 
   if (!hasSourceImage) {
     return TEXT_TO_IMAGE_COST;

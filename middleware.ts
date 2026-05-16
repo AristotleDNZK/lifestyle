@@ -1,8 +1,9 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 import {
   LOCAL_DEV_AUTH_COOKIE,
   isLocalDevAuthEnabled,
-} from "@/lib/local-dev-auth";
+} from "@/lib/local-dev-auth-shared";
 
 const isPublicRoute = createRouteMatcher([
   "/",
@@ -20,11 +21,17 @@ export default clerkMiddleware(async (auth, request) => {
   }
 
   if (isProtectedRoute(request)) {
-    if (
-      isLocalDevAuthEnabled() &&
-      request.cookies.has(LOCAL_DEV_AUTH_COOKIE)
-    ) {
-      return;
+    if (isLocalDevAuthEnabled()) {
+      if (request.cookies.has(LOCAL_DEV_AUTH_COOKIE)) {
+        return;
+      }
+
+      const loginUrl = new URL("/api/dev-login", request.url);
+      loginUrl.searchParams.set(
+        "redirect",
+        `${request.nextUrl.pathname}${request.nextUrl.search}`
+      );
+      return NextResponse.redirect(loginUrl);
     }
 
     await auth.protect();

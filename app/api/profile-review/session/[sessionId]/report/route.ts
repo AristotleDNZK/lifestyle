@@ -10,6 +10,10 @@ import {
   getProfileReviewAccessToken,
   profileReviewJsonError,
 } from "@/lib/profile-review/http";
+import {
+  isLocalProfileReviewSession,
+  requireLocalProfileReviewAccess,
+} from "@/lib/profile-review/local-dev-store";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -20,8 +24,35 @@ export async function GET(
 ) {
   try {
     const scope = req.nextUrl.searchParams.get("scope") || "preview";
-    const userId = await getCurrentUserId();
     const accessToken = getProfileReviewAccessToken(req);
+
+    if (isLocalProfileReviewSession(params.sessionId)) {
+      const session = requireLocalProfileReviewAccess({
+        sessionId: params.sessionId,
+        accessToken: scope === "full" ? undefined : accessToken,
+      });
+
+      if (!session) {
+        return NextResponse.json({ error: "Review session not found" }, { status: 404 });
+      }
+
+      if (!session.previewReport || !session.fullReport) {
+        return NextResponse.json({ error: "Report is not ready yet" }, { status: 409 });
+      }
+
+      if (scope === "full" && !session.paid) {
+        return NextResponse.json({ error: "Full report is locked" }, { status: 403 });
+      }
+
+      return NextResponse.json({
+        session,
+        images: session.images,
+        report: scope === "full" ? session.fullReport : session.previewReport,
+        unlocked: scope === "full",
+      });
+    }
+
+    const userId = await getCurrentUserId();
 
     const session = await requireProfileReviewAccess({
       sessionId: params.sessionId,

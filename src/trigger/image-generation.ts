@@ -14,6 +14,10 @@ type GenerateImagePayload = {
   aspectRatio?: string;
   imageBase64?: string;
   imageMimeType?: string;
+  images?: Array<{
+    imageBase64?: string;
+    imageMimeType?: string;
+  }>;
 };
 
 const RETRYABLE_ERROR_MESSAGE = "API 拥挤，触发 Trigger.dev 自动重试";
@@ -174,8 +178,27 @@ async function requestGeminiImage(payload: GenerateImagePayload) {
   const prompt = payload.prompt.trim() || DEFAULT_AI_PHOTO_OPTIMIZATION_PROMPT;
   const modelId = payload.modelId.trim() || "gemini-3.1-flash-image";
   const aspectRatio = safeString(payload.aspectRatio).trim();
-  const inputImageBase64 = safeString(payload.imageBase64).trim();
-  const inputImageMimeType = safeString(payload.imageMimeType).trim() || "image/jpeg";
+  const inputImages = Array.isArray(payload.images)
+    ? payload.images
+        .map((image) => ({
+          imageBase64: safeString(image?.imageBase64).trim(),
+          imageMimeType:
+            safeString(image?.imageMimeType).trim() || "image/jpeg",
+        }))
+        .filter((image) => image.imageBase64.length > 0)
+        .slice(0, 5)
+    : [];
+
+  if (!inputImages.length) {
+    const inputImageBase64 = safeString(payload.imageBase64).trim();
+    if (inputImageBase64) {
+      inputImages.push({
+        imageBase64: inputImageBase64,
+        imageMimeType:
+          safeString(payload.imageMimeType).trim() || "image/jpeg",
+      });
+    }
+  }
 
   const parts: Array<Record<string, unknown>> = [
     {
@@ -183,14 +206,14 @@ async function requestGeminiImage(payload: GenerateImagePayload) {
     },
   ];
 
-  if (inputImageBase64) {
+  inputImages.forEach((inputImage) => {
     parts.push({
       inlineData: {
-        mimeType: inputImageMimeType,
-        data: inputImageBase64,
+        mimeType: inputImage.imageMimeType,
+        data: inputImage.imageBase64,
       },
     });
-  }
+  });
 
   const requestBody = {
     contents: [

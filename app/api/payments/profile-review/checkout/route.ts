@@ -1,4 +1,3 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { getCatalogItem, getPaddlePriceId } from "@/lib/billing/catalog";
 import { createBillingOrder } from "@/lib/billing/store";
@@ -11,13 +10,19 @@ import {
   getProfileReviewAccessToken,
   profileReviewJsonError,
 } from "@/lib/profile-review/http";
+import { getAppAuthSession } from "@/lib/local-dev-auth";
+import {
+  isLocalProfileReviewSession,
+  markLocalProfileReviewSessionPaid,
+  requireLocalProfileReviewAccess,
+} from "@/lib/profile-review/local-dev-store";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId } = await auth();
+    const { userId, email } = await getAppAuthSession();
 
     if (!userId) {
       return NextResponse.json({ error: "Please sign in first" }, { status: 401 });
@@ -30,21 +35,61 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing profile review session id" }, { status: 400 });
     }
 
-    const user = await currentUser();
-    const email = user?.emailAddresses?.[0]?.emailAddress || "";
+    const userEmail = email || `${userId}@temp.local`;
+    const accessToken = body.accessToken || getProfileReviewAccessToken(req);
 
-    if (!email) {
+    if (!userEmail) {
       return NextResponse.json(
         { error: "No email address found for this account" },
         { status: 400 }
       );
     }
 
-    await ensureUserExists(userId, email);
+    if (isLocalProfileReviewSession(sessionId)) {
+      const session = requireLocalProfileReviewAccess({
+        sessionId,
+        accessToken,
+      });
+
+      if (!session) {
+        return NextResponse.json({ error: "Review session not found" }, { status: 404 });
+      }
+
+      if (!session.previewReport || !session.fullReport) {
+        return NextResponse.json({ error: "Report is not ready yet" }, { status: 409 });
+      }
+
+      markLocalProfileReviewSessionPaid({
+        sessionId,
+        userId,
+        email: userEmail,
+        accessToken,
+      });
+
+      return NextResponse.json({
+        orderId: `local-order-${sessionId}`,
+        email: userEmail,
+        provider: "local",
+        sku: "profile_review_unlock",
+        productType: "profile_review_unlock",
+        profileReviewSessionId: sessionId,
+        paddlePriceId: "local-profile-review-unlock",
+        customData: {
+          order_id: `local-order-${sessionId}`,
+          user_id: userId,
+          sku: "profile_review_unlock",
+          product_type: "profile_review_unlock",
+          profile_review_session_id: sessionId,
+        },
+        reportUrl: `/dating-profile-review/report/${sessionId}?accessToken=${encodeURIComponent(accessToken)}&payment=local&orderId=local-order-${sessionId}`,
+      });
+    }
+
+    await ensureUserExists(userId, userEmail);
 
     await requireProfileReviewAccess({
       sessionId,
-      accessToken: body.accessToken || getProfileReviewAccessToken(req),
+      accessToken,
       userId,
     });
 
@@ -56,7 +101,7 @@ export async function POST(req: NextRequest) {
     const item = getCatalogItem("profile_review_unlock");
     const order = await createBillingOrder({
       userId,
-      email,
+      email: userEmail,
       item,
       profileReviewSessionId: sessionId,
       metadata: {
@@ -75,7 +120,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       orderId: order.id,
-      email,
+      email: userEmail,
       provider: "paddle",
       sku: item.sku,
       productType: item.productType,

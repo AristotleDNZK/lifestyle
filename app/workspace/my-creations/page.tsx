@@ -1,13 +1,14 @@
 ﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import {
   WorkspaceImageActionOverlay,
   buildWorkspaceImageDownloadName,
 } from "../_components/workspace-image-actions";
 
 type GenerationType = "image" | "video";
-type ActiveTab = "images" | "videos";
+type ActiveTab = "images";
 
 type GenerationRecord = {
   id: string;
@@ -156,14 +157,14 @@ export default function MyCreationsPage() {
   const [tab, setTab] = useState<ActiveTab>("images");
   const [records, setRecords] = useState<GenerationRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
 
     const load = async () => {
       setLoading(true);
-      setError(null);
+      setLoadFailed(false);
       try {
         const res = await fetch("/api/user/generations?limit=100", {
           cache: "no-store",
@@ -171,7 +172,7 @@ export default function MyCreationsPage() {
         const data = (await res.json()) as GenerationsResponse;
 
         if (!res.ok) {
-          throw new Error(data?.error || "Failed to load generation history.");
+          throw new Error("Failed to load generation history.");
         }
 
         const list = Array.isArray(data?.data)
@@ -185,7 +186,7 @@ export default function MyCreationsPage() {
         }
       } catch (e: any) {
         if (!cancelled) {
-          setError(e?.message || "Failed to load generation history.");
+          setLoadFailed(true);
           setRecords([]);
         }
       } finally {
@@ -202,7 +203,7 @@ export default function MyCreationsPage() {
   }, []);
 
   const filtered = useMemo(() => {
-    const target: GenerationType = tab === "images" ? "image" : "video";
+    const target: GenerationType = "image";
     return records.filter((item) => item.type === target);
   }, [records, tab]);
 
@@ -211,21 +212,10 @@ export default function MyCreationsPage() {
       <header className="mb-5 border-b border-white/10 pb-4">
         <p className="text-xs uppercase tracking-[0.1em] text-white/40">Workspace</p>
         <h1 className="mt-2 text-xl font-semibold tracking-tight">My Creations</h1>
-        <p className="mt-1 text-white/55">Browse your generated image and video history.</p>
+        <p className="mt-1 text-white/55">Browse your generated image history.</p>
       </header>
 
       <div className="mb-6 inline-flex rounded-lg border border-white/10 bg-[#121212] p-1">
-        <button
-          type="button"
-          onClick={() => setTab("videos")}
-          className={`rounded-md px-4 py-2 text-sm transition ${
-            tab === "videos"
-              ? "bg-white/10 text-white"
-              : "text-white/70 hover:bg-white/5 hover:text-white"
-          }`}
-        >
-          Videos
-        </button>
         <button
           type="button"
           onClick={() => setTab("images")}
@@ -241,23 +231,40 @@ export default function MyCreationsPage() {
 
       {loading ? <LoadingGrid /> : null}
 
-      {!loading && error ? (
-        <div className="rounded-xl border border-[#ff4b4b]/40 bg-[#2a1010] p-4 text-sm text-[#ffb3b3]">
-          {error}
+      {!loading && loadFailed ? (
+        <div className="rounded-xl border border-white/10 bg-[#121212] p-10 text-center">
+          <p className="text-base font-semibold text-white/80">
+            We couldn't refresh your creations right now.
+          </p>
+          <p className="mt-2 text-sm text-white/50">
+            Your workspace is still available. Try again in a moment.
+          </p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="mt-5 inline-flex rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+          >
+            Retry
+          </button>
         </div>
       ) : null}
 
-      {!loading && !error && !filtered.length ? (
+      {!loading && !loadFailed && !filtered.length ? (
         <div className="rounded-xl border border-white/10 bg-[#121212] p-10 text-center">
           <p className="text-base font-semibold text-white/80">No creations yet</p>
           <p className="mt-2 text-sm text-white/50">
-            You have not generated any {tab === "images" ? "images" : "videos"} yet.
-            Create one now.
+            You have not generated any images yet.
           </p>
+          <Link
+            href="/workspace/image-to-image"
+            className="mt-5 inline-flex rounded-lg bg-[#e5e5e5] px-4 py-2 text-sm font-semibold text-[#0b0d10] transition hover:bg-white"
+          >
+            Create one now
+          </Link>
         </div>
       ) : null}
 
-      {!loading && !error && filtered.length ? (
+      {!loading && !loadFailed && filtered.length ? (
         <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filtered.map((item) => (
             <CreationCard key={item.id} item={item} />

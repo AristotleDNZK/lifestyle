@@ -6,6 +6,9 @@ import type {
   ProfileReviewFullReport,
   ProfileReviewPreviewReport,
 } from "@/lib/profile-review/types";
+import { PROFILE_REVIEW_DIMENSION_MAX } from "@/lib/profile-review/scoring";
+
+const PROFILE_REVIEW_SCORE_MAX = 100;
 
 function classes(...values: Array<string | false | null | undefined>) {
   return values.filter(Boolean).join(" ");
@@ -50,7 +53,7 @@ function ScoreChip({ score }: { score: number }) {
         {score}
       </div>
       <div className="-mt-2 text-sm font-bold uppercase tracking-[0.22em] text-white/35">
-        / 50
+        / {PROFILE_REVIEW_SCORE_MAX}
       </div>
     </div>
   );
@@ -141,7 +144,7 @@ function PreviewSection({
               )}
               {typeof bestImage?.analysisScore === "number" ? (
                 <div className="absolute bottom-2 left-2 rounded bg-black/75 px-2 py-1 text-xs font-bold text-white">
-                  {bestImage.analysisScore}/50
+                  {bestImage.analysisScore}/{PROFILE_REVIEW_SCORE_MAX}
                 </div>
               ) : null}
             </div>
@@ -296,13 +299,13 @@ function ImageTile({
 
 function MetricGrid({ scores }: { scores: ProfileReviewFullReport["dimensionScores"] }) {
   const items = [
-    ["First photo impact", scores.firstPhotoImpact, 10],
-    ["Trust and authenticity", scores.trustAndAuthenticity, 8],
-    ["Appearance", scores.appearancePresentation, 8],
-    ["Technique", scores.photoTechnique, 8],
-    ["Lifestyle signals", scores.lifestyleSignals, 6],
-    ["Variety", scores.varietyAndBalance, 4],
-    ["Goal fit", scores.goalFit, 6],
+    ["First photo impact", scores.firstPhotoImpact, PROFILE_REVIEW_DIMENSION_MAX.firstPhotoImpact],
+    ["Trust and authenticity", scores.trustAndAuthenticity, PROFILE_REVIEW_DIMENSION_MAX.trustAndAuthenticity],
+    ["Appearance", scores.appearancePresentation, PROFILE_REVIEW_DIMENSION_MAX.appearancePresentation],
+    ["Technique", scores.photoTechnique, PROFILE_REVIEW_DIMENSION_MAX.photoTechnique],
+    ["Lifestyle signals", scores.lifestyleSignals, PROFILE_REVIEW_DIMENSION_MAX.lifestyleSignals],
+    ["Variety", scores.varietyAndBalance, PROFILE_REVIEW_DIMENSION_MAX.varietyAndBalance],
+    ["Goal fit", scores.goalFit, PROFILE_REVIEW_DIMENSION_MAX.goalFit],
   ] as const;
 
   return (
@@ -474,7 +477,7 @@ export function ProfileReviewReport({
             <section>
               <SectionTitle
                 title="Score breakdown"
-                subtitle="The score stays capped at 50 and is allocated across the dimensions that most affect dating-app performance."
+                subtitle="The score stays capped at 100 and is allocated across the dimensions that most affect dating-app performance."
               />
               <div className="mt-6">
                 <MetricGrid scores={fullReport.dimensionScores} />

@@ -8,6 +8,10 @@ import {
 } from "@/lib/generation-jobs";
 import { DEFAULT_AI_PHOTO_OPTIMIZATION_PROMPT } from "@/lib/ai-photo-optimization";
 import { getAppAuthSession } from "@/lib/local-dev-auth";
+import {
+  createLocalGenerationJob,
+  isLocalDevGenerationStoreEnabled,
+} from "@/lib/local-dev-generations";
 import { supabaseAdmin } from "@/lib/supabase";
 import { findUserIdentityRecords } from "@/lib/user-identity";
 
@@ -24,6 +28,10 @@ type GenerateRequestBody = {
   aspectRatio?: string;
   imageBase64?: string;
   imageMimeType?: string;
+  images?: Array<{
+    imageBase64?: string;
+    imageMimeType?: string;
+  }>;
 };
 
 function buildErrorMessage(error: unknown) {
@@ -66,6 +74,35 @@ async function markJobFailed(jobId: string, message: string) {
   }
 }
 
+function normalizeRequestImages(body: GenerateRequestBody) {
+  const requestImages = Array.isArray(body.images)
+    ? body.images
+        .map((image) => ({
+          imageBase64: safeString(image?.imageBase64).trim(),
+          imageMimeType:
+            safeString(image?.imageMimeType).trim() || "image/jpeg",
+        }))
+        .filter((image) => image.imageBase64.length > 0)
+        .slice(0, 5)
+    : [];
+
+  if (requestImages.length > 0) {
+    return requestImages;
+  }
+
+  const imageBase64 = safeString(body.imageBase64).trim();
+  if (!imageBase64) {
+    return [];
+  }
+
+  return [
+    {
+      imageBase64,
+      imageMimeType: safeString(body.imageMimeType).trim() || "image/jpeg",
+    },
+  ];
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { userId, email } = await getAppAuthSession();
@@ -76,9 +113,6 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       );
     }
-
-    const identity = await findUserIdentityRecords({ userId, email });
-    const canonicalUserId = identity.canonicalUserId;
 
     let body: GenerateRequestBody;
     try {
@@ -110,10 +144,31 @@ export async function POST(req: NextRequest) {
       safeString(body.prompt).trim() || DEFAULT_AI_PHOTO_OPTIMIZATION_PROMPT;
     const aspectRatio =
       safeString(body.ratio).trim() || safeString(body.aspectRatio).trim() || null;
-    const imageBase64 = safeString(body.imageBase64).trim() || undefined;
-    const imageMimeType = safeString(body.imageMimeType).trim() || undefined;
+    const requestImages = normalizeRequestImages(body);
+    const primaryImage = requestImages[0];
+    const imageBase64 = primaryImage?.imageBase64;
+    const imageMimeType = primaryImage?.imageMimeType;
     const modelId = resolveModelId(body);
     const cost = resolveGenerationCost(body);
+
+    if (isLocalDevGenerationStoreEnabled()) {
+      const job = createLocalGenerationJob({
+        userId,
+        prompt,
+        modelId,
+        aspectRatio,
+        cost,
+      });
+
+      return NextResponse.json({
+        success: true,
+        jobId: job.id,
+        local: true,
+      });
+    }
+
+    const identity = await findUserIdentityRecords({ userId, email });
+    const canonicalUserId = identity.canonicalUserId;
 
     const deductSuccess = await deductCredits(userId, cost, email);
 
@@ -168,6 +223,7 @@ export async function POST(req: NextRequest) {
         aspectRatio: aspectRatio ?? undefined,
         imageBase64,
         imageMimeType,
+        images: requestImages,
       });
 
       const { error: triggerRunUpdateError } = await supabaseAdmin

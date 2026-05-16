@@ -96,7 +96,7 @@ export async function sendProfileReviewReportEmail(params: {
       from: profileReviewConfig.reportFromEmail,
       to: [params.to],
       reply_to: profileReviewConfig.reportReplyTo || undefined,
-      subject: `Your dating profile report: ${params.report.overallScore}/50`,
+      subject: `Your dating profile report: ${params.report.overallScore}/100`,
       html: buildProfileReviewEmailHtml(params),
     }),
   });

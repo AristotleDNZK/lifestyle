@@ -185,7 +185,7 @@ export default function DatingProfileReviewLandingPage() {
               </h1>
               <p className="mt-6 max-w-2xl text-lg leading-8 text-white/62 sm:text-xl">
                 Answer a fast quiz, upload your dating app photos, and get a score
-                capped at 50 plus brutally specific fixes on what to keep, what to
+                capped at 100 plus brutally specific fixes on what to keep, what to
                 delete, and what to retake.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -227,7 +227,7 @@ export default function DatingProfileReviewLandingPage() {
                   What the report includes
                 </div>
                 <ul className="mt-4 space-y-3 text-sm leading-6 text-white/68">
-                  <li>Strict score capped at 50 with a weighted breakdown</li>
+                  <li>Strict score capped at 100 with a weighted breakdown</li>
                   <li>Per-photo keep, drop, or retake decisions</li>
                   <li>Questionnaire-aware recommendations tied to your goal</li>
                   <li>Full report unlock, on-site access, and email delivery</li>
@@ -413,7 +413,7 @@ export default function DatingProfileReviewLandingPage() {
               />
               <FAQItem
                 question="How does the score work?"
-                answer="The score uses a strict weighted rubric and can never exceed 50. The prompt explicitly enforces the cap for every generated report."
+                answer="The score uses a strict weighted rubric and can never exceed 100. The prompt explicitly enforces the cap for every generated report."
               />
               <FAQItem
                 question="How many photos can I upload?"

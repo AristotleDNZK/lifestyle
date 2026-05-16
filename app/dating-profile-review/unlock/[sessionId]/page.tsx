@@ -14,26 +14,81 @@ function classes(...values: Array<string | false | null | undefined>) {
   return values.filter(Boolean).join(" ");
 }
 
+type AppAuthSession = {
+  isSignedIn: boolean;
+  userId: string | null;
+  email: string;
+  isLocalDev: boolean;
+  localDevAuthEnabled: boolean;
+};
+
 export default function DatingProfileReviewUnlockPage() {
   const params = useParams<{ sessionId: string }>();
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isLoaded, userId } = useAuth();
+  const [appAuth, setAppAuth] = useState<AppAuthSession | null>(null);
   const [attaching, setAttaching] = useState(false);
   const [attached, setAttached] = useState(false);
   const [attachError, setAttachError] = useState<string | null>(null);
   const accessToken = searchParams.get("accessToken") || searchParams.get("token") || "";
   const sessionId = params.sessionId;
   const unlockPriceUsd = Number(process.env.NEXT_PUBLIC_PROFILE_REVIEW_UNLOCK_PRICE_USD || "3.99");
+  const effectiveUserId = userId || appAuth?.userId || null;
+  const authLoaded = appAuth !== null;
+  const clerkAuthPending = !isLoaded && !appAuth?.userId;
+  const previewUrl = `/dating-profile-review/quiz?sessionId=${encodeURIComponent(sessionId)}&accessToken=${encodeURIComponent(accessToken)}&step=23`;
 
   const redirectTarget = useMemo(() => {
     const params = new URLSearchParams(searchParams.toString());
     return `${pathname}${params.toString() ? `?${params.toString()}` : ""}`;
   }, [pathname, searchParams]);
+  const localLoginHref = `/api/dev-login?redirect=${encodeURIComponent(redirectTarget)}`;
+
+  const goBackToPreview = () => {
+    router.push(previewUrl);
+  };
+
+  const handleStartCheckout = () => {
+    router.push(
+      `/dating-profile-review/checkout/${sessionId}?accessToken=${encodeURIComponent(accessToken)}`
+    );
+  };
 
   useEffect(() => {
-    if (!isLoaded || !userId || !sessionId || attaching || attached) {
+    let cancelled = false;
+
+    async function loadAppAuth() {
+      try {
+        const response = await fetch("/api/auth/session", { cache: "no-store" });
+        const data = (await response.json()) as AppAuthSession;
+
+        if (!cancelled) {
+          setAppAuth(data);
+        }
+      } catch {
+        if (!cancelled) {
+          setAppAuth({
+            isSignedIn: false,
+            userId: null,
+            email: "",
+            isLocalDev: false,
+            localDevAuthEnabled: false,
+          });
+        }
+      }
+    }
+
+    void loadAppAuth();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!authLoaded || !effectiveUserId || !sessionId || attaching || attached) {
       return;
     }
 
@@ -79,7 +134,7 @@ export default function DatingProfileReviewUnlockPage() {
     return () => {
       cancelled = true;
     };
-  }, [accessToken, attached, attaching, isLoaded, sessionId, userId]);
+  }, [accessToken, attached, attaching, authLoaded, effectiveUserId, sessionId]);
 
   return (
     <main className="dpai-page dpai-grid-bg min-h-screen overflow-hidden text-white">
@@ -91,11 +146,11 @@ export default function DatingProfileReviewUnlockPage() {
       <div className="relative min-h-[calc(100vh-2.5rem)]">
         <div className="pointer-events-none absolute inset-0 bg-black/70 backdrop-blur-[6px]" />
 
-        <div className="absolute left-0 right-0 top-0 px-4 pt-5">
+        <div className="absolute left-0 right-0 top-0 z-20 px-4 pt-5">
           <div className="mx-auto flex max-w-4xl items-center justify-between">
             <button
               type="button"
-              onClick={() => router.back()}
+              onClick={goBackToPreview}
               className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-xl text-white/75 transition hover:border-[#e5e5e5]/45 hover:bg-white/10"
               aria-label="Go back"
             >
@@ -119,7 +174,7 @@ export default function DatingProfileReviewUnlockPage() {
               </div>
               <button
                 type="button"
-                onClick={() => router.push(`/dating-profile-review/quiz?sessionId=${encodeURIComponent(sessionId)}&accessToken=${encodeURIComponent(accessToken)}&step=23`)}
+                onClick={goBackToPreview}
                 className="text-xl text-white/40 transition hover:text-white/70"
                 aria-label="Close"
               >
@@ -153,11 +208,11 @@ export default function DatingProfileReviewUnlockPage() {
             </div>
 
             <div className="mt-8 space-y-3">
-              {!isLoaded ? (
+              {!authLoaded ? (
                 <div className="rounded-lg border border-white/10 bg-white/[0.03] px-4 py-4 text-sm text-white/55">
-                  Loading authentication state...
+                  {clerkAuthPending ? "Loading authentication state..." : "Preparing checkout..."}
                 </div>
-              ) : userId ? (
+              ) : effectiveUserId ? (
                 <>
                   <div className="rounded-lg border border-white/10 bg-[#151515] px-4 py-4 text-sm text-white/70">
                     {attaching
@@ -167,20 +222,16 @@ export default function DatingProfileReviewUnlockPage() {
                         : "Your account is ready. Continue to checkout to unlock the full report."}
                   </div>
                   <ProfileReviewPrimaryButton
-                    onClick={() => {
-                      router.push(
-                        `/dating-profile-review/checkout/${sessionId}?accessToken=${encodeURIComponent(accessToken)}`
-                      );
-                    }}
-                    disabled={attaching}
+                    onClick={handleStartCheckout}
+                    disabled={false}
                   >
-                    Start 7-day trial
+                    {attaching ? "Continue while account links" : `Pay $${unlockPriceUsd.toFixed(2)}`}
                   </ProfileReviewPrimaryButton>
                 </>
               ) : (
                 <>
                   <Link
-                    href={`/sign-up?redirect_url=${encodeURIComponent(redirectTarget)}`}
+                    href={appAuth?.localDevAuthEnabled ? localLoginHref : `/sign-up?redirect_url=${encodeURIComponent(redirectTarget)}`}
                     className={classes(
                       "inline-flex min-h-[56px] w-full items-center justify-center rounded-lg bg-[#d4d4d8] px-6 text-base font-semibold uppercase tracking-[0.06em] text-[#111111] transition",
                       "hover:bg-[#f1f1f1]"
@@ -189,7 +240,7 @@ export default function DatingProfileReviewUnlockPage() {
                     Register to continue
                   </Link>
                   <Link
-                    href={`/sign-in?redirect_url=${encodeURIComponent(redirectTarget)}`}
+                    href={appAuth?.localDevAuthEnabled ? localLoginHref : `/sign-in?redirect_url=${encodeURIComponent(redirectTarget)}`}
                     className={classes(
                       "inline-flex min-h-[56px] w-full items-center justify-center rounded-lg border border-white/18 bg-transparent px-6 text-base font-bold uppercase tracking-[0.05em] text-white transition",
                       "hover:border-[#d4d4d8]/60 hover:bg-white/5"
@@ -205,11 +256,7 @@ export default function DatingProfileReviewUnlockPage() {
               </p>
 
               <ProfileReviewSecondaryButton
-                onClick={() => {
-                  router.push(
-                    `/dating-profile-review/quiz?sessionId=${encodeURIComponent(sessionId)}&accessToken=${encodeURIComponent(accessToken)}&step=23`
-                  );
-                }}
+                onClick={goBackToPreview}
               >
                 Back to preview score
               </ProfileReviewSecondaryButton>

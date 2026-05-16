@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAppAuthSession } from "@/lib/local-dev-auth";
+import {
+  isLocalDevGenerationStoreEnabled,
+  listLocalGenerationJobs,
+} from "@/lib/local-dev-generations";
 import { retryAsync } from "@/lib/retry";
 import { supabaseAdmin } from "@/lib/supabase";
 import { findUserIdentityRecords } from "@/lib/user-identity";
@@ -22,8 +26,6 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const identity = await findUserIdentityRecords({ userId, email });
-
     // Get query parameters
     const searchParams = req.nextUrl.searchParams;
     const type = searchParams.get("type"); // 'image' or 'video' or null (all)
@@ -31,6 +33,30 @@ export async function GET(req: NextRequest) {
     const limit = Math.max(1, parseInt(searchParams.get("limit") || "8", 10) || 8);
     const from = (page - 1) * limit;
     const to = from + limit - 1;
+
+    if (isLocalDevGenerationStoreEnabled()) {
+      const result = listLocalGenerationJobs({
+        userId,
+        type,
+        page,
+        limit,
+      });
+      const totalPages = Math.max(1, Math.ceil(result.total / limit));
+
+      return NextResponse.json({
+        data: result.list,
+        generations: result.list,
+        total: result.total,
+        page,
+        totalPages,
+        limit,
+        from: result.from,
+        to: result.to,
+        local: true,
+      });
+    }
+
+    const identity = await findUserIdentityRecords({ userId, email });
 
     // Build query: only successful generations. Clients normalize `url` and
     // `image_url`, so keep image-only rows even if the legacy `url` column is
@@ -77,7 +103,7 @@ export async function GET(req: NextRequest) {
   } catch (error: any) {
     console.error("Generations history error:", error);
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: "Failed to load generation history" },
       { status: 500 }
     );
   }

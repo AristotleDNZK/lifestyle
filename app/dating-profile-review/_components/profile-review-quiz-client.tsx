@@ -56,6 +56,10 @@ type UploadItem = {
   name: string;
 };
 
+type ProfileReviewClientError = Error & {
+  status?: number;
+};
+
 function clampStep(value: number) {
   if (!Number.isFinite(value)) {
     return 1;
@@ -122,6 +126,20 @@ function clearStoredSession() {
   window.localStorage.removeItem(PROFILE_REVIEW_SESSION_STORAGE_KEY);
 }
 
+function createProfileReviewClientError(message: string, status: number) {
+  const error = new Error(message) as ProfileReviewClientError;
+  error.status = status;
+  return error;
+}
+
+function isProfileReviewSessionUnavailable(error: unknown) {
+  return (
+    error instanceof Error &&
+    "status" in error &&
+    [403, 404, 409, 500].includes(Number((error as ProfileReviewClientError).status))
+  );
+}
+
 export function ProfileReviewQuizClient({
   unlockPriceUsd,
 }: {
@@ -141,11 +159,16 @@ export function ProfileReviewQuizClient({
   const [busy, setBusy] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [initRetryKey, setInitRetryKey] = useState(0);
   const pollingRef = useRef<number | null>(null);
   const uploadItemsRef = useRef<UploadItem[]>([]);
   const activeSessionRef = useRef<StoredProfileReviewSession | null>(null);
 
   const step = useMemo(() => getProfileReviewStep(currentStep), [currentStep]);
+  const sessionReady = Boolean(sessionId && accessToken);
+  const sessionNotice = sessionReady
+    ? error
+    : error || "We're preparing your review session.";
 
   const syncLocation = useCallback(
     (nextSessionId: string, nextAccessToken: string, nextStep: number) => {
@@ -213,10 +236,11 @@ export function ProfileReviewQuizClient({
 
       const data = (await response.json()) as StatusResponse | { error?: string };
       if (!response.ok) {
-        throw new Error(
+        throw createProfileReviewClientError(
           "error" in data && typeof data.error === "string"
             ? data.error
-            : "Failed to load review status"
+            : "Failed to load review status",
+          response.status
         );
       }
 
@@ -265,6 +289,8 @@ export function ProfileReviewQuizClient({
       try {
         setInitializing(true);
         setError(null);
+        setSessionId("");
+        setAccessToken("");
 
         if (resolvedEntry.shouldClearStoredSession) {
           clearStoredSession();
@@ -273,15 +299,39 @@ export function ProfileReviewQuizClient({
         let activeSessionId = resolvedEntry.sessionId;
         let activeAccessToken = resolvedEntry.accessToken;
         let activeStep = resolvedEntry.requestedStep;
+        let recreatedSession = false;
 
         if (resolvedEntry.shouldCreateSession) {
           const created = await createSession();
           activeSessionId = created.sessionId;
           activeAccessToken = created.accessToken;
           activeStep = created.currentStep;
+          recreatedSession = true;
         } else {
-          const status = await loadStatus(activeSessionId, activeAccessToken);
-          activeStep = searchParams.get("step")
+          let status: StatusResponse;
+          try {
+            status = await loadStatus(activeSessionId, activeAccessToken);
+          } catch (statusError) {
+            if (!isProfileReviewSessionUnavailable(statusError)) {
+              throw statusError;
+            }
+
+            clearStoredSession();
+            const created = await createSession();
+            activeSessionId = created.sessionId;
+            activeAccessToken = created.accessToken;
+            activeStep = created.currentStep;
+            recreatedSession = true;
+            status = {
+              sessionId: created.sessionId,
+              status: created.status,
+              currentStep: created.currentStep,
+              reportReady: false,
+              isUnlocked: false,
+            };
+          }
+
+          activeStep = !recreatedSession && searchParams.get("step")
             ? resolvedEntry.requestedStep
             : clampStep(status.currentStep);
           if (status.reportReady && activeStep >= 23) {
@@ -303,11 +353,9 @@ export function ProfileReviewQuizClient({
         syncLocation(activeSessionId, activeAccessToken, activeStep);
       } catch (nextError) {
         if (!cancelled) {
-          setError(
-            nextError instanceof Error
-              ? nextError.message
-              : "Failed to initialize the review"
-          );
+          clearStoredSession();
+          activeSessionRef.current = null;
+          setError("We're preparing your review session. Please retry in a moment.");
         }
       } finally {
         if (!cancelled) {
@@ -321,7 +369,14 @@ export function ProfileReviewQuizClient({
     return () => {
       cancelled = true;
     };
-  }, [createSession, loadPreviewReport, loadStatus, searchParams, syncLocation]);
+  }, [createSession, initRetryKey, loadPreviewReport, loadStatus, searchParams, syncLocation]);
+
+  const handleRetryInitialization = useCallback(() => {
+    clearStoredSession();
+    activeSessionRef.current = null;
+    setError(null);
+    setInitRetryKey((value) => value + 1);
+  }, []);
 
   useEffect(() => {
     uploadItemsRef.current = uploadItems;
@@ -426,7 +481,7 @@ export function ProfileReviewQuizClient({
       currentStep: number;
     }) => {
       if (!sessionId || !accessToken) {
-        throw new Error("Missing active profile review session");
+        throw new Error("We're preparing your review session. Please retry in a moment.");
       }
 
       const response = await fetch(`/api/profile-review/session/${sessionId}/answer`, {
@@ -446,7 +501,12 @@ export function ProfileReviewQuizClient({
   );
 
   const handleChoice = useCallback(
-    async (option: StepOption) => {
+        async (option: StepOption) => {
+      if (!sessionReady) {
+        setError("We're preparing your review session. Please retry in a moment.");
+        return;
+      }
+
       if (step.type !== "choice") {
         return;
       }
@@ -471,10 +531,15 @@ export function ProfileReviewQuizClient({
         setBusy(false);
       }
     },
-    [goToStep, saveAnswer, step]
+    [goToStep, saveAnswer, sessionReady, step]
   );
 
   const handleContinue = useCallback(async () => {
+    if (!sessionReady) {
+      setError("We're preparing your review session. Please retry in a moment.");
+      return;
+    }
+
     try {
       setBusy(true);
       setError(null);
@@ -504,27 +569,31 @@ export function ProfileReviewQuizClient({
           answerValue: normalizedEmail,
           answerLabel: normalizedEmail,
           rawPayload: { stepId: step.id },
-          currentStep: step.id + 1,
+          currentStep: 23,
         });
-        goToStep(step.id + 1);
+        await loadPreviewReport(sessionId, accessToken);
+        goToStep(23);
       }
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "Failed to continue");
     } finally {
       setBusy(false);
     }
-  }, [emailValue, goToStep, saveAnswer, step]);
+  }, [accessToken, emailValue, goToStep, loadPreviewReport, saveAnswer, sessionId, sessionReady, step]);
 
   const handleUploadIntroChoice = useCallback(
-    async (source: "upload" | "tinder" | "instagram") => {
+    async (source: "upload") => {
+      if (!sessionReady) {
+        setError("We're preparing your review session. Please retry in a moment.");
+        return;
+      }
+
       if (step.type !== "upload-intro") {
         return;
       }
 
       const labelMap = {
         upload: "Upload photos",
-        tinder: "Import from Tinder",
-        instagram: "Import from Instagram",
       } as const;
 
       try {
@@ -545,35 +614,7 @@ export function ProfileReviewQuizClient({
         setBusy(false);
       }
     },
-    [goToStep, saveAnswer, step]
-  );
-
-  const handleUpsellChoice = useCallback(
-    async (accepted: boolean) => {
-      if (step.type !== "upsell") {
-        return;
-      }
-
-      try {
-        setBusy(true);
-        setError(null);
-        await saveAnswer({
-          stepKey: step.key,
-          question: step.title,
-          answerValue: accepted ? "accepted" : "declined",
-          answerLabel: accepted ? step.acceptLabel : step.declineLabel,
-          rawPayload: { stepId: step.id, accepted },
-          currentStep: step.id + 1,
-        });
-        await loadPreviewReport(sessionId, accessToken);
-        goToStep(step.id + 1);
-      } catch (nextError) {
-        setError(nextError instanceof Error ? nextError.message : "Failed to continue");
-      } finally {
-        setBusy(false);
-      }
-    },
-    [accessToken, goToStep, loadPreviewReport, saveAnswer, sessionId, step]
+    [goToStep, saveAnswer, sessionReady, step]
   );
 
   const handleUploadFiles = useCallback((files: FileList | null) => {
@@ -616,7 +657,7 @@ export function ProfileReviewQuizClient({
 
   const handleSubmitUploads = useCallback(async () => {
     if (!sessionId || !accessToken) {
-      setError("Missing upload session");
+      setError("We're preparing your review session. Please retry in a moment.");
       return;
     }
 
@@ -661,7 +702,7 @@ export function ProfileReviewQuizClient({
 
   const handleUnlockReport = useCallback(() => {
     if (!sessionId || !accessToken) {
-      setError("Missing review session");
+      setError("We're preparing your review session. Please retry in a moment.");
       return;
     }
 
@@ -690,21 +731,21 @@ export function ProfileReviewQuizClient({
   }
 
   return (
-    <ProfileReviewStepRenderer
+        <ProfileReviewStepRenderer
       step={step}
       canGoBack={currentStep > 1 && currentStep < 20}
       onBack={handleBack}
-      busy={busy}
-      emailValue={emailValue}
+          busy={busy}
+          sessionReady={sessionReady}
+          sessionNotice={sessionNotice}
+          onRetryInitialization={handleRetryInitialization}
+          emailValue={emailValue}
       onEmailChange={setEmailValue}
       onChoice={(option) => {
         void handleChoice(option);
       }}
       onContinue={() => {
         void handleContinue();
-      }}
-      onUpsellChoice={(accepted) => {
-        void handleUpsellChoice(accepted);
       }}
       onUploadIntroChoice={(source) => {
         void handleUploadIntroChoice(source);
@@ -720,7 +761,6 @@ export function ProfileReviewQuizClient({
       previewImages={previewImages}
       onUnlockReport={handleUnlockReport}
       unlockPriceUsd={unlockPriceUsd}
-      error={error}
     />
   );
 }

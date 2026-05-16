@@ -6,6 +6,11 @@ import {
   requireProfileReviewAccess,
 } from "@/lib/profile-review/session";
 import { profileReviewJsonError } from "@/lib/profile-review/http";
+import {
+  completeLocalProfileReviewUpload,
+  isLocalProfileReviewSession,
+  requireLocalProfileReviewAccess,
+} from "@/lib/profile-review/local-dev-store";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -16,15 +21,7 @@ export async function POST(
   { params }: { params: { sessionId: string } }
 ) {
   try {
-    const userId = await getCurrentUserId();
     const accessToken = req.headers.get("x-profile-review-token");
-
-    await requireProfileReviewAccess({
-      sessionId: params.sessionId,
-      accessToken,
-      userId,
-    });
-
     const formData = await req.formData();
     const files = formData
       .getAll("files")
@@ -36,6 +33,36 @@ export async function POST(
         { status: 400 }
       );
     }
+
+    if (isLocalProfileReviewSession(params.sessionId)) {
+      const session = requireLocalProfileReviewAccess({
+        sessionId: params.sessionId,
+        accessToken,
+      });
+
+      if (!session) {
+        return NextResponse.json({ error: "Review session not found" }, { status: 404 });
+      }
+
+      await completeLocalProfileReviewUpload({
+        sessionId: params.sessionId,
+        files,
+      });
+
+      return NextResponse.json({
+        success: true,
+        status: "analyzed",
+        currentStep: 21,
+      });
+    }
+
+    const userId = await getCurrentUserId();
+
+    await requireProfileReviewAccess({
+      sessionId: params.sessionId,
+      accessToken,
+      userId,
+    });
 
     await replaceProfileReviewImages({
       sessionId: params.sessionId,

@@ -18,7 +18,7 @@ export function profileReviewJsonError(error: unknown) {
   console.error("[ProfileReview][UnhandledError]", error);
   return NextResponse.json(
     {
-      error: error instanceof Error ? error.message : "Internal server error",
+      error: "We couldn't prepare your review session. Please try again.",
     },
     { status: 500 }
   );

@@ -1,4 +1,5 @@
 import { env } from "@/lib/env";
+import { PROFILE_REVIEW_SCORE_MAX } from "@/lib/profile-review/scoring";
 
 function parseInteger(raw: string, fallback: number) {
   const value = Number(raw);
@@ -16,7 +17,7 @@ export const profileReviewConfig = {
   timeoutMs: parseInteger(env.GEMINI_TIMEOUT_MS || "120000", 120_000),
   storageBucket: env.PROFILE_REVIEW_STORAGE_BUCKET,
   maxUploadImages: parseInteger(env.PROFILE_REVIEW_MAX_UPLOAD_IMAGES, 9),
-  scoreMax: parseInteger(env.PROFILE_REVIEW_SCORE_MAX, 50),
+  scoreMax: parseInteger(env.PROFILE_REVIEW_SCORE_MAX, PROFILE_REVIEW_SCORE_MAX),
   unlockPriceUsd: parseDecimal(env.PROFILE_REVIEW_UNLOCK_PRICE_USD, 3.99),
   resendApiKey: env.RESEND_API_KEY || "",
   reportFromEmail: env.PROFILE_REVIEW_REPORT_FROM_EMAIL || "",

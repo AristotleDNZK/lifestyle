@@ -9,6 +9,7 @@ type NavItem = {
   href?: string;
   match?: "exact" | "prefix";
   indent?: boolean;
+  external?: boolean;
 };
 
 const toolItems: NavItem[] = [
@@ -23,7 +24,7 @@ const toolItems: NavItem[] = [
 const accountItems: NavItem[] = [
   { label: "Account", href: "/workspace/account", match: "prefix" },
   { label: "Pricing", href: "/workspace/pricing", match: "prefix" },
-  { label: "Help & Feedback" },
+  { label: "Help & Feedback", href: "mailto:support@datingphotosai.com", external: true },
 ];
 
 function isActive(
@@ -50,10 +51,11 @@ function SidebarItem({
     ? "bg-[#1a1a1a] text-white"
     : "text-white/60 hover:bg-[#1b1b1c] hover:text-white";
 
-  if (!item.href) {
+  if (item.external && item.href) {
     return (
-      <div
-        className={`${baseClass} ${activeClass} cursor-default ${
+      <a
+        href={item.href}
+        className={`${baseClass} ${activeClass} ${
           item.indent ? "pl-8" : ""
         }`}
       >
@@ -61,8 +63,12 @@ function SidebarItem({
           *
         </span>
         <span className="ml-2">{item.label}</span>
-      </div>
+      </a>
     );
+  }
+
+  if (!item.href) {
+    return null;
   }
 
   return (

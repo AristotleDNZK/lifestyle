@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   SignedIn,
   SignedOut,
@@ -200,6 +201,7 @@ function PlanCard({
 }
 
 export default function AiPhotosPage() {
+  const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [step, setStep] = useState<FunnelStep>("question");
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -207,6 +209,7 @@ export default function AiPhotosPage() {
   const [email, setEmail] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<PackageType>("popular");
+  const [handoffBusy, setHandoffBusy] = useState(false);
 
   const currentQuestion = questions[questionIndex] || questions[0];
   const questionDone = step !== "question";
@@ -218,6 +221,50 @@ export default function AiPhotosPage() {
     () => files.slice(0, 4).map((file) => URL.createObjectURL(file)),
     [files]
   );
+
+  const persistWorkspaceHandoff = async () => {
+    if (typeof window === "undefined") return;
+
+    const storedImages = await Promise.all(
+      files.slice(0, 5).map(
+        (file) =>
+          new Promise<{ id: string; name: string; dataUrl: string }>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () =>
+              resolve({
+                id: `ai-photos-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+                name: file.name,
+                dataUrl: String(reader.result || ""),
+              });
+            reader.onerror = () => reject(new Error("Failed to read uploaded photo."));
+            reader.readAsDataURL(file);
+          })
+      )
+    );
+
+    const answerSummary = questions
+      .map((question) => {
+        const answer = answers[question.id];
+        return answer ? `${question.title}: ${answer}` : "";
+      })
+      .filter(Boolean)
+      .join("\n");
+
+    window.sessionStorage.setItem("i2i_uploadedImages", JSON.stringify(storedImages));
+    window.sessionStorage.setItem(
+      "i2i_prompt",
+      JSON.stringify(
+        [
+          "Create a polished dating profile photo set using these user preferences.",
+          answerSummary,
+          email.trim() ? `Contact email: ${email.trim()}` : "",
+        ]
+          .filter(Boolean)
+          .join("\n")
+      )
+    );
+    window.sessionStorage.setItem("i2i_tab", JSON.stringify("examples"));
+  };
 
   const chooseAnswer = (answer: string) => {
     const nextAnswers = {
@@ -242,6 +289,36 @@ export default function AiPhotosPage() {
   const continueToPlans = () => {
     if (!files.length) return;
     setStep("plan");
+  };
+
+  const handleChoosePurchasePlan = async () => {
+    if (handoffBusy) return;
+
+    try {
+      setHandoffBusy(true);
+      await persistWorkspaceHandoff();
+      router.push(`/pricing?source=ai-photos&plan=${selectedPlan}`);
+    } finally {
+      setHandoffBusy(false);
+    }
+  };
+
+  const handleContinueToWorkspace = async (
+    destination = "/workspace/image-to-image"
+  ) => {
+    if (handoffBusy) return;
+
+    try {
+      setHandoffBusy(true);
+      await persistWorkspaceHandoff();
+      if (destination === LOCAL_DEV_WORKSPACE_LOGIN_URL) {
+        router.push(LOCAL_DEV_WORKSPACE_LOGIN_URL);
+        return;
+      }
+      router.push(destination);
+    } finally {
+      setHandoffBusy(false);
+    }
   };
 
   return (
@@ -387,41 +464,58 @@ export default function AiPhotosPage() {
                       />
                     ))}
                   </div>
-                  <Link
-                    href={`/pricing?source=ai-photos&plan=${selectedPlan}`}
-                    className="mt-6 inline-flex min-h-[50px] w-full items-center justify-center rounded-xl bg-[#e5e5e5] px-6 text-sm font-semibold tracking-tight text-[#0b0d10] transition hover:bg-[#f1f1f1]"
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void handleChoosePurchasePlan();
+                    }}
+                    disabled={handoffBusy}
+                    className="mt-6 inline-flex min-h-[50px] w-full items-center justify-center rounded-xl bg-[#e5e5e5] px-6 text-sm font-semibold tracking-tight text-[#0b0d10] transition hover:bg-[#f1f1f1] disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    Choose purchase plan
-                  </Link>
+                    {handoffBusy ? "Preparing workspace..." : "Choose purchase plan"}
+                  </button>
                   <SignedOut>
                     {isLocalDevAuthEnabled() ? (
-                      <Link
-                        href={LOCAL_DEV_WORKSPACE_LOGIN_URL}
-                        className="mt-3 inline-flex min-h-[50px] w-full items-center justify-center rounded-xl border border-white/14 px-6 text-sm font-semibold tracking-tight text-white transition hover:border-[#d4d4d8]/60 hover:bg-white/5"
+                      <button
+                        type="button"
+                        onClick={() => {
+                          void handleContinueToWorkspace(
+                            LOCAL_DEV_WORKSPACE_LOGIN_URL
+                          );
+                        }}
+                        disabled={handoffBusy}
+                        className="mt-3 inline-flex min-h-[50px] w-full items-center justify-center rounded-xl border border-white/14 px-6 text-sm font-semibold tracking-tight text-white transition hover:border-[#d4d4d8]/60 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60"
                       >
-                        Continue to workspace
-                      </Link>
+                        {handoffBusy ? "Preparing workspace..." : "Continue to workspace"}
+                      </button>
                     ) : (
                       <SignUpButton
                         mode="modal"
                         forceRedirectUrl="/workspace/image-to-image"
                       >
-                        <button
-                          type="button"
-                          className="mt-3 inline-flex min-h-[50px] w-full items-center justify-center rounded-xl border border-white/14 px-6 text-sm font-semibold tracking-tight text-white transition hover:border-[#d4d4d8]/60 hover:bg-white/5"
-                        >
+                          <button
+                            type="button"
+                            onClick={() => {
+                              void persistWorkspaceHandoff();
+                            }}
+                            className="mt-3 inline-flex min-h-[50px] w-full items-center justify-center rounded-xl border border-white/14 px-6 text-sm font-semibold tracking-tight text-white transition hover:border-[#d4d4d8]/60 hover:bg-white/5"
+                          >
                           Continue to workspace
                         </button>
                       </SignUpButton>
                     )}
                   </SignedOut>
                   <SignedIn>
-                    <Link
-                      href="/workspace/image-to-image"
-                      className="mt-3 inline-flex min-h-[50px] w-full items-center justify-center rounded-xl border border-white/14 px-6 text-sm font-semibold tracking-tight text-white transition hover:border-[#d4d4d8]/60 hover:bg-white/5"
+                    <button
+                      type="button"
+                      onClick={() => {
+                        void handleContinueToWorkspace();
+                      }}
+                      disabled={handoffBusy}
+                      className="mt-3 inline-flex min-h-[50px] w-full items-center justify-center rounded-xl border border-white/14 px-6 text-sm font-semibold tracking-tight text-white transition hover:border-[#d4d4d8]/60 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      Continue to workspace
-                    </Link>
+                      {handoffBusy ? "Preparing workspace..." : "Continue to workspace"}
+                    </button>
                   </SignedIn>
                 </div>
               ) : null}

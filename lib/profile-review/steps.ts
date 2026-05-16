@@ -61,17 +61,6 @@ export type ProfileReviewStep =
   | {
       id: number;
       key: string;
-      type: "upsell";
-      title: string;
-      body: string;
-      progress: number;
-      theme?: "black" | "green";
-      acceptLabel: string;
-      declineLabel: string;
-    }
-  | {
-      id: number;
-      key: string;
       type: "preview";
       title: string;
       body: string;
@@ -310,17 +299,6 @@ export const profileReviewSteps: ProfileReviewStep[] = [
     title: "Your report is ready",
     body: "Enter your email to unlock your analysis preview and receive expert tips.",
     cta: "Access now",
-    progress: percent(100),
-    theme: "black",
-  },
-  {
-    id: 22,
-    key: "style_upsell",
-    type: "upsell",
-    title: "Want to dress confidently for dates?",
-    body: "Get the style guide add-on with mood boards, outfit combinations, and practical date-night direction.",
-    acceptLabel: "Yes, send me the guide",
-    declineLabel: "No thanks",
     progress: percent(100),
     theme: "black",
   },

@@ -98,11 +98,13 @@ export function ProfileReviewStepRenderer({
   canGoBack,
   onBack,
   busy,
+  sessionReady,
+  sessionNotice,
+  onRetryInitialization,
   emailValue,
   onEmailChange,
   onChoice,
   onContinue,
-  onUpsellChoice,
   onUploadIntroChoice,
   uploadPreviews,
   onUploadFiles,
@@ -113,18 +115,19 @@ export function ProfileReviewStepRenderer({
   previewImages,
   onUnlockReport,
   unlockPriceUsd,
-  error,
 }: {
   step: ProfileReviewStep;
   canGoBack: boolean;
   onBack: () => void;
   busy?: boolean;
+  sessionReady: boolean;
+  sessionNotice?: string | null;
+  onRetryInitialization: () => void;
   emailValue: string;
   onEmailChange: (value: string) => void;
   onChoice: (option: StepOption) => void;
   onContinue: () => void;
-  onUpsellChoice: (accepted: boolean) => void;
-  onUploadIntroChoice: (source: "upload" | "tinder" | "instagram") => void;
+  onUploadIntroChoice: (source: "upload") => void;
   uploadPreviews: UploadPreview[];
   onUploadFiles: (files: FileList | null) => void;
   onRemoveUpload: (id: string) => void;
@@ -134,9 +137,23 @@ export function ProfileReviewStepRenderer({
   previewImages: ProfileReviewReportImage[];
   onUnlockReport: () => void;
   unlockPriceUsd: number;
-  error?: string | null;
 }) {
   const fileInputId = useId();
+  const interactionDisabled = busy || !sessionReady;
+  const notice = sessionNotice ? (
+    <div className="pt-4 text-center">
+      <p className="text-sm text-white/45">{sessionNotice}</p>
+      {!sessionReady ? (
+        <button
+          type="button"
+          onClick={onRetryInitialization}
+          className="mt-3 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white/80 transition hover:bg-white/10"
+        >
+          Retry
+        </button>
+      ) : null}
+    </div>
+  ) : null;
 
   if (step.type === "preview") {
     if (!previewReport) {
@@ -185,10 +202,10 @@ export function ProfileReviewStepRenderer({
               option={option}
               index={index}
               onClick={() => onChoice(option)}
-              disabled={busy}
+              disabled={interactionDisabled}
             />
           ))}
-          {error ? <p className="pt-3 text-sm text-[#ff7b7b]">{error}</p> : null}
+          {notice}
         </div>
       </ProfileReviewShell>
     );
@@ -205,7 +222,10 @@ export function ProfileReviewStepRenderer({
         subtitle={step.body}
         footer={
           <div className="mx-auto max-w-md">
-            <ProfileReviewPrimaryButton onClick={onContinue} disabled={busy}>
+            <ProfileReviewPrimaryButton
+              onClick={onContinue}
+              disabled={interactionDisabled}
+            >
               {step.cta}
             </ProfileReviewPrimaryButton>
           </div>
@@ -262,24 +282,12 @@ export function ProfileReviewStepRenderer({
           <div className="mt-5 space-y-3">
             <ProfileReviewPrimaryButton
               onClick={() => onUploadIntroChoice("upload")}
-              disabled={busy}
+              disabled={interactionDisabled}
             >
               Upload photos
             </ProfileReviewPrimaryButton>
-            <ProfileReviewSecondaryButton
-              onClick={() => onUploadIntroChoice("tinder")}
-              disabled={busy}
-            >
-              Import from Tinder
-            </ProfileReviewSecondaryButton>
-            <ProfileReviewSecondaryButton
-              onClick={() => onUploadIntroChoice("instagram")}
-              disabled={busy}
-            >
-              Import from Instagram
-            </ProfileReviewSecondaryButton>
           </div>
-          {error ? <p className="pt-4 text-center text-sm text-[#ff7b7b]">{error}</p> : null}
+          {notice}
         </div>
       </ProfileReviewShell>
     );
@@ -297,7 +305,7 @@ export function ProfileReviewStepRenderer({
           <div className="mx-auto max-w-md">
             <ProfileReviewPrimaryButton
               onClick={onSubmitUploads}
-              disabled={busy || uploadPreviews.length === 0}
+              disabled={interactionDisabled || uploadPreviews.length === 0}
             >
               {busy ? "Analyzing..." : "Analyze it"}
             </ProfileReviewPrimaryButton>
@@ -363,7 +371,7 @@ export function ProfileReviewStepRenderer({
               <li>Mix one strong headshot, one full-body shot, one lifestyle shot, and one social-context shot.</li>
             </ul>
           </div>
-          {error ? <p className="text-sm text-[#ff7b7b]">{error}</p> : null}
+          {notice}
         </div>
       </ProfileReviewShell>
     );
@@ -401,7 +409,7 @@ export function ProfileReviewStepRenderer({
               author="Ryan S."
             />
           </div>
-          {error ? <p className="text-center text-sm text-[#ff7b7b]">{error}</p> : null}
+          {notice}
         </div>
       </ProfileReviewShell>
     );
@@ -421,7 +429,7 @@ export function ProfileReviewStepRenderer({
             />
           </div>
           <div className="mt-5">
-            <ProfileReviewPrimaryButton onClick={onContinue} disabled={busy}>
+            <ProfileReviewPrimaryButton onClick={onContinue} disabled={interactionDisabled}>
               {busy ? "Saving..." : step.cta}
             </ProfileReviewPrimaryButton>
           </div>
@@ -441,36 +449,7 @@ export function ProfileReviewStepRenderer({
               ))}
             </div>
           </div>
-          {error ? <p className="mt-4 text-center text-sm text-[#ff7b7b]">{error}</p> : null}
-        </div>
-      </ProfileReviewShell>
-    );
-  }
-
-  if (step.type === "upsell") {
-    return (
-      <ProfileReviewShell
-        progress={step.progress}
-        title="Your report is ready"
-        subtitle="One last optional bonus before we show your preview."
-      >
-        <div className="relative">
-          <div className="pointer-events-none absolute inset-0 rounded-xl bg-[radial-gradient(circle,rgba(255,255,255,0.06),transparent_55%)] blur-3xl" />
-          <div className="relative mx-auto max-w-xl rounded-xl border border-white/10 bg-[#0b0b0c] p-6  sm:p-8">
-            <div className="mx-auto aspect-[4/3] w-full max-w-[220px] rounded-xl bg-[linear-gradient(180deg,rgba(255,255,255,0.16),rgba(255,255,255,0.03)),radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_55%)]" />
-            <h3 className="mt-6 text-center text-base font-semibold uppercase tracking-tight text-white sm:text-2xl">
-              {step.title}
-            </h3>
-            <p className="mt-4 text-center text-base leading-7 text-white/65">{step.body}</p>
-            <div className="mt-8 space-y-3">
-              <ProfileReviewPrimaryButton onClick={() => onUpsellChoice(true)} disabled={busy}>
-                {step.acceptLabel}
-              </ProfileReviewPrimaryButton>
-              <ProfileReviewSecondaryButton onClick={() => onUpsellChoice(false)} disabled={busy}>
-                {step.declineLabel}
-              </ProfileReviewSecondaryButton>
-            </div>
-          </div>
+          {notice}
         </div>
       </ProfileReviewShell>
     );

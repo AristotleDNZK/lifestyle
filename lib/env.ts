@@ -59,7 +59,7 @@ export const env = {
     process.env.PROFILE_REVIEW_STORAGE_BUCKET || "profile-review-photos",
   PROFILE_REVIEW_MAX_UPLOAD_IMAGES:
     process.env.PROFILE_REVIEW_MAX_UPLOAD_IMAGES || "9",
-  PROFILE_REVIEW_SCORE_MAX: process.env.PROFILE_REVIEW_SCORE_MAX || "50",
+  PROFILE_REVIEW_SCORE_MAX: process.env.PROFILE_REVIEW_SCORE_MAX || "100",
 
   // Trigger.dev
   TRIGGER_SECRET_KEY: process.env.TRIGGER_SECRET_KEY,

@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { currentUser } from "@clerk/nextjs/server";
 import { ensureUserExists } from "@/lib/credits";
 import { profileReviewConfig } from "@/lib/profile-review/config";
 import { sendProfileReviewReportEmail } from "@/lib/profile-review/email";
 import {
-  getCurrentUserId,
   getProfileReviewReport,
   getProfileReviewSession,
   requireProfileReviewAccess,
@@ -15,6 +13,11 @@ import {
   getProfileReviewAccessToken,
   profileReviewJsonError,
 } from "@/lib/profile-review/http";
+import { getAppAuthSession } from "@/lib/local-dev-auth";
+import {
+  isLocalProfileReviewSession,
+  markLocalProfileReviewSessionPaid,
+} from "@/lib/profile-review/local-dev-store";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -24,25 +27,49 @@ export async function POST(
   { params }: { params: { sessionId: string } }
 ) {
   try {
-    const userId = await getCurrentUserId();
+    const { userId, email } = await getAppAuthSession();
     if (!userId) {
       return NextResponse.json({ error: "Please sign in first" }, { status: 401 });
     }
 
-    const user = await currentUser();
-    const email = user?.emailAddresses?.[0]?.emailAddress || "";
-    if (!email) {
+    const userEmail = email || `${userId}@temp.local`;
+    if (!userEmail) {
       return NextResponse.json(
         { error: "No email address found for this account" },
         { status: 400 }
       );
     }
 
-    await ensureUserExists(userId, email);
+    const accessToken = getProfileReviewAccessToken(req);
+
+    if (isLocalProfileReviewSession(params.sessionId)) {
+      const session = markLocalProfileReviewSessionPaid({
+        sessionId: params.sessionId,
+        userId,
+        email: userEmail,
+        accessToken,
+      });
+
+      if (!session) {
+        return NextResponse.json({ error: "Report is not ready yet" }, { status: 409 });
+      }
+
+      const reportUrl = `/dating-profile-review/report/${params.sessionId}?accessToken=${encodeURIComponent(accessToken)}&payment=local&orderId=local_${params.sessionId}`;
+
+      return NextResponse.json({
+        success: true,
+        emailSent: false,
+        reportUrl,
+        sessionEmail: userEmail,
+        priorStatus: "analyzed",
+      });
+    }
+
+    await ensureUserExists(userId, userEmail);
 
     await requireProfileReviewAccess({
       sessionId: params.sessionId,
-      accessToken: getProfileReviewAccessToken(req),
+      accessToken,
       userId,
     });
 
@@ -66,7 +93,7 @@ export async function POST(
 
     await updateProfileReviewSession(params.sessionId, {
       user_id: userId,
-      email,
+      email: userEmail,
       status: "paid",
       paid_at: new Date().toISOString(),
     });
@@ -79,7 +106,7 @@ export async function POST(
 
     try {
       await sendProfileReviewReportEmail({
-        to: email,
+        to: userEmail,
         report: report.full_report,
         reportUrl,
       });
@@ -97,7 +124,7 @@ export async function POST(
       success: true,
       emailSent,
       reportUrl,
-      sessionEmail: email,
+      sessionEmail: userEmail,
       priorStatus: session.status,
     });
   } catch (error) {

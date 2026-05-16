@@ -312,6 +312,27 @@ function parseDataUrl(dataUrl: string) {
   return { mimeType: m[1] || "image/jpeg", base64: m[2] || "" };
 }
 
+async function imageUrlToStoredImage(item: HistoryItem): Promise<StoredImage> {
+  const response = await fetch(item.imageUrl, { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error("Failed to load selected creation.");
+  }
+
+  const blob = await response.blob();
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("Failed to read selected creation."));
+    reader.readAsDataURL(blob);
+  });
+
+  return {
+    id: uid("creation"),
+    name: `creation-${item.id}.jpg`,
+    dataUrl,
+  };
+}
+
 function safeJsonParse<T>(raw: string | null, fallback: T): T {
   if (!raw) return fallback;
   try {
@@ -372,9 +393,11 @@ function PillTab({
 function UploadZone({
   images,
   setImages,
+  onOpenCreations,
 }: {
   images: StoredImage[];
   setImages: (next: StoredImage[]) => void;
+  onOpenCreations: () => void;
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -452,7 +475,7 @@ function UploadZone({
           className="mt-2 text-sm font-semibold text-white/85 hover:text-white"
           onClick={(e) => {
             e.stopPropagation();
-            // Placeholder: hook into /workspace/my-creations selection later.
+            onOpenCreations();
           }}
         >
           Select from My Creations
@@ -494,6 +517,124 @@ function UploadZone({
           ))}
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function CreationPickerModal({
+  open,
+  loading,
+  history,
+  currentImages,
+  onClose,
+  onImport,
+}: {
+  open: boolean;
+  loading: boolean;
+  history: HistoryItem[];
+  currentImages: StoredImage[];
+  onClose: () => void;
+  onImport: (items: HistoryItem[]) => void;
+}) {
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (open) {
+      setSelectedIds([]);
+    }
+  }, [open]);
+
+  if (!open) return null;
+
+  const remainingSlots = Math.max(0, 5 - currentImages.length);
+  const selectedItems = history.filter((item) => selectedIds.includes(item.id));
+
+  return (
+    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/70 px-4">
+      <div className="w-full max-w-3xl overflow-hidden rounded-xl border border-white/10 bg-[#101010] shadow-[0_24px_80px_rgba(0,0,0,0.65)]">
+        <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+          <div>
+            <h2 className="text-base font-semibold text-white">
+              Select from My Creations
+            </h2>
+            <p className="mt-1 text-xs text-white/45">
+              Import up to {remainingSlots} images into AI Photo Optimization.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
+            aria-label="Close"
+          >
+            <Icon name="x" className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="max-h-[520px] overflow-auto p-5">
+          {loading ? (
+            <div className="rounded-xl border border-white/10 bg-white/5 p-6 text-center text-sm text-white/60">
+              Loading images...
+            </div>
+          ) : !history.length ? (
+            <div className="rounded-xl border border-white/10 bg-white/5 p-6 text-center text-sm text-white/60">
+              No image creations yet.
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {history.map((item) => {
+                const selected = selectedIds.includes(item.id);
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedIds((current) => {
+                        if (current.includes(item.id)) {
+                          return current.filter((id) => id !== item.id);
+                        }
+                        if (current.length >= remainingSlots) {
+                          return current;
+                        }
+                        return [...current, item.id];
+                      });
+                    }}
+                    className={`overflow-hidden rounded-xl border text-left transition ${
+                      selected
+                        ? "border-[#d4d4d8]/70 bg-white/10"
+                        : "border-white/10 bg-black/25 hover:border-white/25"
+                    }`}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={item.imageUrl}
+                      alt={item.prompt || "Creation"}
+                      className="h-32 w-full object-cover"
+                    />
+                    <p className="line-clamp-2 px-3 py-2 text-xs text-white/60">
+                      {item.prompt || "Untitled image"}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between border-t border-white/10 px-5 py-4">
+          <span className="text-xs text-white/45">
+            {selectedItems.length} selected
+          </span>
+          <button
+            type="button"
+            onClick={() => onImport(selectedItems)}
+            disabled={!selectedItems.length || remainingSlots <= 0}
+            className="rounded-lg bg-[#e5e5e5] px-4 py-2 text-sm font-semibold text-[#0b0d10] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-45"
+          >
+            Import selected
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -942,6 +1083,7 @@ export default function ImageToImagePage() {
 
   const [loading, setLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [showCreationPicker, setShowCreationPicker] = useState(false);
   const [toast, setToast] = useState<
     | {
         id: string;
@@ -1123,22 +1265,98 @@ export default function ImageToImagePage() {
     });
   };
 
+  const fetchCreationPickerHistory = async () => {
+    setHistoryLoading(true);
+    try {
+      const res = await fetch(
+        "/api/user/generations?limit=100&type=image",
+        { cache: "no-store" }
+      );
+      const data = (await res.json()) as HistoryResponse;
+
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to load creations.");
+      }
+
+      const list = Array.isArray(data?.data) ? data.data : [];
+      const normalized: HistoryItem[] = list
+        .filter((item) => {
+          const url = String(item?.image_url || item?.url || "");
+          return url.length > 0 && !url.startsWith("data:image/");
+        })
+        .map((item) => ({
+          id: String(item.id),
+          imageUrl: String(item.image_url || item.url || ""),
+          prompt: String(item.prompt || ""),
+          modelId: String(item.model_id || item.model_name || item.model || ""),
+          ratio: String(item.aspect_ratio || "auto"),
+          createdAt: formatDateLabel(item.created_at),
+        }));
+
+      setHistoryData(normalized);
+    } catch (error) {
+      showError(
+        error instanceof Error ? error.message : "Failed to load creations."
+      );
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  const importCreations = async (items: HistoryItem[]) => {
+    if (!items.length) return;
+    const remainingSlots = Math.max(0, 5 - uploadedImages.length);
+    if (remainingSlots <= 0) {
+      showError("You can upload up to 5 images.");
+      return;
+    }
+
+    try {
+      const imported: StoredImage[] = [];
+      for (const item of items.slice(0, remainingSlots)) {
+        imported.push(await imageUrlToStoredImage(item));
+      }
+      setUploadedImages([...uploadedImages, ...imported].slice(0, 5));
+      setShowCreationPicker(false);
+    } catch (error) {
+      showError(
+        error instanceof Error
+          ? error.message
+          : "Failed to import selected creations."
+      );
+    }
+  };
+
   const onTransform = async () => {
     if (loading) return;
-    const first = uploadedImages[0];
-    if (!first?.dataUrl) {
+    if (!uploadedImages.length) {
       showError("Please upload an image first.");
       return;
     }
-    const parsed = parseDataUrl(first.dataUrl);
-    if (!parsed?.base64) {
+
+    const requestImages = uploadedImages
+      .map((image) => {
+        const parsed = parseDataUrl(image.dataUrl);
+        if (!parsed?.base64) return null;
+        return {
+          imageMimeType: parsed.mimeType,
+          imageBase64: parsed.base64,
+        };
+      })
+      .filter(Boolean) as Array<{
+      imageMimeType: string;
+      imageBase64: string;
+    }>;
+
+    if (!requestImages.length) {
       showError("Invalid image format. Please re-upload the image.");
       return;
     }
     const promptText = (prompt || "").trim() || DEFAULT_AI_PHOTO_OPTIMIZATION_PROMPT;
+    const generationCount = multiShot ? 3 : 1;
 
     // Use real credits from DB. Form state is already persisted via sessionStorage hooks.
-    if (credits < cost) {
+    if (credits < cost * generationCount) {
       router.push("/workspace/pricing");
       return;
     }
@@ -1147,49 +1365,63 @@ export default function ImageToImagePage() {
     try {
       setActiveTab("history");
 
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt: promptText,
-          ratio,
-          model: selectedModel,
-          imageMimeType: parsed.mimeType,
-          imageBase64: parsed.base64,
-        }),
-      });
+      const queuedJobIds: string[] = [];
 
-      if (!res.ok) {
-        let msg = `Request failed (${res.status})`;
-        try {
-          const j = (await res.json()) as any;
-          msg = j?.error || j?.message || msg;
-        } catch {
-          // ignore
-        }
-        if (res.status === 402) {
-          router.push("/workspace/pricing");
+      for (let index = 0; index < generationCount; index++) {
+        const res = await fetch("/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prompt:
+              generationCount > 1
+                ? `${promptText}\nVariation ${index + 1}: create a distinct but consistent dating-photo option.`
+                : promptText,
+            ratio,
+            model: selectedModel,
+            images: uploadedImages.map((image) => {
+              const parsed = parseDataUrl(image.dataUrl);
+              return {
+                imageMimeType: parsed?.mimeType || "image/jpeg",
+                imageBase64: parsed?.base64 || "",
+              };
+            }),
+          }),
+        });
+
+        if (!res.ok) {
+          let msg = `Request failed (${res.status})`;
+          try {
+            const j = (await res.json()) as any;
+            msg = j?.error || j?.message || msg;
+          } catch {
+            // ignore
+          }
+          if (res.status === 402) {
+            router.push("/workspace/pricing");
+            return;
+          }
+          showError(msg);
           return;
         }
-        showError(msg);
-        return;
-      }
 
-      const data = (await res.json()) as any;
-      if (!data?.success || !data?.jobId) {
-        showError(data?.error || "Generation job was not queued.");
-        return;
+        const data = (await res.json()) as any;
+        if (!data?.success || !data?.jobId) {
+          showError(data?.error || "Generation job was not queued.");
+          return;
+        }
+        queuedJobIds.push(String(data.jobId));
       }
 
       void fetchCredits();
-      const job = await pollGenerationJob(String(data.jobId));
-      if (!job.imageUrl) {
+      const jobs = await Promise.all(queuedJobIds.map((jobId) => pollGenerationJob(jobId)));
+      const lastJob = jobs[jobs.length - 1];
+      if (!jobs.some((job) => job.imageUrl)) {
         showError("Generation completed but no image URL was returned.");
         return;
       }
 
       setCurrentPage(1);
-      await fetchHistory(1, String(job.id));
+      await fetchHistory(1, lastJob ? String(lastJob.id) : null);
       void fetchCredits();
     } finally {
       setTimeout(() => setLoading(false), 350);
@@ -1221,7 +1453,15 @@ export default function ImageToImagePage() {
   return (
     <div className="relative grid gap-5 xl:grid-cols-[420px_1fr]">
       <div className="space-y-4">
-        <UploadZone images={uploadedImages} setImages={setUploadedImages} />
+        <UploadZone
+          images={uploadedImages}
+          setImages={setUploadedImages}
+              onOpenCreations={() => {
+                setShowCreationPicker(true);
+                setActiveTab("history");
+                void fetchCreationPickerHistory();
+              }}
+            />
 
         <div className="rounded-xl border border-white/10 bg-[#101010] p-4 sm:p-5">
           <p className="text-sm font-semibold text-white/80">
@@ -1359,6 +1599,17 @@ export default function ImageToImagePage() {
           </div>
         </div>
       ) : null}
+
+      <CreationPickerModal
+        open={showCreationPicker}
+        loading={historyLoading}
+        history={historyData}
+        currentImages={uploadedImages}
+        onClose={() => setShowCreationPicker(false)}
+        onImport={(items) => {
+          void importCreations(items);
+        }}
+      />
     </div>
   );
 }
