@@ -11,6 +11,7 @@ test("AI photo optimization sends all uploaded source images to the generation A
   const page = source("app/workspace/image-to-image/page.tsx");
   const route = source("app/api/generate/route.ts");
   const triggerTask = source("src/trigger/image-generation.ts");
+  const gemini = source("lib/gemini-image-generation.ts");
   const jobs = source("lib/generation-jobs.ts");
 
   assert.match(page, /images:\s*uploadedImages\.map/);
@@ -19,8 +20,108 @@ test("AI photo optimization sends all uploaded source images to the generation A
   assert.match(route, /normalizeRequestImages/);
   assert.match(route, /images:\s*requestImages/);
   assert.match(jobs, /images\?:\s*Array/);
-  assert.match(triggerTask, /images\?:\s*Array/);
-  assert.match(triggerTask, /inputImages\.forEach/);
+  assert.match(triggerTask, /GenerateImagePayload/);
+  assert.match(gemini, /images\?:\s*GeminiInputImage\[\]/);
+  assert.match(gemini, /inputImages\.forEach/);
+});
+
+test("AI photo optimization uses Gemini image generation in local dev instead of placeholder images", () => {
+  const route = source("app/api/generate/route.ts");
+  const localStore = source("lib/local-dev-generations.ts");
+  const triggerTask = source("src/trigger/image-generation.ts");
+  const jobs = source("lib/generation-jobs.ts");
+  const gemini = source("lib/gemini-image-generation.ts");
+
+  assert.match(route, /requestGeminiImage/);
+  assert.match(route, /createLocalGenerationJob\(\{/);
+  assert.match(route, /imageUrl:\s*uploadResult\.url/);
+  assert.match(route, /provider:\s*"gemini"/);
+  assert.match(localStore, /imageUrl:\s*string/);
+  assert.doesNotMatch(localStore, /\/homepage\/hero-after\.png/);
+  assert.match(jobs, /gemini-3\.1-flash-image-preview/);
+  assert.match(jobs, /gemini-3-pro-image-preview/);
+  assert.match(triggerTask, /requestGeminiImage/);
+  assert.match(gemini, /generativelanguage\.googleapis\.com/);
+  assert.match(gemini, /inlineData/);
+  assert.match(gemini, /responseModalities:\s*\["TEXT", "IMAGE"\]/);
+  assert.match(gemini, /rawAspectRatio\.toLowerCase\(\) !== "auto"/);
+  assert.doesNotMatch(gemini, /responseFormat:\s*\{/);
+});
+
+test("AI photo optimization keeps prompt field visually blank while submitting the default prompt", () => {
+  const page = source("app/workspace/image-to-image/page.tsx");
+
+  assert.match(page, /useSessionStorageState<string>\("i2i_prompt", ""\)/);
+  assert.match(page, /value=\{prompt\}/);
+  assert.match(
+    page,
+    /const promptText = \(prompt \|\| ""\)\.trim\(\) \|\| DEFAULT_AI_PHOTO_OPTIMIZATION_PROMPT;/
+  );
+  assert.match(page, /if \(prompt === DEFAULT_AI_PHOTO_OPTIMIZATION_PROMPT\)/);
+  assert.match(page, /setPrompt\(""\)/);
+  assert.doesNotMatch(page, /setPrompt\(DEFAULT_AI_PHOTO_OPTIMIZATION_PROMPT\)/);
+});
+
+test("Gemini image generation falls back between proxy and direct network paths", () => {
+  const gemini = source("lib/gemini-image-generation.ts");
+  const checkScript = source("scripts/check-gemini-network.mjs");
+
+  assert.match(gemini, /buildGeminiFetchCandidates/);
+  assert.match(gemini, /getExplicitGeminiProxyUrl/);
+  assert.match(gemini, /getAutoLocalProxyUrls/);
+  assert.match(gemini, /GEMINI_AUTO_PROXY/);
+  assert.match(gemini, /GEMINI_USE_SYSTEM_PROXY/);
+  assert.match(gemini, /label:\s*"proxy"/);
+  assert.match(gemini, /"auto-proxy"/);
+  assert.match(gemini, /label:\s*"direct"/);
+  assert.match(gemini, /for \(const candidate of fetchCandidates\)/);
+  assert.match(gemini, /lastNetworkError/);
+  assert.match(gemini, /GEMINI_NETWORK_ERROR_MESSAGE/);
+  assert.match(gemini, /if \(process\.env\.GEMINI_USE_SYSTEM_PROXY !== "1"\)/);
+  assert.doesNotMatch(gemini, /const customFetch = getProxiedFetch\(\)/);
+
+  const route = source("app/api/generate/route.ts");
+  const triggerTask = source("src/trigger/image-generation.ts");
+  assert.match(route, /diagnostic:/);
+  assert.match(triggerTask, /GEMINI_NETWORK_ERROR_MESSAGE/);
+  assert.match(checkScript, /\$\{candidate\.label\}:generate/);
+  assert.match(checkScript, /getAutoLocalProxyUrls/);
+  assert.match(checkScript, /GEMINI_AUTO_PROXY/);
+  assert.match(checkScript, /label:\s*"direct"/);
+  assert.match(checkScript, /label:\s*"proxy"/);
+});
+
+test("Gemini image generation can fall back to a secured server relay", () => {
+  const gemini = source("lib/gemini-image-generation.ts");
+  const relayRoute = source("app/api/gemini/relay/route.ts");
+  const checkScript = source("scripts/check-gemini-network.mjs");
+
+  assert.match(gemini, /GEMINI_RELAY_URL/);
+  assert.match(gemini, /GEMINI_RELAY_SECRET/);
+  assert.match(gemini, /"relay-proxy"/);
+  assert.match(gemini, /"relay-direct"/);
+  assert.match(gemini, /x-gemini-relay-secret/);
+  assert.match(gemini, /requestGeminiImageDirect/);
+
+  assert.match(relayRoute, /runtime = "nodejs"/);
+  assert.match(relayRoute, /dynamic = "force-dynamic"/);
+  assert.match(relayRoute, /x-gemini-relay-secret/);
+  assert.match(relayRoute, /requestGeminiImageDirect/);
+  assert.match(relayRoute, /Unauthorized/);
+
+  assert.match(checkScript, /GEMINI_RELAY_URL/);
+  assert.match(checkScript, /\$\{relayCandidate\.label\}:generate/);
+});
+
+test("Gemini relay requests reuse configured proxy network paths in local dev", () => {
+  const gemini = source("lib/gemini-image-generation.ts");
+  const checkScript = source("scripts/check-gemini-network.mjs");
+
+  assert.match(gemini, /buildRelayFetchCandidates/);
+  assert.match(gemini, /"relay-proxy"/);
+  assert.match(gemini, /candidate\.fetch\(endpoint/);
+  assert.match(checkScript, /"relay-proxy"/);
+  assert.match(checkScript, /\$\{relayCandidate\.label\}:generate/);
 });
 
 test("AI photo optimization supports importing images from My Creations", () => {
@@ -103,7 +204,7 @@ test("my creations does not expose internal API failures on the page", () => {
   assert.match(page, /We couldn't refresh your creations right now\./);
 });
 
-test("local dev generation flow persists records for My Creations", () => {
+test("local dev generation flow persists real Gemini records for My Creations", () => {
   assert.ok(
     source("lib/local-dev-generations.ts"),
     "local dev generation store should exist"
@@ -120,9 +221,11 @@ test("local dev generation flow persists records for My Creations", () => {
   assert.match(localStore, /listLocalGenerationJobs/);
   assert.match(localStore, /getLocalGenerationJob/);
   assert.match(generateRoute, /createLocalGenerationJob/);
+  assert.match(generateRoute, /requestGeminiImage/);
+  assert.doesNotMatch(localStore, /hero-after\.png/);
   assert.match(jobRoute, /getLocalGenerationJob/);
   assert.match(generationsRoute, /listLocalGenerationJobs/);
-  assert.match(statsRoute, /credits:\s*100/);
+  assert.match(statsRoute, /LOCAL_DEV_CREDIT_BALANCE/);
 });
 
 test("profile review removes unsupported import and upsell choices", () => {

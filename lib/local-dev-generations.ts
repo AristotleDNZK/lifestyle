@@ -46,18 +46,18 @@ export function createLocalGenerationJob(params: {
   modelId: string;
   aspectRatio?: string | null;
   cost: number;
+  imageUrl: string;
 }) {
   const now = new Date().toISOString();
   const id = `local-gen-${randomUUID()}`;
-  const imageUrl = `/homepage/hero-after.png?job=${encodeURIComponent(id)}`;
   const record: LocalGenerationRecord = {
     id,
     user_id: params.userId,
     type: "image",
     prompt: params.prompt,
     status: "completed",
-    url: imageUrl,
-    image_url: imageUrl,
+    url: params.imageUrl,
+    image_url: params.imageUrl,
     error_message: null,
     model_id: params.modelId,
     model_name: params.modelId,

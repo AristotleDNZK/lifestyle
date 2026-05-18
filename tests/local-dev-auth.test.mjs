@@ -23,6 +23,8 @@ test("local dev auth bypass is available without Google OAuth", () => {
   assert.match(devAuthShared, /LOCAL_DEV_AUTH_COOKIE/);
   assert.match(devAuthShared, /NODE_ENV !== "production"/);
   assert.match(devAuthShared, /dev-user-datingphotosai/);
+  assert.match(devAuthShared, /nuoweileinaxiawan@gmail\.com/);
+  assert.match(devAuthShared, /LOCAL_DEV_CREDIT_BALANCE = 99999/);
 
   assert.match(devLogin, /LOCAL_DEV_AUTH_COOKIE/);
   assert.match(devLogin, /@\/lib\/local-dev-auth-shared/);
@@ -52,6 +54,7 @@ test("profile review auth gates use the shared app auth session", () => {
   const mockCheckoutRoute = source("app/api/profile-review/session/[sessionId]/mock-checkout/route.ts");
 
   assert.match(sessionRoute, /getAppAuthSession/);
+  assert.match(source("app/api/user/stats/route.ts"), /LOCAL_DEV_CREDIT_BALANCE/);
   assert.match(sessionRoute, /localDevAuthEnabled/);
   assert.match(unlockPage, /\/api\/auth\/session/);
   assert.match(checkoutPage, /\/api\/auth\/session/);

@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { getAppAuthSession } from "@/lib/local-dev-auth";
-import { isLocalDevAuthEnabled } from "@/lib/local-dev-auth-shared";
+import {
+  LOCAL_DEV_CREDIT_BALANCE,
+  isLocalDevAuthEnabled,
+} from "@/lib/local-dev-auth-shared";
 import { resolveUserStatsRecord } from "@/lib/user-stats";
 import { findUserIdentityRecords } from "@/lib/user-identity";
 
@@ -22,7 +25,7 @@ export async function GET() {
     if (isLocalDevAuthEnabled()) {
       return NextResponse.json(
         {
-          credits: 100,
+          credits: LOCAL_DEV_CREDIT_BALANCE,
           generations: 0,
           totalSpent: 0,
           local: true,

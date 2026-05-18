@@ -18,6 +18,12 @@ test("dev:3000 starts through a cleanup wrapper for stale port and chunks", () =
   assert.match(script, /Stop-Process/);
   assert.match(script, /\.next-dev/);
   assert.match(script, /\.next/);
+  assert.match(script, /removeDirectoryWithRetry/);
+  assert.match(script, /ENOTEMPTY/);
+  assert.match(script, /EPERM/);
+  assert.match(script, /EBUSY/);
+  assert.match(script, /await cleanNextDevCaches\(\)/);
+  assert.doesNotMatch(script, /rmSync\(fullPath, \{ recursive: true, force: true \}\);\n\s*\}/);
   assert.match(script, /"next", "dist", "bin", "next"/);
   assert.match(script, /"dev", "--port", String\(port\)/);
   assert.match(script, /waitForReady/);

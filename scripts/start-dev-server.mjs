@@ -59,7 +59,37 @@ if ($process) {
   }
 }
 
-function cleanNextDevCaches() {
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function removeDirectoryWithRetry(fullPath, label, attempts = 8) {
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      rmSync(fullPath, { recursive: true, force: true });
+      return true;
+    } catch (error) {
+      const code =
+        error && typeof error === "object" && "code" in error
+          ? error.code
+          : "";
+      const message =
+        error instanceof Error ? error.message : String(error || "unknown");
+      const retryable = code === "ENOTEMPTY" || code === "EPERM" || code === "EBUSY";
+
+      if (!retryable || attempt === attempts) {
+        console.warn(`Unable to remove ${label} after ${attempt} attempts: ${message}`);
+        return false;
+      }
+
+      await delay(250 * attempt);
+    }
+  }
+
+  return false;
+}
+
+async function cleanNextDevCaches() {
   const cacheDirs = [".next-dev", ".next"];
 
   for (const dir of cacheDirs) {
@@ -69,12 +99,8 @@ function cleanNextDevCaches() {
     }
 
     console.log(`Removing stale Next.js cache: ${dir}`);
-    rmSync(fullPath, { recursive: true, force: true });
+    await removeDirectoryWithRetry(fullPath, dir);
   }
-}
-
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function requestPath(port, requestPath) {
@@ -130,7 +156,7 @@ async function waitForReady(port, child) {
 
 const port = parsePort();
 stopProcessesOnPort(port);
-cleanNextDevCaches();
+await cleanNextDevCaches();
 
 const nextBin = path.join(process.cwd(), "node_modules", "next", "dist", "bin", "next");
 const child = spawn(process.execPath, [nextBin, "dev", "--port", String(port)], {

@@ -7,6 +7,11 @@ import {
   safeString,
 } from "@/lib/generation-jobs";
 import { DEFAULT_AI_PHOTO_OPTIMIZATION_PROMPT } from "@/lib/ai-photo-optimization";
+import {
+  GEMINI_NETWORK_ERROR_MESSAGE,
+  requestGeminiImage,
+} from "@/lib/gemini-image-generation";
+import { uploadToImgBB } from "@/lib/imgbb";
 import { getAppAuthSession } from "@/lib/local-dev-auth";
 import {
   createLocalGenerationJob,
@@ -152,19 +157,52 @@ export async function POST(req: NextRequest) {
     const cost = resolveGenerationCost(body);
 
     if (isLocalDevGenerationStoreEnabled()) {
-      const job = createLocalGenerationJob({
-        userId,
-        prompt,
-        modelId,
-        aspectRatio,
-        cost,
-      });
+      try {
+        const generatedImage = await requestGeminiImage({
+          jobId: "local-preview",
+          prompt,
+          modelId,
+          userId,
+          cost,
+          aspectRatio: aspectRatio ?? undefined,
+          imageBase64,
+          imageMimeType,
+          images: requestImages,
+        });
+        const uploadResult = await uploadToImgBB(generatedImage.imageBase64);
 
-      return NextResponse.json({
-        success: true,
-        jobId: job.id,
-        local: true,
-      });
+        const job = createLocalGenerationJob({
+          userId,
+          prompt,
+          modelId,
+          aspectRatio,
+          cost,
+          imageUrl: uploadResult.url,
+        });
+
+        return NextResponse.json({
+          success: true,
+          jobId: job.id,
+          local: true,
+          provider: "gemini",
+          modelId,
+          mimeType: generatedImage.mimeType,
+        });
+      } catch (error) {
+        const message = buildErrorMessage(error);
+        console.error("[GenerateRoute][LocalGeminiError]", { message });
+
+        return NextResponse.json(
+          {
+            error: "Failed to generate image with Gemini.",
+            diagnostic:
+              message === GEMINI_NETWORK_ERROR_MESSAGE
+                ? "Gemini network request failed. Check direct internet access or start the configured local proxy."
+                : undefined,
+          },
+          { status: 502 }
+        );
+      }
     }
 
     const identity = await findUserIdentityRecords({ userId, email });

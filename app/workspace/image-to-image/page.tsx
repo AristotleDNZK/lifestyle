@@ -1111,6 +1111,12 @@ export default function ImageToImagePage() {
     }
   }, [selectedModel, setSelectedModel]);
 
+  useEffect(() => {
+    if (prompt === DEFAULT_AI_PHOTO_OPTIMIZATION_PROMPT) {
+      setPrompt("");
+    }
+  }, [prompt, setPrompt]);
+
   const selectedExample = useMemo(() => {
     const id = selectedExampleId;
     if (!id) return null;
