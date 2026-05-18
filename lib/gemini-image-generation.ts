@@ -16,6 +16,7 @@ export type GenerateImagePayload = {
   imageBase64?: string;
   imageMimeType?: string;
   images?: GeminiInputImage[];
+  geminiApiKey?: string;
 };
 
 export type GeminiImageResult = {
@@ -271,8 +272,8 @@ function normalizeGeminiImages(payload: GenerateImagePayload) {
   ];
 }
 
-function buildGeminiRequest(payload: GenerateImagePayload) {
-  const apiKey = getRequiredEnv("GEMINI_API_KEY");
+function buildGeminiRequest(payload: GenerateImagePayload, apiKeyOverride = "") {
+  const apiKey = apiKeyOverride || getRequiredEnv("GEMINI_API_KEY");
 
   const prompt = payload.prompt.trim() || DEFAULT_AI_PHOTO_OPTIMIZATION_PROMPT;
   const modelId = payload.modelId.trim() || "gemini-3.1-flash-image-preview";
@@ -319,9 +320,10 @@ function buildGeminiRequest(payload: GenerateImagePayload) {
 
 export async function requestGeminiImageDirect(
   payload: GenerateImagePayload,
-  candidates = buildGeminiFetchCandidates()
+  candidates = buildGeminiFetchCandidates(),
+  apiKeyOverride = ""
 ): Promise<GeminiImageResult> {
-  const { requestUrl, body } = buildGeminiRequest(payload);
+  const { requestUrl, body } = buildGeminiRequest(payload, apiKeyOverride);
   const fetchCandidates = candidates;
   const attemptTimeoutMs = Math.min(
     Math.max(getOverallTimeoutMs(), 10_000),
@@ -432,6 +434,11 @@ async function requestGeminiImageViaRelay(
       proxy: candidate.proxyUrl ? redactProxy(candidate.proxyUrl) : null,
     });
 
+    const relayPayload = {
+      ...payload,
+      geminiApiKey: safeString(process.env.GEMINI_API_KEY).trim(),
+    };
+
     const response = (await candidate.fetch(endpoint, {
       method: "POST",
       headers: {
@@ -439,7 +446,7 @@ async function requestGeminiImageViaRelay(
         "x-gemini-relay-secret": secret,
       },
       signal: controller.signal,
-      body: JSON.stringify(payload),
+      body: JSON.stringify(relayPayload),
     })) as unknown as Response;
     const rawText = await response.text();
     let json: any = null;
@@ -481,13 +488,27 @@ async function requestGeminiImageViaRelay(
 export async function requestGeminiImage(
   payload: GenerateImagePayload
 ): Promise<GeminiImageResult> {
+  const relayEndpoint = resolveGeminiRelayEndpoint();
+
+  if (relayEndpoint && process.env.GEMINI_RELAY_FIRST !== "0") {
+    try {
+      return await requestGeminiImageViaRelay(payload);
+    } catch (relayError) {
+      console.error("[Gemini][RelayFirstError]", {
+        message:
+          relayError instanceof Error ? relayError.message : String(relayError),
+      });
+    }
+  }
+
   try {
     return await requestGeminiImageDirect(payload);
   } catch (error) {
     if (
       error instanceof Error &&
       error.message === GEMINI_NETWORK_ERROR_MESSAGE &&
-      resolveGeminiRelayEndpoint()
+      relayEndpoint &&
+      process.env.GEMINI_RELAY_FIRST === "0"
     ) {
       return requestGeminiImageViaRelay(payload);
     }

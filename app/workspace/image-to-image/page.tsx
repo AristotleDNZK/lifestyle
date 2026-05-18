@@ -7,6 +7,11 @@ import {
   buildWorkspaceImageDownloadName,
 } from "../_components/workspace-image-actions";
 import { DEFAULT_AI_PHOTO_OPTIMIZATION_PROMPT } from "@/lib/ai-photo-optimization";
+import {
+  MAX_OPTIMIZATION_IMAGE_BYTES,
+  MAX_OPTIMIZATION_IMAGE_EDGE,
+  compressImageToDataUrl,
+} from "@/lib/client-image-compression";
 import { pollGenerationJob } from "@/lib/generation-jobs";
 
 type Ratio = "auto" | "1:1" | "3:4" | "9:16" | "4:3" | "16:9";
@@ -319,17 +324,24 @@ async function imageUrlToStoredImage(item: HistoryItem): Promise<StoredImage> {
   }
 
   const blob = await response.blob();
-  const dataUrl = await new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result || ""));
-    reader.onerror = () => reject(new Error("Failed to read selected creation."));
-    reader.readAsDataURL(blob);
-  });
+  const dataUrl = await compressImageToDataUrl(blob);
 
   return {
     id: uid("creation"),
     name: `creation-${item.id}.jpg`,
     dataUrl,
+  };
+}
+
+async function optimizeStoredImage(image: StoredImage): Promise<StoredImage | null> {
+  if (!parseDataUrl(image.dataUrl)) return null;
+
+  const response = await fetch(image.dataUrl);
+  const blob = await response.blob();
+
+  return {
+    ...image,
+    dataUrl: await compressImageToDataUrl(blob),
   };
 }
 
@@ -404,18 +416,11 @@ function UploadZone({
 
   const addFiles = async (files: FileList | File[]) => {
     const list = Array.from(files).slice(0, 5 - images.length);
-    const readOne = (file: File) =>
-      new Promise<StoredImage>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () =>
-          resolve({
-            id: uid("img"),
-            name: file.name,
-            dataUrl: String(reader.result || ""),
-          });
-        reader.onerror = () => reject(new Error("read failed"));
-        reader.readAsDataURL(file);
-      });
+    const readOne = async (file: File): Promise<StoredImage> => ({
+      id: uid("img"),
+      name: file.name,
+      dataUrl: await compressImageToDataUrl(file),
+    });
 
     const results: StoredImage[] = [];
     for (const file of list) {
@@ -1340,7 +1345,24 @@ export default function ImageToImagePage() {
       return;
     }
 
-    const requestImages = uploadedImages
+    let optimizedImages: StoredImage[];
+    try {
+      optimizedImages = (
+        await Promise.all(uploadedImages.map((image) => optimizeStoredImage(image)))
+      ).filter(Boolean) as StoredImage[];
+    } catch {
+      showError("We couldn't prepare your uploaded images. Please re-upload and try again.");
+      return;
+    }
+
+    if (!optimizedImages.length) {
+      showError("Invalid image format. Please re-upload the image.");
+      return;
+    }
+
+    setUploadedImages(optimizedImages);
+
+    const requestImages = optimizedImages
       .map((image) => {
         const parsed = parseDataUrl(image.dataUrl);
         if (!parsed?.base64) return null;
@@ -1384,13 +1406,7 @@ export default function ImageToImagePage() {
                 : promptText,
             ratio,
             model: selectedModel,
-            images: uploadedImages.map((image) => {
-              const parsed = parseDataUrl(image.dataUrl);
-              return {
-                imageMimeType: parsed?.mimeType || "image/jpeg",
-                imageBase64: parsed?.base64 || "",
-              };
-            }),
+            images: requestImages,
           }),
         });
 

@@ -12,6 +12,7 @@ import {
 } from "@clerk/nextjs";
 import { useMemo, useRef, useState } from "react";
 import { CREDIT_PACKAGES, type PackageType } from "@/lib/credit-packages";
+import { compressImageToDataUrl } from "@/lib/client-image-compression";
 import {
   LOCAL_DEV_WORKSPACE_LOGIN_URL,
   isLocalDevAuthEnabled,
@@ -227,18 +228,11 @@ export default function AiPhotosPage() {
 
     const storedImages = await Promise.all(
       files.slice(0, 5).map(
-        (file) =>
-          new Promise<{ id: string; name: string; dataUrl: string }>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () =>
-              resolve({
-                id: `ai-photos-${Date.now()}-${Math.random().toString(16).slice(2)}`,
-                name: file.name,
-                dataUrl: String(reader.result || ""),
-              });
-            reader.onerror = () => reject(new Error("Failed to read uploaded photo."));
-            reader.readAsDataURL(file);
-          })
+        async (file) => ({
+          id: `ai-photos-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+          name: file.name,
+          dataUrl: await compressImageToDataUrl(file),
+        })
       )
     );
 

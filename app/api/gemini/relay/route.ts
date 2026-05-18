@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
         label: "direct",
         fetch: async (url, options) => fetch(url, options as RequestInit),
       },
-    ]);
+    ], safeString(payload.geminiApiKey).trim());
 
     return NextResponse.json(result);
   } catch (error) {

@@ -14,7 +14,8 @@ test("AI photo optimization sends all uploaded source images to the generation A
   const gemini = source("lib/gemini-image-generation.ts");
   const jobs = source("lib/generation-jobs.ts");
 
-  assert.match(page, /images:\s*uploadedImages\.map/);
+  assert.match(page, /images:\s*requestImages/);
+  assert.doesNotMatch(page, /images:\s*uploadedImages\.map/);
   assert.doesNotMatch(page, /const first = uploadedImages\[0\]/);
   assert.match(route, /images\?:\s*Array/);
   assert.match(route, /normalizeRequestImages/);
@@ -23,6 +24,30 @@ test("AI photo optimization sends all uploaded source images to the generation A
   assert.match(triggerTask, /GenerateImagePayload/);
   assert.match(gemini, /images\?:\s*GeminiInputImage\[\]/);
   assert.match(gemini, /inputImages\.forEach/);
+});
+
+test("AI photo optimization compresses uploaded images before storing and generating", () => {
+  const page = source("app/workspace/image-to-image/page.tsx");
+  const aiPhotos = source("app/ai-photos/page.tsx");
+
+  assert.match(page, /compressImageToDataUrl/);
+  assert.match(page, /MAX_OPTIMIZATION_IMAGE_EDGE/);
+  assert.match(page, /MAX_OPTIMIZATION_IMAGE_BYTES/);
+  assert.match(page, /await compressImageToDataUrl\(file\)/);
+  assert.match(page, /await compressImageToDataUrl\(blob/);
+  assert.match(page, /optimizeStoredImage/);
+  assert.match(page, /setUploadedImages\(optimizedImages\)/);
+  assert.match(page, /const requestImages = optimizedImages/);
+  assert.match(page, /images:\s*requestImages/);
+  assert.doesNotMatch(page, /images:\s*uploadedImages\.map/);
+
+  assert.match(aiPhotos, /compressImageToDataUrl/);
+  assert.match(aiPhotos, /await compressImageToDataUrl\(file\)/);
+
+  const compression = source("lib/client-image-compression.ts");
+  assert.match(compression, /MAX_OPTIMIZATION_IMAGE_BYTES = 360_000/);
+  assert.match(compression, /while \(edge >= 640\)/);
+  assert.match(compression, /edge = Math\.floor\(edge \* 0\.82\)/);
 });
 
 test("AI photo optimization uses Gemini image generation in local dev instead of placeholder images", () => {
@@ -101,11 +126,14 @@ test("Gemini image generation can fall back to a secured server relay", () => {
   assert.match(gemini, /"relay-proxy"/);
   assert.match(gemini, /"relay-direct"/);
   assert.match(gemini, /x-gemini-relay-secret/);
+  assert.match(gemini, /geminiApiKey/);
+  assert.match(gemini, /apiKeyOverride/);
   assert.match(gemini, /requestGeminiImageDirect/);
 
   assert.match(relayRoute, /runtime = "nodejs"/);
   assert.match(relayRoute, /dynamic = "force-dynamic"/);
   assert.match(relayRoute, /x-gemini-relay-secret/);
+  assert.match(relayRoute, /safeString\(payload\.geminiApiKey\)\.trim\(\)/);
   assert.match(relayRoute, /requestGeminiImageDirect/);
   assert.match(relayRoute, /Unauthorized/);
 
@@ -117,6 +145,9 @@ test("Gemini relay requests reuse configured proxy network paths in local dev", 
   const gemini = source("lib/gemini-image-generation.ts");
   const checkScript = source("scripts/check-gemini-network.mjs");
 
+  assert.match(gemini, /GEMINI_RELAY_FIRST/);
+  assert.match(gemini, /requestGeminiImageViaRelay\(payload\)/);
+  assert.match(gemini, /\[Gemini\]\[RelayFirstError\]/);
   assert.match(gemini, /buildRelayFetchCandidates/);
   assert.match(gemini, /"relay-proxy"/);
   assert.match(gemini, /candidate\.fetch\(endpoint/);
@@ -306,7 +337,8 @@ test("AI Photos funnel carries answers, email, and uploads into the workspace wi
   assert.match(aiPhotos, /router\.push\(LOCAL_DEV_WORKSPACE_LOGIN_URL\)/);
   assert.match(aiPhotos, /i2i_uploadedImages/);
   assert.match(aiPhotos, /i2i_prompt/);
-  assert.match(aiPhotos, /dataUrl: String\(reader\.result \|\| ""\)/);
+  assert.match(aiPhotos, /compressImageToDataUrl/);
+  assert.match(aiPhotos, /dataUrl:\s*await compressImageToDataUrl\(file\)/);
   assert.match(aiPhotos, /Continue to workspace/);
   assert.match(aiPhotos, /\/workspace\/image-to-image/);
 });
